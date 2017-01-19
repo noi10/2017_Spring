@@ -1,0 +1,47 @@
+# Problem 1
+#library(multtest)
+#data(golub)
+
+#gol.fac <- factor(golub.cl, levels=0:1, labels = c("ALL", "AML"))
+#meanALL <- apply(golub[,gol.fac=="ALL"], 1, mean)
+#meanAML <- apply(golub[,gol.fac=="AML"], 1, mean)
+#sortedmeanALL <- sort(meanALL, decreasing = TRUE)
+#sortedmeanAML <- sort(meanAML, decreasing = TRUE)
+#print( golub.gnames[grep(sortedmeanALL[1], meanALL),2])
+#print( golub.gnames[grep(sortedmeanALL[2], meanALL),2])
+#print( golub.gnames[grep(sortedmeanALL[3], meanALL),2])
+
+#print( golub.gnames[grep(sortedmeanAML[1], meanAML),2])
+#print( golub.gnames[grep(sortedmeanAML[2], meanAML),2])
+#print( golub.gnames[grep(sortedmeanAML[3], meanAML),2])
+
+# Problem 2
+#AML5 <- golub[1:5, gol.fac == "AML"]
+#write.csv(AML5, file="AML5.csv")
+
+#ALL5 <- golub[1:5, gol.fac == "ALL"]
+#write.table(ALL5, file="ALL5.txt")
+
+#exp100To200 <- golub[100:200,1]
+#sd(exp100To200)
+
+#expStOfGenes <- c()
+#for ( i in 1:3051 ){
+#	expStOfGenes[i] = sd(golub[i,])
+#}
+#length(expStOfGenes[expStOfGenes>1])
+
+#exp101th = golub[101,]
+#exp102th = golub[102,]
+#plot(exp101th, exp102th, xlab=golub.gnames[101,2], ylab=golub.gnames[102,2])
+
+# Problem 3
+#library(ALL)
+#data(ALL)
+#meanExp <- apply(exprs(ALL[,ALL$BT=="B1"]), 2, mean)
+#sorted <- sort(meanExp, decreasing = TRUE)
+#print (sorted)
+
+# Problem 4
+data(trees)
+plot(trees$Girth~trees$Height)

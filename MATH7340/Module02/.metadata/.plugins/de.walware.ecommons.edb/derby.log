@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Wed Jan 18 17:54:25 EST 2017:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.2.2 - (1181258): instance a816c00e-0159-b3c9-d118-ffffcb621cbf 
-on database directory C:\Users\lenovo\Desktop\2017_Spring\MATH7340\Module02\.metadata\.plugins\de.walware.statet.r.core\db  with class loader org.eclipse.osgi.internal.loader.EquinoxClassLoader@463e0b6a[de.walware.thirdparty-org.apache.derby.core:10.8.2000002.b201309081345E42sw(id=990)] 
+Thu Jan 19 19:17:24 EST 2017:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.2.2 - (1181258): instance a816c00e-0159-b93c-2821-ffffcb621cbf 
+on database directory C:\Users\lenovo\Desktop\2017_Spring\MATH7340\Module02\.metadata\.plugins\de.walware.statet.r.core\db  with class loader org.eclipse.osgi.internal.loader.EquinoxClassLoader@4c821dc7[de.walware.thirdparty-org.apache.derby.core:10.8.2000002.b201309081345E42sw(id=990)] 
 Loaded from file:/C:/Users/lenovo/.p2/pool/plugins/de.walware.thirdparty-org.apache.derby.core_10.8.2000002.b201309081345E42sw.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_101-b13
@@ -9,8 +9,8 @@ user.dir=C:\Users\lenovo\Desktop
 derby.system.home=C:\Users\lenovo\Desktop\2017_Spring\MATH7340\Module02\.metadata\.plugins\de.walware.ecommons.edb
 Database Class Loader started - derby.database.classpath=''
 ----------------------------------------------------------------
-Wed Jan 18 19:20:35 EST 2017: Shutting down Derby engine
+Thu Jan 19 19:49:37 EST 2017: Shutting down Derby engine
 ----------------------------------------------------------------
-Wed Jan 18 19:20:36 EST 2017:
-Shutting down instance a816c00e-0159-b3c9-d118-ffffcb621cbf on database directory C:\Users\lenovo\Desktop\2017_Spring\MATH7340\Module02\.metadata\.plugins\de.walware.statet.r.core\db with class loader org.eclipse.osgi.internal.loader.EquinoxClassLoader@463e0b6a[de.walware.thirdparty-org.apache.derby.core:10.8.2000002.b201309081345E42sw(id=990)] 
+Thu Jan 19 19:49:37 EST 2017:
+Shutting down instance a816c00e-0159-b93c-2821-ffffcb621cbf on database directory C:\Users\lenovo\Desktop\2017_Spring\MATH7340\Module02\.metadata\.plugins\de.walware.statet.r.core\db with class loader org.eclipse.osgi.internal.loader.EquinoxClassLoader@4c821dc7[de.walware.thirdparty-org.apache.derby.core:10.8.2000002.b201309081345E42sw(id=990)] 
 ----------------------------------------------------------------

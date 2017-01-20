@@ -5,15 +5,19 @@ data(golub)
 gol.fac <- factor(golub.cl, levels=0:1, labels = c("ALL", "AML"))
 meanALL <- apply(golub[,gol.fac=="ALL"], 1, mean)
 meanAML <- apply(golub[,gol.fac=="AML"], 1, mean)
-sortedmeanALL <- sort(meanALL, decreasing = TRUE)
-sortedmeanAML <- sort(meanAML, decreasing = TRUE)
-print( golub.gnames[grep(sortedmeanALL[1], meanALL),2])
-print( golub.gnames[grep(sortedmeanALL[2], meanALL),2])
-print( golub.gnames[grep(sortedmeanALL[3], meanALL),2])
+orderALL = order(meanALL, decreasing = TRUE)
+orderAML = order(meanAML, decreasing = TRUE)
+print(golub.gnames[orderALL[1:3],2])
+print(golub.gnames[orderAML[1:3],2])
+#sortedmeanALL <- sort(meanALL, decreasing = TRUE)
+#sortedmeanAML <- sort(meanAML, decreasing = TRUE)
+#print( golub.gnames[grep(sortedmeanALL[1:3], meanALL),2])
+#print( golub.gnames[grep(sortedmeanALL[2], meanALL),2])
+#print( golub.gnames[grep(sortedmeanALL[3], meanALL),2])
 
-print( golub.gnames[grep(sortedmeanAML[1], meanAML),2])
-print( golub.gnames[grep(sortedmeanAML[2], meanAML),2])
-print( golub.gnames[grep(sortedmeanAML[3], meanAML),2])
+#print( golub.gnames[grep(sortedmeanAML[1], meanAML),2])
+#print( golub.gnames[grep(sortedmeanAML[2], meanAML),2])
+#print( golub.gnames[grep(sortedmeanAML[3], meanAML),2])
 
 # Problem 2
 AML5 <- golub[1:5, gol.fac == "AML"]
@@ -24,12 +28,13 @@ write.table(ALL5, file="ALL5.txt")
 
 exp100To200 <- golub[100:200,1]
 sd(exp100To200)
-
-expStOfGenes <- c()
-for ( i in 1:3051 ){
-	expStOfGenes[i] = sd(golub[i,])
-}
-length(expStOfGenes[expStOfGenes>1])
+sd_all <- apply(golub, 1, sd)
+#expStOfGenes <- c()
+#for ( i in 1:3051 ){
+#	expStOfGenes[i] = sd(golub[i,])
+#}
+#length(expStOfGenes[expStOfGenes>1])
+sum(sd_all>1)
 
 exp101th = golub[101,]
 exp102th = golub[102,]
@@ -38,9 +43,10 @@ plot(exp101th, exp102th, xlab=golub.gnames[101,2], ylab=golub.gnames[102,2])
 # Problem 3
 library(ALL)
 data(ALL)
-meanExp <- apply(exprs(ALL[,ALL$BT=="B1"]), 2, mean)
-sorted <- sort(meanExp, decreasing = TRUE)
-print (sorted)
+hist(dataset,ylim=c(0,25000), xlab="Expression level", main="Histogram of gene expressions in ALL dataset")
+meanExp <- apply(exprs(ALL[,ALL$BT=="B1"]), 1, mean)
+orderB1 <- order(meanExp, decreasing = TRUE)
+print(meanExp[orderB1[1:3]])
 
 # Problem 4
 data(trees)

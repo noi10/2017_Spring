@@ -40,27 +40,17 @@ windows()
 plot(exp101th, exp102th, xlab=golub.gnames[101,2], ylab=golub.gnames[102,2])
 
 # Problem 3
-# (a)
 rm(list=ls())
 library(ALL)
 data(ALL)
 windows()
 hist(exprs(ALL[,ALL$BT=="B1"]),ylim=c(0,25000), xlab="Expression level", main="Histogram of gene expressions in ALL dataset")
-
-# (b)
 meanExp <- apply(exprs(ALL[,ALL$BT=="B1"]), 1, mean)
-
-# (c)
 orderB1 <- order(meanExp, decreasing = TRUE)
 print(meanExp[orderB1[1:3]])
 
 # Problem 4
-# (a)
-rm(list=ls())
 data(trees)
-print(class(trees))
-# (b)
 windows()
-plot(trees$Height~trees$Girth, xlab="Girth", ylab="Height and Volume", col="blue", pch="+", ylim = c(0,90))
-points(trees$Volume~trees$Girth, col = "red" , pch="o")	
-legend(18,20, c("Height", "Volume"), pch=c("+","o"), col = c("blue","red"))
+plot(trees$Height~trees$Girth, col="blue", pch="+", ylim = c(0,90))
+points(trees$Volume~trees$Girth, col = "red" , pch="o")

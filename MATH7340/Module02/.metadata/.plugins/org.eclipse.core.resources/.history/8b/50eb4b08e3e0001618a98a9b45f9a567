@@ -37,7 +37,7 @@ print(sum(apply(golub, 1, sd)>1))
 exp101th = golub[101,]
 exp102th = golub[102,]
 windows()
-plot(exp102th, exp101th, xlab=golub.gnames[102,2], ylab=golub.gnames[101,2])
+plot(exp101th, exp102th, xlab=golub.gnames[101,2], ylab=golub.gnames[102,2])
 
 # Problem 3
 # (a)

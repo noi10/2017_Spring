@@ -1,0 +1,43 @@
+# problem 1
+# (b)
+
+# problem 2
+f2 <- function(x) {2^x*exp(-2)/gamma(x+1)}
+print(f2(1))
+print(f2(0)+f2(1)+f2(2)+f2(3))
+
+# problem 3
+# n = 3 p = 1/4
+
+# problem 4
+rm(list=ls())
+xrange = c(0:2)
+print(sum(dbinom(xrange, size=3, p=0.25)))
+
+Xrange = c(0:3)
+EX <- sum(Xrange*dbinom(Xrange, size=3, p=0.25))
+print(EX)
+VarX <- sum((Xrange-EX)^2*dbinom(Xrange, size=3, p=0.3))
+print(VarX)
+
+# problem 5
+rm(list=ls())
+integrate(function(x) dchisq(x, df = 3), lower=1, upper=4)$value
+EX <- integrate(function(x) x*dchisq(x, df = 3), lower=-Inf, upper=Inf)$value
+VarX <- integrate(function(x) (x-EX)^2*dchisq(x, df = 3), lower=-Inf, upper=Inf)$value
+
+x <- rchisq(n=100000, df=3)
+mean((1<x)&(x<4))
+
+# problem 6
+# E(Y) = 10
+# Var(Y) = 160
+# NO
+
+# problem 7
+# (a)
+rm(list=ls())
+integrate(function(x) dnorm(x, 1.6, 0.4), lower=1, upper=1.6)$value
+# (b)
+x <- rnorm(n=500000, 1.6, 0.4)
+mean((1<x)&(x<1.6))

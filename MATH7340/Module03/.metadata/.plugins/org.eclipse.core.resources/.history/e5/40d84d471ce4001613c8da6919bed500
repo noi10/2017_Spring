@@ -1,0 +1,12 @@
+# problem 1
+# (b)
+
+# problem 2
+f2 <- function(x) {2^x*exp(-2)/gamma(x+1)}
+print(f2(1))
+print(f2(0)+f2(1)+f2(2)+f2(3))
+
+# problem 3
+# n = 3 p = 1/4
+
+# problem 4

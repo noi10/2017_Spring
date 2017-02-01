@@ -52,21 +52,25 @@ print(dbinom(2, 5, p))
 rm(list=ls())
 m <- 2
 n <- 5
+# (a)
 print("mean and variance of X~F(m=2, n=5)")
 EX<-integrate(function(x) x*df(x, m, n), lower=0, upper=Inf)$value
 print(EX)
 VarX<-integrate(function(x) (x-EX)^2*df(x, m, n), lower=0, upper=Inf)$value	
 print(VarX)
+# (b)
 print(n/(n-2))
 print( 2*n^2*(m+n-2)/(m*(n-2)^2*(n-4)) )
 
 rm(list=ls())
 m <- 10	
 n <- 5
+# (a)
 print("mean and variance of X~F(m=10, n=5)")
 EX<-integrate(function(x) x*df(x, m, n), lower=0, upper=Inf)$value
 print(EX)
 VarX<-integrate(function(x) (x-EX)^2*df(x, m, n), lower=0, upper=Inf)$value	
 print(VarX)
+# (b)
 print(n/(n-2))
 print( 2*n^2*(m+n-2)/(m*(n-2)^2*(n-4)) )

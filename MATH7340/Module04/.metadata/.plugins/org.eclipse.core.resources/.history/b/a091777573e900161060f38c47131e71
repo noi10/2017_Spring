@@ -1,0 +1,32 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+
+
+# problem 1
+
+# mean = 5
+# var = 0.6*sqrt(5)
+
+x <- matrix(rnorm(5*10000, mean=5, sd=3), nrow =10000)
+mean.x <- apply(x, 1, mean)
+mean( (2<mean.x) & (mean.x<5.1))
+
+# problem 2
+rm(list=ls())
+meanX <- 20*0.7
+VarX <- 20*0.7*0.3
+print(1-pnorm(15, mean=meanX, sd=sqrt(VarX)/10))
+
+# problem 3
+rm(list=ls())
+count <- 0
+for (i in 1:1000){
+	x <- rnorm(50, 9, sqrt(3))
+	y <- rnorm(50, 10, sqrt(5))
+	mean.x <- mean(x)
+	mean.y <- mean(y)
+	count = count + (mean.x + 0.5 < mean.y)
+}
+print(count/1000)

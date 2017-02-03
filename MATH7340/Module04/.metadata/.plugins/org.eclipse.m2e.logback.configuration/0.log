@@ -12,3 +12,17 @@
 2017-02-01 21:18:35,910 [Worker-5] INFO  org.eclipse.jetty.server.Server - Started @62008ms
 2017-02-01 21:47:21,250 [Framework stop] INFO  o.e.jetty.server.ServerConnector - Stopped ServerConnector@56af1dab{HTTP/1.1}{127.0.0.1:0}
 2017-02-01 21:47:21,304 [Framework stop] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@912ca36{/rhelp,null,UNAVAILABLE}
+2017-02-02 13:09:27,559 [Worker-6] INFO  org.eclipse.jetty.util.log - Logging initialized @79640ms
+2017-02-02 13:09:29,300 [Worker-6] INFO  org.eclipse.jetty.server.Server - jetty-9.2.13.v20150730
+2017-02-02 13:09:29,781 [Worker-6] INFO  o.e.j.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@5a9000c9{/rhelp,null,AVAILABLE}
+2017-02-02 13:09:30,611 [Worker-6] INFO  o.e.jetty.server.ServerConnector - Started ServerConnector@5aaf9c1{HTTP/1.1}{127.0.0.1:64891}
+2017-02-02 13:09:30,612 [Worker-6] INFO  org.eclipse.jetty.server.Server - Started @82785ms
+2017-02-02 13:31:42,646 [Framework stop] INFO  o.e.jetty.server.ServerConnector - Stopped ServerConnector@5aaf9c1{HTTP/1.1}{127.0.0.1:0}
+2017-02-02 13:31:42,677 [Framework stop] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@5a9000c9{/rhelp,null,UNAVAILABLE}
+2017-02-02 17:53:10,298 [Worker-0] INFO  org.eclipse.jetty.util.log - Logging initialized @35132ms
+2017-02-02 17:53:12,283 [Worker-0] INFO  org.eclipse.jetty.server.Server - jetty-9.2.13.v20150730
+2017-02-02 17:53:12,533 [Worker-0] INFO  o.e.j.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@40b48254{/rhelp,null,AVAILABLE}
+2017-02-02 17:53:13,068 [Worker-0] INFO  o.e.jetty.server.ServerConnector - Started ServerConnector@3164d4d3{HTTP/1.1}{127.0.0.1:1132}
+2017-02-02 17:53:13,068 [Worker-0] INFO  org.eclipse.jetty.server.Server - Started @37932ms
+2017-02-02 19:55:58,187 [Framework stop] INFO  o.e.jetty.server.ServerConnector - Stopped ServerConnector@3164d4d3{HTTP/1.1}{127.0.0.1:0}
+2017-02-02 19:55:58,205 [Framework stop] INFO  o.e.j.server.handler.ContextHandler - Stopped o.e.j.s.ServletContextHandler@40b48254{/rhelp,null,UNAVAILABLE}

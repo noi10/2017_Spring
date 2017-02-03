@@ -22,16 +22,18 @@ print(1-pnorm(15, mean=meanX, sd=sqrt(VarX)/10))
 
 # problem 3
 rm(list=ls())
-#require(mvtnorm)
-#sim <- 10000
+require(mvtnorm)
+#sim <- 1000
 #blah <- rep(NA, sim)
 #for (i in 1:sim){
+	
 #	matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
 #	meanX <- mean(matrix[,1])
 #	meanY <- mean(matrix[,2])
 #	blah[i] <- meanX + 0.5 < meanY
 #}
 #p <- mean(blah)
+
 #print( mean(blah) + c(-1, 1)*1.96*sqrt(var(blah)/sim))
 
 res <- rep(NA, 1000)

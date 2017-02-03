@@ -1,0 +1,35 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+
+
+# problem 1
+
+# mean = 5
+# var = 0.6*sqrt(5)
+
+# No, we can't.
+#x <- matrix(rnorm(5*10000, mean=5, sd=3), nrow =10000)
+#mean.x <- apply(x, 1, mean)
+#mean( (2<mean.x) & (mean.x<5.1))
+
+# problem 2
+rm(list=ls())
+meanX <- 20*0.7
+VarX <- 20*0.7*0.3
+print(1-pnorm(15, mean=meanX, sd=sqrt(VarX)/10))
+
+# problem 3
+rm(list=ls())
+require(mvtnorm)
+sim <- 100000
+blah <- rep(NA, sim)
+for (i in 1:sim){
+	
+	matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
+	meanX <- mean(matrix[,1])
+	meanY <- mean(matrix[,2])
+	blah[i] <- meanX + 0.5 < meanY
+	
+}

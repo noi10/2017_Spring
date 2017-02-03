@@ -68,10 +68,11 @@ res <- rep(NA, n)
 for (i in 1:n){
 	res[i] = (max(rnorm(n, 0, 1))-an)/bn
 }
+#hist(res)
 plot(density(res), ylim=c(0,0.5), xlab="range of X", main="Extreme Value investigation")
 f <- function(x) {exp(-x)*exp(-exp(-x))}
 curve(f, range(density(res)$x), add=TRUE, col = "blue")
 curve(dnorm, add=TRUE, col = "red")
-legend(1.5,0.5, c("generated extreme data", "extreme value", "normal distribution"), lty = "solid", col = c("black","blue","red"))
+
 # The extreme value fits to the density of generated extreme data much better than 
 # the red line

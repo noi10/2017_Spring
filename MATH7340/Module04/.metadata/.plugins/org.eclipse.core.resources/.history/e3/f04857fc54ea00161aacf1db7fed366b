@@ -68,6 +68,7 @@ res <- rep(NA, n)
 for (i in 1:n){
 	res[i] = (max(rnorm(n, 0, 1))-an)/bn
 }
+#hist(res)
 plot(density(res), ylim=c(0,0.5), xlab="range of X", main="Extreme Value investigation")
 f <- function(x) {exp(-x)*exp(-exp(-x))}
 curve(f, range(density(res)$x), add=TRUE, col = "blue")

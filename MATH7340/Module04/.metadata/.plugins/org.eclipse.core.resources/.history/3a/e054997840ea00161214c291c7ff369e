@@ -1,0 +1,69 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+
+
+# problem 1
+
+# mean = 5
+# var = 0.6*sqrt(5)
+
+# No, we can't.
+#x <- matrix(rnorm(5*10000, mean=5, sd=3), nrow =10000)
+#mean.x <- apply(x, 1, mean)
+#mean( (2<mean.x) & (mean.x<5.1))
+
+# problem 2
+rm(list=ls())
+meanX <- 20*0.7
+VarX <- 20*0.7*0.3
+print(1-pnorm(15, mean=meanX, sd=sqrt(VarX)/10))
+
+# problem 3
+rm(list=ls())
+require(mvtnorm)
+#sim <- 10000
+#blah <- rep(NA, sim)
+#for (i in 1:sim){
+#	matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
+#	meanX <- mean(matrix[,1])
+#	meanY <- mean(matrix[,2])
+#	blah[i] <- meanX + 0.5 < meanY
+#}
+#p <- mean(blah)
+#print( mean(blah) + c(-1, 1)*1.96*sqrt(var(blah)/sim))
+
+res <- rep(NA, 1000)
+for (i in 1:1000){
+	sim <- 100
+	blah <- rep(NA, sim)
+	for (j in 1:sim){
+	
+		matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
+		meanX <- mean(matrix[,1])
+		meanY <- mean(matrix[,2])
+		blah[j] <- meanX + 0.5 < meanY
+	}
+	p <- mean(blah)
+	res[i] <- p
+}
+print( mean(res) + c(-1, 1)*1.96*sqrt(var(res)/1000))
+
+# problem 4
+x1 <- rchisq(10000, 10)
+x2 <- rgamma(10000, 1, 2)
+x3 <- rt(10000, 3)
+y <- sqrt(x1)*x2+4*(x3^2)
+print(mean(y))
+
+# problem 5
+rm(list=ls())
+a <- function(n) {
+	sqrt(2*log(n))
+}
+res <- rep(NA, 1000)
+for (i in 1:1000){
+	res[i] = max(rnorm(1000, 0, 1))
+}
+hist(res)

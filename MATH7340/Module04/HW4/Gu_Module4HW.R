@@ -22,7 +22,7 @@ print(1-pnorm(15, mean=meanX, sd=sqrt(VarX)/10))
 
 # problem 3
 rm(list=ls())
-#require(mvtnorm)
+require(mvtnorm)
 #sim <- 10000
 #blah <- rep(NA, sim)
 #for (i in 1:sim){
@@ -35,17 +35,44 @@ rm(list=ls())
 #print( mean(blah) + c(-1, 1)*1.96*sqrt(var(blah)/sim))
 
 res <- rep(NA, 1000)
-for (j in 1:1000){
+for (i in 1:1000){
 	sim <- 100
 	blah <- rep(NA, sim)
-	for (i in 1:sim){
+	for (j in 1:sim){
 	
 		matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
 		meanX <- mean(matrix[,1])
 		meanY <- mean(matrix[,2])
-		blah[i] <- meanX + 0.5 < meanY
+		blah[j] <- meanX + 0.5 < meanY
 	}
 	p <- mean(blah)
-	res[j] <- p
+	res[i] <- p
 }
 print( mean(res) + c(-1, 1)*1.96*sqrt(var(res)/1000))
+
+# problem 4
+x1 <- rchisq(10000, 10)
+x2 <- rgamma(10000, 1, 2)
+x3 <- rt(10000, 3)
+y <- sqrt(x1)*x2+4*(x3^2)
+print(mean(y))
+
+# problem 5
+rm(list=ls())
+n <- 1000
+a <- function(n) {sqrt(2*log(n)) - 0.5*(log(log(n)) + log(4*pi)) * (2*log(n))^(-1/2)}
+b <- function(n) {(2*log(n))^(-1/2)}
+an <- a(n)
+bn <- b(n)
+res <- rep(NA, 1000)
+for (i in 1:1000){
+	res[i] = (max(rnorm(1000, 0, 1))-an)/bn
+}
+#hist(res)
+plot(density(res), ylim=c(0,0.5))
+f <- function(x) {exp(-x)*exp(-exp(-x))}
+curve(f, range(density(res)$x), add=TRUE, col = "blue")
+curve(dnorm, add=TRUE, col = "red")
+
+# The extreme value fits to the density of generated extreme data much better than 
+# the red line

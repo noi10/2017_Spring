@@ -4,13 +4,16 @@
 ###############################################################################
 library(pastecs)
 library(leaps)
+library(glmnet)
 options(scipen=100)
 options(digits=2)
 
 mydata <- read.table("prostate.txt")
 as.data.frame(mydata)
 trainSet <- mydata[mydata$train == "TRUE", -c(10)]
-
+testSet <- mydata[mydata$train == "FALSE", -c(10)]
+x.test <- model.matrix(lpsa ~ ., data = testSet)
+y.test <- testSet$lpsa
 
 # identify outliers
 m.dist.order <- order(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
@@ -37,6 +40,7 @@ qqnorm(y, ylim=c(-2.5,2.5))
 abline(a=0,b=1,col="red")
 
 # variable selection 
+# all subset
 regfit.full <- regsubsets(lpsa ~ ., data=trainSet)
 reg.summary <- summary(regfit.full)
 reg.summary
@@ -47,23 +51,19 @@ plot(reg.summary$adjr2, xlab="Number of variables", ylab="adjR2", type='l')
 plot(reg.summary$cp, xlab="Number of variables", ylab="Cp", type='l')
 plot(reg.summary$bic, xlab="Number of variables", ylab="BIC", type='l')
 
-coef(regfit.full, which.min(reg.summary$bic))
+coefi <- coef(regfit.full, which.min(reg.summary$bic))
+y.pred.full <- x.test[, names(coefi)] %*% coefi
+mean((y.pred.full - y.test)^2)
 
-#require(RCurl)
-#ch09ta01.file <- getURL("https://netfiles.umn.edu/users/nacht001/www/nachtsheim/5th/KutnerData/Chapter%20%209%20Data%20Sets/CH09TA01.txt",
-#		ssl.verifypeer=FALSE)
+# lasso
 
-#X <- read.table(textConnection(ch09ta01.file), sep='')
-#dimnames(X)[[2]] <- c('blood', 'prog', 'enz', 'liver', 'age', 'female', 'modAlc', 'heavyAlc', 'surv', 'lsurv')
-
-library(glmnet)
 grid=10^seq(10, -2, length=100)
 lasso.mod <- glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1, lambda=grid)
 windows()
 plot(lasso.mod)
-
 cv.out <- cv.glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1)
 plot(cv.out)
 
 coef(cv.out, s="lambda.min")
-predict(cv.out, newx=trainSet[,-c(9)], s="lambda.min")
+y.pred.lasso <- predict(cv.out, newx=as.matrix(testSet[,-c(9)]), s="lambda.min")
+mean((y.pred.lasso - y.test)^2)

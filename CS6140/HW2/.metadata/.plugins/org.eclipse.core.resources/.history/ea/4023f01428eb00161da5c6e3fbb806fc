@@ -1,8 +1,0 @@
-# TODO: Add comment
-# 
-# Author: lenovo
-###############################################################################
-
-mydata <- read.table("C:\Users\lenovo\Desktop\2017_Spring\CS6140\HW2\HW2\prostate.txt")
-mydata
-

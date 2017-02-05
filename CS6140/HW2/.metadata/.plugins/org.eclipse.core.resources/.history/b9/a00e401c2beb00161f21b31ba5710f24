@@ -1,8 +1,0 @@
-# TODO: Add comment
-# 
-# Author: lenovo
-###############################################################################
-
-mydata <- read.table("prostate.txt")
-as.data.frame(mydata)
-trainSet <- mydata[mydata$train == "TRUE",]

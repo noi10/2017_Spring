@@ -1,7 +1,0 @@
-# TODO: Add comment
-# 
-# Author: lenovo
-###############################################################################
-
-mydata <- read.talbe("prostate.txt")
-

@@ -132,3 +132,67 @@ This warning can be switched off on the Team > Git > Confirmations and Warnings 
 
 !ENTRY org.eclipse.ui 4 4 2017-02-04 17:23:17.835
 !MESSAGE Conflicting handlers for de.walware.statet.nico.commands.CancelCurrentAndPause: {de.walware.statet.nico.ui.actions.CancelHandler@245c8ea5} vs {de.walware.statet.nico.ui.actions.CancelHandler@14e215b}
+!SESSION 2017-02-04 23:15:27.045 -----------------------------------------------
+eclipse.buildId=4.5.2.M20160212-1500
+java.version=1.8.0_101
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=zh_CN
+Framework arguments:  -product org.eclipse.epp.package.jee.product
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -product org.eclipse.epp.package.jee.product
+
+!ENTRY org.eclipse.jface 2 0 2017-02-04 23:15:49.239
+!MESSAGE Keybinding conflicts occurred.  They may interfere with normal accelerator operation.
+!SUBENTRY 1 org.eclipse.jface 2 0 2017-02-04 23:15:49.239
+!MESSAGE A conflict occurred for ALT+SHIFT+X R:
+Binding(ALT+SHIFT+X R,
+	ParameterizedCommand(Command(org.eclipse.wst.server.launchShortcut.run,Run on Server,
+		Run the current selection on a server,
+		Category(org.eclipse.debug.ui.category.run,Run/Debug,Run/Debug command category,true),
+		org.eclipse.ui.internal.WorkbenchHandlerServiceHandler@6f986031,
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.ui.contexts.window,,,system)
+Binding(ALT+SHIFT+X R,
+	ParameterizedCommand(Command(de.walware.statet.r.commands.SubmitFileToRViaCommand,Run File in R via Command,
+		Submits default command to run (source, load, etc.) file in R,
+		Category(org.eclipse.debug.ui.category.run,Run/Debug,Run/Debug command category,true),
+		org.eclipse.ui.internal.WorkbenchHandlerServiceHandler@38326fd5,
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.ui.contexts.window,,,system)
+
+!ENTRY org.eclipse.egit.ui 2 0 2017-02-04 23:16:08.778
+!MESSAGE Warning: The environment variable HOME is not set. The following directory will be used to store the Git
+user global configuration and to define the default location to store repositories: 'C:\Users\lenovo'. If this is
+not correct please set the HOME environment variable and restart Eclipse. Otherwise Git for Windows and
+EGit might behave differently since they see different configuration options.
+This warning can be switched off on the Team > Git > Confirmations and Warnings preference page.
+
+!ENTRY org.eclipse.ui 4 4 2017-02-04 23:16:43.222
+!MESSAGE Conflicting handlers for de.walware.statet.nico.commands.CancelAll: {de.walware.statet.nico.ui.actions.CancelHandler@68d0e075} vs {de.walware.statet.nico.ui.actions.CancelHandler@5163bb14}
+
+!ENTRY org.eclipse.ui 4 4 2017-02-04 23:16:43.284
+!MESSAGE Conflicting handlers for de.walware.statet.nico.commands.CancelCurrent: {de.walware.statet.nico.ui.actions.CancelHandler@6f535d77} vs {de.walware.statet.nico.ui.actions.CancelHandler@19097fa5}
+
+!ENTRY org.eclipse.ui 4 4 2017-02-04 23:16:43.290
+!MESSAGE Conflicting handlers for de.walware.statet.nico.commands.CancelCurrentAndPause: {de.walware.statet.nico.ui.actions.CancelHandler@7e8a0192} vs {de.walware.statet.nico.ui.actions.CancelHandler@61736817}
+
+!ENTRY de.walware.statet.r.sweave 4 20110 2017-02-05 00:49:12.963
+!MESSAGE No file is selected in the active Eclipse window.
+
+!ENTRY de.walware.statet.r.sweave 4 20110 2017-02-05 00:49:54.832
+!MESSAGE No file is selected in the active Eclipse window.
+
+!ENTRY de.walware.statet.r.sweave 4 20100 2017-02-05 00:50:36.727
+!MESSAGE Status Processing Sweave Document 'try.RMD'.
+!SUBENTRY 1 de.walware.statet.r.sweave 4 -1 2017-02-05 00:50:36.727
+!MESSAGE The TeX file, expected at '/HW2/try.tex' could not be found.
+!SUBENTRY 1 de.walware.statet.r.sweave 1 0 2017-02-05 00:50:36.727
+!MESSAGE Exit code = 199
+
+!ENTRY de.walware.statet.r.sweave 4 20100 2017-02-05 00:58:53.905
+!MESSAGE Status Processing Sweave Document 'try.RMD'.
+!SUBENTRY 1 de.walware.statet.r.sweave 4 -1 2017-02-05 00:58:53.905
+!MESSAGE The TeX file, expected at '/HW2/try.tex' could not be found.
+!SUBENTRY 1 de.walware.statet.r.sweave 1 0 2017-02-05 00:58:53.905
+!MESSAGE Exit code = 199

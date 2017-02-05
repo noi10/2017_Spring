@@ -1,0 +1,7 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+
+mydata <- read.table("prostate.txt")
+print(mydata)

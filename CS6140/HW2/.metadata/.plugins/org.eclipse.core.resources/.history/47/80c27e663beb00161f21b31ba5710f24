@@ -1,0 +1,28 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+library(pastecs)
+
+options(scipen=100)
+options(digits=2)
+
+mydata <- read.table("prostate.txt")
+as.data.frame(mydata)
+trainSet <- mydata[mydata$train == "TRUE", -c(10)]
+
+# one variable summary
+summary(trainSet)
+stat.desc(trainSet, basic=F)
+stat.desc(trainSet, desc=F)
+
+# two variable summary
+round(cor(trainSet), digits=2)
+pairs(trainSet)
+
+m.dist.order <- order(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
+is.outlier   <- rep(FALSE, nrow(trainSet))
+is.outlier[m.dist.order[1:8]] <- TRUE
+
+trainSetWithOutlier <- cbind(trainSet, is.outlier)
+

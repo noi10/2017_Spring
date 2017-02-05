@@ -1,0 +1,16 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+library(pastecs)
+
+options(scipen=100)
+options(digits=2)
+
+mydata <- read.table("prostate.txt")
+as.data.frame(mydata)
+trainSet <- mydata[mydata$train == "TRUE",]
+
+# one variable summary
+stat.desc(trainSet[,-c(10)], basic=F)
+stat.desc(trainSet[,-c(10)], desc=F)

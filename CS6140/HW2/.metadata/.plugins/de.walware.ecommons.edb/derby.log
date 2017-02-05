@@ -1,0 +1,16 @@
+----------------------------------------------------------------
+Sat Feb 04 17:20:45 EST 2017:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.8.2.2 - (1181258): instance a816c00e-015a-0b37-1d76-000065348073 
+on database directory C:\Users\lenovo\Desktop\2017_Spring\CS6140\HW2\.metadata\.plugins\de.walware.statet.r.core\db  with class loader org.eclipse.osgi.internal.loader.EquinoxClassLoader@5304ac92[de.walware.thirdparty-org.apache.derby.core:10.8.2000002.b201309081345E42sw(id=990)] 
+Loaded from file:/C:/Users/lenovo/.p2/pool/plugins/de.walware.thirdparty-org.apache.derby.core_10.8.2000002.b201309081345E42sw.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.8.0_101-b13
+user.dir=C:\Users\lenovo\Desktop
+derby.system.home=C:\Users\lenovo\Desktop\2017_Spring\CS6140\HW2\.metadata\.plugins\de.walware.ecommons.edb
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Sat Feb 04 21:44:23 EST 2017: Shutting down Derby engine
+----------------------------------------------------------------
+Sat Feb 04 21:44:24 EST 2017:
+Shutting down instance a816c00e-015a-0b37-1d76-000065348073 on database directory C:\Users\lenovo\Desktop\2017_Spring\CS6140\HW2\.metadata\.plugins\de.walware.statet.r.core\db with class loader org.eclipse.osgi.internal.loader.EquinoxClassLoader@5304ac92[de.walware.thirdparty-org.apache.derby.core:10.8.2000002.b201309081345E42sw(id=990)] 
+----------------------------------------------------------------

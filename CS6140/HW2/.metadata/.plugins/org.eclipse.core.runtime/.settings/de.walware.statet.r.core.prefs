@@ -1,0 +1,15 @@
+eclipse.preferences.version=1
+r.environments/default_configuration.name=user-local--103nr3y1tbke4
+r.environments/user-local--103nr3y1tbke4/env.r_bits.count=64
+r.environments/user-local--103nr3y1tbke4/env.r_doc.dir=${env_var\:R_HOME}/doc
+r.environments/user-local--103nr3y1tbke4/env.r_home=E\:\\R-3.3.2
+r.environments/user-local--103nr3y1tbke4/env.r_include.dir=${env_var\:R_HOME}/include
+r.environments/user-local--103nr3y1tbke4/env.r_libs.r.common=
+r.environments/user-local--103nr3y1tbke4/env.r_libs.r.default=
+r.environments/user-local--103nr3y1tbke4/env.r_libs.r.site=${env_var\:R_HOME}/site-library
+r.environments/user-local--103nr3y1tbke4/env.r_libs.r.user=
+r.environments/user-local--103nr3y1tbke4/env.r_share.dir=${env_var\:R_HOME}/share
+r.environments/user-local--103nr3y1tbke4/env.sub_arch=x86_64
+r.environments/user-local--103nr3y1tbke4/name=R
+r.environments/user-local--103nr3y1tbke4/type=user-local
+r.environments/version=2

@@ -1,0 +1,8 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+library(pastecs)
+mydata <- read.table("prostate.txt")
+as.data.frame(mydata)
+trainSet <- mydata[mydata$train == "TRUE",]

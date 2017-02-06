@@ -1,10 +1,18 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+
+
 # problem 1
 
 # mean = 5
-# var = 0.6*sqrt(5) = 1.3416
+# var = 0.6*sqrt(5)
 
-# No, we can't. n is too small.
-
+# No, we can't.
+#x <- matrix(rnorm(5*10000, mean=5, sd=3), nrow =10000)
+#mean.x <- apply(x, 1, mean)
+#mean( (2<mean.x) & (mean.x<5.1))
 
 # problem 2
 rm(list=ls())
@@ -13,44 +21,34 @@ VarX <- 20*0.7*0.3
 print(1-pnorm(15, mean=meanX, sd=sqrt(VarX)/10))
 
 # problem 3
-# one loop
 rm(list=ls())
 require(mvtnorm)
-sim <- 100000
-blah <- rep(NA, sim)
-for (i in 1:sim){
-	matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
-	meanX <- mean(matrix[,1])
-	meanY <- mean(matrix[,2])
-	blah[i] <- meanX + 0.5 < meanY
-}
-p <- mean(blah)
-print(p)
-print( p + c(-1, 1)*1.96*sqrt(var(blah)/sim))
+#sim <- 10000
+#blah <- rep(NA, sim)
+#for (i in 1:sim){
+#	matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
+#	meanX <- mean(matrix[,1])
+#	meanY <- mean(matrix[,2])
+#	blah[i] <- meanX + 0.5 < meanY
+#}
+#p <- mean(blah)
+#print( mean(blah) + c(-1, 1)*1.96*sqrt(var(blah)/sim))
 
-# two loops
-rm(list=ls())
-require(mvtnorm)
-sim <- 1000
-res <- rep(NA, sim)
-n <- 100
-zeroOnes <- rep(NA, n)
-for (i in 1:sim){
-	for (j in 1:n){
+res <- rep(NA, 1000)
+for (i in 1:1000){
+	sim <- 100
+	blah <- rep(NA, sim)
+	for (j in 1:sim){
+	
 		matrix <- rmvnorm(50, mean=c(9,10), sigma=matrix(c(3,2,2,5), nrow=2))
 		meanX <- mean(matrix[,1])
 		meanY <- mean(matrix[,2])
-		zeroOnes[j] <- meanX + 0.5 < meanY
+		blah[j] <- meanX + 0.5 < meanY
 	}
-	p <- mean(zeroOnes)
+	p <- mean(blah)
 	res[i] <- p
 }
-print( mean(res) )
-print( mean(res) + c(-1, 1)*1.96*sqrt(var(res)/sim))
-
-# theoretical
-1-pnorm(0.5, 1, sqrt(0.08))
-
+print( mean(res) + c(-1, 1)*1.96*sqrt(var(res)/1000))
 
 # problem 4
 x1 <- rchisq(100000, df = 10)
@@ -59,15 +57,11 @@ x3 <- rt(100000, df = 3)
 y <- sqrt(x1)*x2+4*(x3^2)
 print(mean(y))
 
-# theoretical
 Esqrtx1 <- integrate(function(x) sqrt(x)*dchisq(x, df = 10), lower=0, upper=Inf)$value
 Ex2 <- 1*2
 Esquarex3 <- integrate(function(x) x^2 *dt(x, df = 3), lower=-Inf, upper=Inf)$value
 Ey <- Esqrtx1*Ex2 + 4*Esquarex3
 print(Ey)
-
-# percentage error
-print(  abs(mean(y)-Ey)/Ey * 100  ) 
 
 # problem 5
 rm(list=ls())

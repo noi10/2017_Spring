@@ -1,41 +1,87 @@
+---
+title: "CS6140 Assignment 2"
+author: "Chengbo Gu"
+date: "2017-2-5 16:23:51"
+---
 ```{r include=FALSE}
+source('Variables.R')
 library(pastecs)
 library(leaps)
 library(glmnet)
 options(scipen=100)
 options(digits=2)
 ```
+
+## Problem 4
+
+### (a) Select the training set
+
+First, we read the data, retrieve trainSet and testSet.
+Also build test model which will be used to calculate MSE later.
 ```{r}
 mydata <- as.data.frame(read.table("prostate.txt"))
 trainSet <- mydata[mydata$train == "TRUE", -c(10)]
 testSet <- mydata[mydata$train == "FALSE", -c(10)]
 x.test <- model.matrix(lpsa ~ ., data = testSet)
 y.test <- testSet$lpsa
+```
 
+### (b) Data exploration
+In this section, we will first identify outliers from training set and then perform one-variable
+and two-variable summary statistics.
+```{r plot, fig.width = 5, fig.height=4}
 # identify outliers
+m.dist <- sort(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
+plot(m.dist, ylab="manalanobis distance", xlab="index of m.dist", main = "Outliers Identification")
 m.dist.order <- order(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
 is.outlier   <- rep(FALSE, nrow(trainSet))
 is.outlier[m.dist.order[1:8]] <- TRUE
 
 trainSet_Outlier <- cbind(trainSet, is.outlier)
 trainSet <- trainSet_Outlier[trainSet_Outlier$is.outlier == FALSE, -c(10)]
+```
+As we can see from the plot above that the first 8 patients are seems to be outliers, thus we remove them from our training set. After this, we can apply one-variable and two-variable summary.
 
+#### one variable summary
+
+simple one variable summary
+```{r}
 # one variable summary
 summary(trainSet)
+```
+
+Of course we can explore some more details with following commands
+```{r}
 stat.desc(trainSet, basic=F)
 stat.desc(trainSet, desc=F)
-
+```
+#### two variable summary
+```{r}
 # two variable summary
 round(cor(trainSet), digits=2)
 pairs(trainSet)
+```
 
+#### Discussion
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
+
+### (c) Assumption of Normality
+```{r}
 # Assumption of Normality
 fit <- lm(lpsa ~ ., data=trainSet)
 y <- fit$residuals
 fit.summary <- summary(fit)
 qqnorm(y, ylim=c(-2.5,2.5))
 abline(a=0,b=1,col="red")
-
+```
+     
+     
+     
+### (d) Variable selection and Performance evaluation
+```{r}
 # variable selection 
 # all subset
 regfit.full <- regsubsets(lpsa ~ ., data=trainSet)
@@ -50,10 +96,9 @@ plot(reg.summary$bic, xlab="Number of variables", ylab="BIC", type='l')
 
 coefi <- coef(regfit.full, which.min(reg.summary$bic))
 y.pred.full <- x.test[, names(coefi)] %*% coefi
-mean((y.pred.full - y.test)^2)
+
 
 # lasso
-
 grid=10^seq(10, -2, length=100)
 lasso.mod <- glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1, lambda=grid)
 windows()
@@ -63,6 +108,11 @@ plot(cv.out)
 
 coef(cv.out, s="lambda.min")
 y.pred.lasso <- predict(cv.out, newx=as.matrix(testSet[,-c(9)]), s="lambda.min")
+
+# performance evaluation
+# full subset
+mean((y.pred.full - y.test)^2)
+# lasso
 mean((y.pred.lasso - y.test)^2)
 ```
 

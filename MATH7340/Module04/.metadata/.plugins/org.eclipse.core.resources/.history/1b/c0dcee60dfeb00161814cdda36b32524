@@ -1,10 +1,18 @@
+# TODO: Add comment
+# 
+# Author: lenovo
+###############################################################################
+
+
 # problem 1
 
 # mean = 5
-# var = 0.6*sqrt(5) = 1.3416
+# var = 0.6*sqrt(5)
 
-# No, we can't. n is too small.
-
+# No, we can't.
+#x <- matrix(rnorm(5*10000, mean=5, sd=3), nrow =10000)
+#mean.x <- apply(x, 1, mean)
+#mean( (2<mean.x) & (mean.x<5.1))
 
 # problem 2
 rm(list=ls())

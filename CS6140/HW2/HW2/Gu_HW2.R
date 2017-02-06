@@ -49,7 +49,9 @@ par(mfrow=c(2,2))
 plot(reg.summary$rss, xlab="Number of variables", ylab="RSS", type='l')
 plot(reg.summary$adjr2, xlab="Number of variables", ylab="adjR2", type='l')
 plot(reg.summary$cp, xlab="Number of variables", ylab="Cp", type='l')
+abline(a=0, b=1, lty=3, lwd=2)
 plot(reg.summary$bic, xlab="Number of variables", ylab="BIC", type='l')
+
 
 coefi <- coef(regfit.full, which.min(reg.summary$bic))
 y.pred.full <- x.test[, names(coefi)] %*% coefi

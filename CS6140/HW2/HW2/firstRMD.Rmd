@@ -4,16 +4,27 @@ author: "Chengbo Gu"
 date: "2017-2-5 16:23:51"
 ---
 ```{r include=FALSE}
-source('Variables.R')
+#source('Variables.R')
 library(pastecs)
 library(leaps)
 library(glmnet)
-options(scipen=100)
-options(digits=2)
+#options(scipen=100)
+options(digits=4)
 ```
+## Problem 1
+## Problem 2
+How to classify Alzheimer¡¯s disease and identify those presymptomatic individuals with mild cognitive impairment (MCI) who will eventually convert to Alzheimer¡¯s is the issue addressed in Sandip Ray¡¯s manuscript. Statistical methods including significance analysis of microarrays (SAM), unsupervised clustering algorithm, predictive analysis of microarrays (PAM, 10-fold cross-validation) were used in Ray¡¯s work. His conclusion is that 18 signaling proteins in blood plasma are found that can be used to classify blinded samples from Alzheimer¡¯s and control subjects with close to 90% accuracy. Also, these signaling proteins can help identify patients who had MCI that progressed to Alzheimer¡¯s disease 2-6 years later. Biological analysis of the 18 proteins points to systemic dysregulation of hematopoiesis, immune responses, apoptosis and neuronal support in presymptomatic Alzheimer¡¯s disease, which makes the conclusion more convincing.  
 
+
+The first and most interesting part of Ray¡¯s work for me is that whenever he draws a conclusion, he wants to verify it from other perspectives. For instance, after SAM identified 19 proteins with highly significant differences in expression between Alzheimer¡¯s and NDC samples, he applied an unsupervised clustering algorithm based on the similarity in abundance of these 19 markers which produced two main clusters that contained mostly Alzheimer¡¯s or NDC samples respectively. Similarly, after PAM identified 18 predictors and classified Alzheimer¡¯s and NDC samples with very high accuracy, the unsupervised clustering based on these 18 markers was able to separate Alzheimer¡¯s and NDC samples at the same time. From high level, this manuscript is not merely about statistical analysis but combined with the biological one. Moreover, they are consistent with each other.
+
+
+Another impressive part is that these 18 predictors also perform well in distinguishing Alzheimer¡¯s samples from other neurological diseases and rheumatoid arthritis. Though this may not be Ray¡¯s initial intention, the result does support his statement that these 18 biomarkers certainly form an Alzheimer¡¯s-specific signature.
+
+To go further, we may want to find the reason why there exists a discrepancy between SAM and PAM ¡ª¡ª the missing biomarker CCL22. Why it shows significant difference but is discarded by PAM? What will the regression model and MSE be with 19 predictors? What¡¯s the correlation between CCL22 and M-CSF? CCL22 and M-CSF are the nearest in the phylogenetic tree, maybe CCL22 is somewhat collinear with M-CSF. By solving these problems, we may be able to explain the missing CCL22 thus makes the work more persuasive.
+
+## Problem 3
 ## Problem 4
-
 ### (a) Select the training set
 
 First, we read the data, retrieve trainSet and testSet.
@@ -30,15 +41,16 @@ y.test <- testSet$lpsa
 In this section, we will first identify outliers from training set and then perform one-variable
 and two-variable summary statistics.
 ```{r plot, fig.width = 5, fig.height=4}
+sum(is.na.data.frame(mydata))
 # identify outliers
 m.dist <- sort(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
 plot(m.dist, ylab="manalanobis distance", xlab="index of m.dist", main = "Outliers Identification")
-m.dist.order <- order(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
-is.outlier   <- rep(FALSE, nrow(trainSet))
-is.outlier[m.dist.order[1:8]] <- TRUE
+#m.dist.order <- order(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
+#is.outlier   <- rep(FALSE, nrow(trainSet))
+#is.outlier[m.dist.order[1:8]] <- TRUE
 
-trainSet_Outlier <- cbind(trainSet, is.outlier)
-trainSet <- trainSet_Outlier[trainSet_Outlier$is.outlier == FALSE, -c(10)]
+#trainSet_Outlier <- cbind(trainSet, is.outlier)
+#trainSet <- trainSet_Outlier[trainSet_Outlier$is.outlier == FALSE, -c(10)]
 ```
 As we can see from the plot above that the first 8 patients are seems to be outliers, thus we remove them from our training set. After this, we can apply one-variable and two-variable summary.
 
@@ -47,6 +59,8 @@ As we can see from the plot above that the first 8 patients are seems to be outl
 simple one variable summary
 ```{r}
 # one variable summary
+
+#options(digits=2)
 summary(trainSet)
 ```
 
@@ -82,6 +96,7 @@ abline(a=0,b=1,col="red")
      
 ### (d) Variable selection and Performance evaluation
 ```{r}
+#options(digits=4)
 # variable selection 
 # all subset
 regfit.full <- regsubsets(lpsa ~ ., data=trainSet)
@@ -92,9 +107,12 @@ par(mfrow=c(2,2))
 plot(reg.summary$rss, xlab="Number of variables", ylab="RSS", type='l')
 plot(reg.summary$adjr2, xlab="Number of variables", ylab="adjR2", type='l')
 plot(reg.summary$cp, xlab="Number of variables", ylab="Cp", type='l')
+abline(a=0, b=1, lty=3, lwd=2)
 plot(reg.summary$bic, xlab="Number of variables", ylab="BIC", type='l')
 
+
 coefi <- coef(regfit.full, which.min(reg.summary$bic))
+coefi
 y.pred.full <- x.test[, names(coefi)] %*% coefi
 
 
@@ -102,11 +120,21 @@ y.pred.full <- x.test[, names(coefi)] %*% coefi
 grid=10^seq(10, -2, length=100)
 lasso.mod <- glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1, lambda=grid)
 windows()
-plot(lasso.mod)
-cv.out <- cv.glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1)
-plot(cv.out)
 
+plot(lasso.mod)
+legend('topleft', legend = names(trainSet[,-c(9)]), col=1:8, lty=1)
+
+cv.out <- cv.glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1)
+#x.test.lasso
+#y.lasso.pred <- predict(lasso.mod, as.matrix(x.test.lasso))
+#y.lasso.pred
+#MSE.lasso.test <- apply( (y.lasso.pred - y.test)^2, 2 ,mean )
+plot(cv.out)
+#points(log(lasso.mod$lambda), MSE.lasso.test, col = "blue", pch = 18)
+
+cv.out$lambda.min
 coef(cv.out, s="lambda.min")
+
 y.pred.lasso <- predict(cv.out, newx=as.matrix(testSet[,-c(9)]), s="lambda.min")
 
 # performance evaluation

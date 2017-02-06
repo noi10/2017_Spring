@@ -85,5 +85,4 @@ f <- function(x) {exp(-x)*exp(-exp(-x))}
 curve(f, range(density(res)$x), add=TRUE, col = "blue")
 curve(dnorm, add=TRUE, col = "red")
 legend(1.5,0.5, c("generated extreme data", "extreme value", "normal distribution"), lty = "solid", col = c("black","blue","red"))
-# The extreme value fits to the density of generated extreme data much better than 
-# the red line
+# The extreme value fits to the density of generated extreme data much better than the red line

@@ -3,12 +3,7 @@ title: "CS6140 Assignment 2"
 author: "Chengbo Gu"
 date: "2017-2-5 16:23:51"
 ---
-```{r include=FALSE}
-library(pastecs)
-library(leaps)
-library(glmnet)
-options(digits=4)
-```
+
 ## Problem 1
 ## Problem 2
 How to classify Alzheimer's disease and identify those presymptomatic individuals with mild cognitive impairment (MCI) who will eventually convert to Alzheimer's is the issue addressed in Sandip Ray's manuscript. Statistical methods including significance analysis of microarrays (SAM), unsupervised clustering algorithm, predictive analysis of microarrays (PAM, 10-fold cross-validation regularization and logistic regression) were used in Ray's work. His conclusion is that 18 signaling proteins in blood plasma are found that can be used to classify blinded samples from Alzheimer's and control subjects with close to 90% accuracy. Also, these signaling proteins can help identify patients who had MCI that progressed to Alzheimer's disease 2-6 years later. Biological analysis of the 18 proteins points to systemic dysregulation of hematopoiesis, immune responses, apoptosis and neuronal support in presymptomatic Alzheimer's disease, which makes the conclusion more convincing.  
@@ -34,10 +29,17 @@ The second one could be the poor performance of their best model given data of t
 For future work, partnering with the U.S. Department of Education to gain access to all kinds of data (from all kinds of alumni and maybe some privacy-suppressed data) would be a big plus. More generalized models for imputation can be involved to handle the remaining privacy-suppressed data better if given enough computational resource. Finally, improving the performance towards trade schools by possibly selecting new features could form the project an organic whole.
 
 ## Problem 4
+```{r include=FALSE}
+library(pastecs)
+library(leaps)
+library(glmnet)
+library(knitr)
+#options(digits=4)
+```
 ### (a) Select the training set
 
 First, we read the data, retrieve trainSet and testSet.
-Also build test model which will be used to calculate MSE later.
+Also build test model which will be used to calculate mean sqaure prediction error later.
 ```{r}
 mydata <- as.data.frame(read.table("prostate.txt"))
 trainSet <- mydata[mydata$train == "TRUE", -c(10)]
@@ -48,30 +50,31 @@ y.test <- testSet$lpsa
 ```
 
 ### (b) Data exploration
-In this section, we will first identify outliers from training set and then perform one-variable
-and two-variable summary statistics.
-```{r plot, fig.width = 5, fig.height=4}
+In this section, we will try to identify outliers from training set and perform one-variable and two-variable summary statistics.
+```{r}
 sum(is.na.data.frame(mydata))
+
 # identify outliers
 m.dist <- sort(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
 plot(m.dist, ylab="manalanobis distance", xlab="index of m.dist", main = "Outliers Identification")
-#m.dist.order <- order(mahalanobis(trainSet, colMeans(trainSet), cov(trainSet)), decreasing=TRUE)
-#is.outlier   <- rep(FALSE, nrow(trainSet))
-#is.outlier[m.dist.order[1:8]] <- TRUE
-
-#trainSet_Outlier <- cbind(trainSet, is.outlier)
-#trainSet <- trainSet_Outlier[trainSet_Outlier$is.outlier == FALSE, -c(10)]
 ```
-As we can see from the plot above that the first 8 patients are seems to be outliers, thus we remove them from our training set. After this, we can apply one-variable and two-variable summary.
+
+#### Discussion
+As we can see above, there is no missing value in our dataset.
+Besides, the plot indicates that the first 8 patients are seems to be outliers. However, different from the rest doesn't necessarily mean wrong as we discussed in class. Since the number of observations is small, we decided not to remove the first 8 patients with large mahalanobis distance. After this, we can apply one-variable and two-variable summary.
+
+
+
+
 
 #### one variable summary
 
 simple one variable summary
 ```{r}
 # one variable summary
+one.variable.summary <- summary(trainSet, digits=2)
+one.variable.summary
 
-#options(digits=2)
-summary(trainSet)
 ```
 
 Of course we can explore some more details with following commands
@@ -79,6 +82,9 @@ Of course we can explore some more details with following commands
 format(round(stat.desc(trainSet, basic=F), 2), nsmall = 2)
 format(round(stat.desc(trainSet, desc=F), 2), nsmall=2)
 ```
+
+
+
 #### two variable summary
 ```{r}
 # two variable summary
@@ -87,12 +93,14 @@ pairs(trainSet)
 ```
 
 #### Discussion
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+svi is the only categorical predictor in our dataset which has the value of either 0 or 1.
+lcp vs lcavol, pgg45 vs lcp, pgg45 vs gleason are the paris which are highly correlated predictors.
 
 
 
 
 ### (c) Assumption of Normality
+In this section, we will validate the assumption of normality of residuals.
 ```{r}
 # Assumption of Normality
 fit <- lm(lpsa ~ ., data=trainSet)
@@ -101,12 +109,20 @@ fit.summary <- summary(fit)
 qqnorm(y, ylim=c(-2.5,2.5))
 abline(a=0,b=1,col="red")
 ```
+
+#### Discussion     
+The red line in the qq-plot is y=x which indicates that the closer the data is to the redline, the more likely the data is normally distributed. Since we don't have many observations, this qq-plot is not that bad. We could draw the conclusion that the linearity of the points suggests that the residuals are normally distributed using all predictors.
      
-     
-     
+
 ### (d) Variable selection and Performance evaluation
+In this section, we will use 2 methods to select variables. They are bic and lasso.
+For bic, we first use exhaustive subset seartch to select the variables and then build interaction models based on it trying to catch the nonlinearship between variables. We report the prediction error of them at last.
+
+For lasso, we realize that the process is not deterministic but probabilistic because of the cross-validation. Thus, we repeat the process 1000 times, count the number of variables that lasso help us eliminate and store the mean sqaure prediction error every time. We last report the average of mean sqaure prediction error of lasso models when the number of variables eliminated is 0,1,3 respectively.
+
+Finally, we compare the models of the two classes by their performance.
+#### BIC
 ```{r}
-#options(digits=4)
 # variable selection 
 # all subset
 regfit.full <- regsubsets(lpsa ~ ., data=trainSet)
@@ -122,9 +138,19 @@ plot(reg.summary$bic, xlab="Number of variables", ylab="BIC", type='l')
 
 
 coefi <- coef(regfit.full, which.min(reg.summary$bic))
-y.pred.full <- x.test[, names(coefi)] %*% coefi
+y.pred.full2 <- x.test[, names(coefi)] %*% coefi
+predict.full2 <- mean((y.pred.full2 - y.test)^2)
 coefi
 
+coefi <- coef(regfit.full, 3)
+y.pred.full3 <- x.test[, names(coefi)] %*% coefi
+predict.full3 <- mean((y.pred.full3 - y.test)^2)
+coefi
+```
+
+#### model refinement based on result of all subset
+```{r}
+# add new predictors
 x.interaction.train <- cbind(trainSet[,1], trainSet[,2], trainSet[,9], 
                              trainSet[,1]^2, trainSet[,2]^2, trainSet$lcavol*trainSet$lweight)
 colnames(x.interaction.train)<- c( 'lcavol', 'lweight', 'lpsa', 'lcavol^2', 'lweight^2', 'lcavol*lweight')
@@ -133,53 +159,128 @@ x.interaction.test <- cbind(testSet[,1], testSet[,2], testSet[,9],
                             testSet[,1]^2, testSet[,2]^2, testSet$lcavol*testSet$lweight)
 colnames(x.interaction.test)<- c( 'lcavol', 'lweight', 'lpsa', 'lcavol^2', 'lweight^2', 'lcavol*lweight')
 
+# build model that has lc*lw predictor
 x.intermodel1.test <- model.matrix(lpsa ~ ., data = as.data.frame(x.interaction.test[,-c(4:5)]))
 inter1.fit <- lm(lpsa ~ ., data=as.data.frame(x.interaction.train[, -c(4:5)]))
 coefi <- coef(inter1.fit)
 y.inter1.pred <- x.intermodel1.test[, names(coefi)] %*% coefi
-mean((y.inter1.pred - y.test)^2)
+predict.inter1 <- mean((y.inter1.pred - y.test)^2)
 
+# build model that has lc^2 and lw^2 predictors
 x.quadratic.test <- model.matrix(lpsa ~ ., data = as.data.frame(x.interaction.test[,-c(6)]))
 quadratic.fit <- lm(lpsa ~ ., data=as.data.frame(x.interaction.train[, -c(6)]))
-summary(quadratic.fit)
 coefi <- coef(quadratic.fit)
 y.quadratic.pred <- x.quadratic.test[, names(coefi)] %*% coefi
-mean((y.quadratic.pred - y.test)^2)
+predict.quadratic <- mean((y.quadratic.pred - y.test)^2)
 
+# build model that has lc*lw, lc^2 and lw^2 predictors
 x.intermodel2.test <- model.matrix(lpsa ~ ., data = as.data.frame(x.interaction.test))
 inter2.fit <- lm(lpsa ~ ., data=as.data.frame(x.interaction.train))
-summary(inter2.fit)
 coefi <- coef(inter2.fit)
 y.inter2.pred <- x.intermodel2.test[, names(coefi)] %*% coefi
-mean((y.inter2.pred - y.test)^2)
+predict.inter2 <- mean((y.inter2.pred - y.test)^2)
 
+# report mean sqaure prediction error 
+result <- t(as.matrix(c(predict.full2, predict.full3, predict.inter1, 
+                        predict.quadratic, predict.inter2)))
+colnames(result) <- c('lc+lw', 'lc+lw+svi', '+lc*lw', '+lc^2^+lw^2^', '+lc*lw+lc^2^+lw^2^')
+kable(result, caption = 'mean sqaure prediction error models based on bic variable selection')
+```
+
+#### Discussion
+For simplicity, we only build the models up to quadratic level. The minimum BIC indicates that only lc and lw are needed to build the model. However, we also build a model on lc, lw and svi because the line of BIC is almost flat between 2 and 3. While adding lc*lw or lc^2 and lw^2 alone doesn't improve the performance of the model, combining them together yield the best model among these models using lc, lw and the combination of them as predictors. Interestingly, the model built with lc, lw and svi is the best model with minimum mean sqaure prediction error, which indicates that sometimes BIC is not that accurate because it is just a statistical criterion which uses in-sample error to infer extra-sample error.
+
+#### Lasso
+```{r}
 # lasso
 grid=10^seq(10, -2, length=100)
 lasso.mod <- glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1, lambda=grid)
-windows()
-
 plot(lasso.mod)
 legend('topleft', legend = names(trainSet[,-c(9)]), col=1:8, lty=1)
 
-cv.out <- cv.glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1)
-#x.test.lasso
-#y.lasso.pred <- predict(lasso.mod, as.matrix(x.test.lasso))
-#y.lasso.pred
-#MSE.lasso.test <- apply( (y.lasso.pred - y.test)^2, 2 ,mean )
-plot(cv.out)
-#points(log(lasso.mod$lambda), MSE.lasso.test, col = "blue", pch = 18)
+counter1 <- 0; counter3 <- 0; counter0 <- 0
+predict.lasso.0 <- 0; flag0 <- FALSE
+predict.lasso.1 <- 0; flag1 <- FALSE
+predict.lasso.3 <- 0; flag3 <- FALSE; lambda <- 0
+par(mfrow=c(2,2))
+for (i in 1:1000){
+  cv.out <- cv.glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1)
+  cv.out$lambda.min
+  coefi <- coef(cv.out, s="lambda.min")
+  y.pred.lasso <- predict(cv.out, newx=as.matrix(testSet[,-c(9)]), s="lambda.min")
+  predict.lasso <- mean((y.pred.lasso - y.test)^2)
+  if ( sum(coefi==0) == 1 ) {
+    if (flag1 == FALSE) {
+      plot(cv.out)
+      title("1 predictor is eliminated", line = 2.5)
+      flag1 <- TRUE
+    }
+    counter1 <- counter1 + 1
+    predict.lasso.1 <- predict.lasso.1 + predict.lasso
+  } else if (sum(coefi==0)==3) {
+    if (flag3 == FALSE) {
+      plot(cv.out)
+      title("3 predictors are eliminated", line = 2.5)
+      flag3 <- TRUE
+      y.best.pred <- y.pred.lasso
+    }
+    lambda <- lambda + cv.out$lambda.min
+    counter3 <- counter3 + 1
+    predict.lasso.3 <- predict.lasso.3 + predict.lasso
+  } else {
+    if (flag0 == FALSE) {
+      plot(cv.out)
+      title("no predictor is eliminated", line = 2.5)
+      flag0 <- TRUE
+    }
+    counter0 <- counter0 + 1
+    predict.lasso.0 <- predict.lasso.0 + predict.lasso
+  }
+}
+predict.lasso.1 <- predict.lasso.1/counter1
+predict.lasso.3 <- predict.lasso.3/counter3
+predict.lasso.0 <- predict.lasso.0/counter0
+result <- t(as.matrix(c(predict.lasso.0, predict.lasso.1, predict.lasso.3)))
+colnames(result) <- c('lassoe0', 'lassoe1', 'lassoe3')
+kable(result, caption = 'mean sqaure prediction error of lasso models')
+bestlambda <- lambda/counter3
 
-cv.out$lambda.min
-coef(cv.out, s="lambda.min")
-
-y.pred.lasso <- predict(cv.out, newx=as.matrix(testSet[,-c(9)]), s="lambda.min")
-
-# performance evaluation
-# full subset
-mean((y.pred.full - y.test)^2)
-# interaction
-#mean((y.interaction.pred - y.test)^2)
-# lasso
-mean((y.pred.lasso - y.test)^2)
 ```
 
+#### Discussion
+Let lassoe1 denote the situation when 1 predictor was eliminated (similarly for lassoe0 and lassoe3). Among 1000 times experiment, lassoe0, lassoe1 and lassoe3 appears `r counter0`, `r counter1` and `r counter3` times respectively. By comparing the average of mean sqaure prediction error or these three models, we draw the conclusion that the best model is built when in lassoe3 with $\lambda $ `r bestlambda`. 
+
+
+
+#### Performance evaluation and Interpretation
+```{r}
+# performance evaluation
+result <- t(as.matrix(c(predict.full2, predict.full3, predict.inter1, 
+                        predict.quadratic, predict.inter2, 
+                        predict.lasso.0, predict.lasso.1, predict.lasso.3)))
+colnames(result) <- c('lc+lw', 'lc+lw+svi', '+lc*lw', '+lc^2^+lw^2^', '+lc*lw+lc^2^+lw^2^', 
+                      'lassoe0', 'lassoe1', 'lassoe3')
+kable(result, caption = 'mean sqaure prediction error')
+```
+
+
+
+#### Predict against test
+```{r echo=FALSE}
+par(mfrow=c(2,2))
+plot(as.vector(t(y.inter2.pred))  ~  y.test, xlab = 'test lpsa', ylab = 'predict lpsa',
+     main = 'best interaction model')
+abline(a=0,b=1)
+plot(as.vector(t(y.best.pred)) ~ y.test, xlab = 'test lpsa', ylab = 'predict lpsa',
+     main = 'best lasso model')
+abline(a=0,b=1)
+plot(as.vector(t(y.pred.full3)) ~ y.test, xlab = 'test lpsa', ylab = 'predict lpsa',
+     main = 'best additive model')
+abline(a=0,b=1)
+```
+
+
+#### Discussion
+Finally we can evaluate the performance of two classes of models. From my point of view, for this certain dataset, there is no significant difference between the models we built. They all have mean sqaure prediction error around 0.4-0.5. But we can certainly pick the additive one with lc, lw and svi as predictors to be the best model regarding this dataset. In this model, svi is a qualitive predictor while the other two are quantative. It holds the minimum mean square prediction error which could be inferred from both number and the figure above. Compared with others, the points from this model are closer to the line y=x. The reason it outperforms is that the number of predictors here is relatively small thus using OLS won't result in a large MSE due to variance. 
+
+However, based on bias-variance tradeoff, it would be better to introduce bias rather than having a large variance when we do model selection. Specifically for small observations and large number of features, lasso fit is more likely to ourperform. To draw the conclusion, model selection and competition are truly an important part in machine learning. Besides, there is no universal answer towards model selection.

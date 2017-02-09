@@ -30,7 +30,8 @@ If possible, We also want to collect more plasma samples and test the model agai
 
 
 ## Problem 3
-### project 212  URL:http://cs229.stanford.edu/proj2015/212_report.pdf
+### project number: 212  
+### URL:http://cs229.stanford.edu/proj2015/212_report.pdf
 To make predictions regarding post-college earnings and debt of alumni by machine learning models is the issue discussed in Monica's project. Techniques like single regression imputation, sequential forward-based feature selection, linear/locally weighted linear/K-nearest neighbors/support vector regression and neural networks were applied during the process. The incremental model selection process indicated that regression imputation of privacy-suppressed values improved performance of models. Besides, weighted linear regression outperformed other models with below 10% and 18% average error for earning and debt data respectively. Moreover, this model performed well towards law schools though law schools made up only little of the data.
 
 One of the most attractive highlights in Monica's project is privacy-suppressed values handling. Instead of simply removing all features with any privacy-suppressed entries or merely setting missing values to the mean of observed values, single regression imputation was applied. To make the regression model statistically meaningful, they imposed a requirement that imputed features must have missing data for less than 30% of schools. Since privacy-suppressed values occurred in potentially useful metrics, the aforementioned implementation does increase the credibility of the model.
@@ -241,7 +242,7 @@ predict.lasso.1 <- 0; flag1 <- FALSE
 predict.lasso.3 <- 0; flag3 <- FALSE; lambda <- 0
 par(mfrow=c(2,2))
 
-for (i in 1:100){
+for (i in 1:1000){
   cv.out <- cv.glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1)
   cv.out$lambda.min
   coefi <- coef(cv.out, s="lambda.min")
@@ -307,7 +308,7 @@ kable(result, caption = 'mean sqaure prediction error')
 ```
 
 
-
+\newpage
 #### Predict against test
 
 ```{r echo=FALSE}

@@ -1,7 +1,6 @@
 ---
 title: "CS6140 Assignment 2"
 author: "Chengbo Gu"
-date: "2017-2-5 16:23:51"
 output:
   pdf_document: default
   html_document: default
@@ -9,9 +8,8 @@ output:
 ---
 
 ## Problem 1
-Group
-HengFang Deng, 1st year PhD student in Civil Engineering
-Zexi Han, 1st Year MS student in Data Science
+HengFang Deng, 1st year PhD student in Civil Engineering   
+Zexi Han, 1st Year MS student in Data Science   
 Chengbo Gu, 2nd Year MS student in Bioinformatics
 
 
@@ -22,7 +20,7 @@ The first and most interesting part of Ray's work for me is that whenever he dra
 
 Another impressive part is that these 18 predictors also perform well in distinguishing Alzheimer's samples from other neurological diseases and rheumatoid arthritis. Though this may not be Ray's initial intention, the result does support his statement that these 18 biomarkers certainly form an Alzheimer's-specific signature.
 
-The result and accuracy of Ray's work seems satisfied, but it lacks model competing part from the view of machine learning. There are lots of models and algorithms that can be applied regarding classification issue. For example, Fisher's linear discriminant, naive bayes classifier, least squares support vector machines, etc. In my opinion, it is better to compare logistic regression with some of other models then yield the best model.
+The result and accuracy of Ray's work seems to be plausible, but it lacks model competing part from the view of machine learning. There are lots of models and algorithms that can be applied regarding classification issue. For example, Fisher's linear discriminant, naive bayes classifier, least squares support vector machines, etc. In my opinion, it is better to compare logistic regression with some other models first, yield the best model next.
 
 To go further, we may want to figure it out why there exists a discrepancy between SAM and PAM -- the missing biomarker CCL22. Why it shows significant difference but is discarded by PAM? What will the regression model and prediction error be with 19 predictors? What will the regulatory networks be connecting the 19 signaling proteins? What's the correlation between CCL22 and M-CSF?
 
@@ -137,10 +135,11 @@ The red line in the qq-plot is y=x which indicates that the closer the data is t
 \newpage
 ### (d) Variable selection and Performance evaluation
 
-In this section, we will use 2 methods to select variables. They are bic and lasso. The reason why we won't apply ridge selection is that ridge regression shrinks all regression coeffients towards 0 at the same time.
-For bic, we first use exhaustive subset seartch to select the variables and then build interaction models based on it trying to catch the nonlinearship between variables. We report the prediction error of them at last.
+In this section, we will use 2 methods to select variables. They are BIC and Lasso. The reason why we won't apply ridge selection is that ridge regression shrinks all regression coeffients towards 0 at the same time which indicates that ridge doesn't really select variables.
 
-For lasso, we realize that the process is not deterministic but probabilistic because of the cross-validation. Thus, we repeat the process 1000 times, count the number of variables that lasso help us eliminate and store the mean sqaure prediction error every time. We last report the average of mean sqaure prediction error of lasso models when the number of variables eliminated is 0,1,3 respectively.
+For BIC, we first use exhaustive subset seartch to select the variables and then build interaction models based on it trying to catch the nonlinearship between variables. We report the prediction error of them at last.
+
+For Lasso, we realize that the process is not deterministic but probabilistic because of the cross-validation. Thus, we repeat the process 1000 times, count the number of variables that lasso help us eliminate and store the mean sqaure prediction error every time. We last report the average of mean sqaure prediction error of lasso models when the number of variables eliminated is 0,1,3 respectively.
 
 Finally, we compare the models of the two classes by their performance.
 
@@ -216,7 +215,7 @@ result <- t(as.matrix(c(predict.full2, predict.full3, predict.inter1,
 colnames(result) <- c('lc+lw', 'lc+lw+svi', 'lc+lw+lc*lw', 
                       'lc+lw+lc^2^+lw^2^', 'lc+lw+lc*lw+lc^2^+lw^2^')
 kable(result, 
-      caption = 'mean sqaure prediction error models based on bic variable selection')
+      caption = 'mean sqaure prediction error of BIC models')
 ```
 
 #### Discussion
@@ -235,6 +234,7 @@ legend('topleft', legend = names(trainSet[,-c(9)]), col=1:8, lty=1)
 ```
 ```{r}
 # 1000 times experiments to get lassoe0, lassoe1 and lassoe3
+
 # variables initialization
 counter1 <- 0; counter3 <- 0; counter0 <- 0
 predict.lasso.0 <- 0; flag0 <- FALSE
@@ -242,6 +242,7 @@ predict.lasso.1 <- 0; flag1 <- FALSE
 predict.lasso.3 <- 0; flag3 <- FALSE; lambda <- 0
 par(mfrow=c(2,2))
 
+# 1000 times iteration
 for (i in 1:1000){
   cv.out <- cv.glmnet(x=as.matrix(trainSet[,-c(9)]), y=trainSet[,9], alpha=1)
   cv.out$lambda.min
@@ -304,7 +305,7 @@ result <- t(as.matrix(c(predict.full2, predict.full3, predict.inter1,
 colnames(result) <- c('lc+lw', 'lc+lw+svi', 'lc+lw+lc*lw', 
                       'lc+lw+lc^2^+lw^2^', 'lc+lw+lc*lw+lc^2^+lw^2^', 
                       'lassoe0', 'lassoe1', 'lassoe3')
-kable(result, caption = 'mean sqaure prediction error')
+kable(result, caption = 'mean sqaure prediction error of all models')
 ```
 
 
@@ -327,6 +328,6 @@ abline(a=0,b=1)
 
 #### Discussion
 
-Finally we can evaluate the performance of models in two classes. From my point of view, for this certain dataset, there is no significant difference between the models we built. They all have mean sqaure prediction error around 0.4-0.5. But we can certainly pick the additive one with lc, lw and svi as predictors to be the best model regarding this dataset. In this model, svi is a qualitive predictor while the other two are quantative. It holds the minimum mean square prediction error which could be inferred both numerically and graphically. Compared with others, this model holds the minimum mean square prediction error. Moreover, points from this model are closer to the line y = x compared with best interaction model and best lasso model. The reason it outperforms is that the number of predictors here is relatively small thus using OLS won't result in a large MSE because of variance. 
+Finally we can evaluate the performance of models in two classes. From my point of view, for this certain dataset, there is no significant difference between the models we built. They all have mean sqaure prediction error around 0.4-0.5. But we can certainly pick the additive one with lc, lw and svi as predictors to be the best model regarding this dataset. In this model, svi is a qualitive predictor while the other two are quantative. It holds the minimum mean square prediction error which could be inferred both numerically and graphically. Compared with others, this model holds the minimum mean square prediction error. In addition, points from this model are closer to the line y = x compared with best interaction model and best lasso model. The reason it outperforms is that the number of predictors here is relatively small thus using OLS won't result in a large MSE because of variance. 
 
 However, based on bias-variance tradeoff, it would be better to introduce bias rather than having a large variance in the cases when there are only small observations but large number of features. Lasso fit is more likely to ourperform in this situation. Unlike ridge regression which does not really select features, lasso does both parameter shrinkage and variable selection automatically because it zero out the co-efficients of collinear variables. To draw a conclusion, model selection and competition is truly an important part in machine learning. We should select the correct model both accordingly and wisely.

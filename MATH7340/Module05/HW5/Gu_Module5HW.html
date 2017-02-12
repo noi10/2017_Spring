@@ -143,10 +143,12 @@ lnlik(x_1,x_2,...,x_n,\lambda)=nln(\lambda)-\lambda \sum_{i=1}^{n}x_i =nln(\lamb
 <pre class="r"><code>1/mean(obs)</code></pre>
 <pre><code>## [1] 0.8995502</code></pre>
 <p>Numerical Optimization:</p>
+<p>First, we use negative likelihood.</p>
 <pre class="r"><code>lik &lt;- function(theta) prod(dexp(obs, rate = theta))
 nlik &lt;- function(theta) -lik(theta)
 suppressWarnings(optim(par = 1, nlik)$par)</code></pre>
 <pre><code>## [1] 0.8995117</code></pre>
+<p>Then we use negative log-likelihood.</p>
 <pre class="r"><code>nloglik &lt;- function(theta) {
   -sum(log(dexp(obs, rate = theta)))
 }
@@ -194,6 +196,40 @@ suppressWarnings(optim(par = 1, nloglik)$par)</code></pre>
 <div id="problem-a-b-c" class="section level5">
 <h5>problem (a) (b) (c)</h5>
 <p>Results of (a) (b) and (c) are showed in the table below.</p>
+<table>
+<caption>Result Table</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th align="left">ALL.mean</th>
+<th align="left">AML.mean</th>
+<th align="left">ALL.variance</th>
+<th align="left">AML.variance</th>
+<th align="left">ALL.median</th>
+<th align="left">AML.median</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>boostrap</td>
+<td align="left">(-0.5792,-0.0424)</td>
+<td align="left">(1.3782,1.7921)</td>
+<td align="left">(0.3278,0.6511)</td>
+<td align="left">(0.0489,0.2083)</td>
+<td align="left">(-0.7351,0.3143)</td>
+<td align="left">(1.2281,1.8283)</td>
+</tr>
+<tr class="even">
+<td>parametric</td>
+<td align="left">(-0.5807,-0.0088)</td>
+<td align="left">(1.3397,1.8336)</td>
+<td align="left">(0.3240,0.9813)</td>
+<td align="left">(0.0660,0.4162)</td>
+<td align="left">N/A</td>
+<td align="left">N/A</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="problem-d" class="section level5">
 <h5>problem (d)</h5>
@@ -314,14 +350,14 @@ ci.variance.AML</code></pre>
 <div id="problem-b" class="section level4">
 <h4>problem (b)</h4>
 <pre class="r"><code>MCsim(1000, 0.1)</code></pre>
-<pre><code>## proportion of the CIs that contains the true lambda using mean: 0.859 
-## proportion of the CIs that contains the true lambda using variance: 0.522</code></pre>
+<pre><code>## proportion of the CIs that contains the true lambda using mean: 0.855 
+## proportion of the CIs that contains the true lambda using variance: 0.53</code></pre>
 <pre class="r"><code>MCsim(1000, 1)</code></pre>
-<pre><code>## proportion of the CIs that contains the true lambda using mean: 0.902 
-## proportion of the CIs that contains the true lambda using variance: 0.836</code></pre>
+<pre><code>## proportion of the CIs that contains the true lambda using mean: 0.905 
+## proportion of the CIs that contains the true lambda using variance: 0.819</code></pre>
 <pre class="r"><code>MCsim(1000, 10)</code></pre>
-<pre><code>## proportion of the CIs that contains the true lambda using mean: 0.904 
-## proportion of the CIs that contains the true lambda using variance: 0.891</code></pre>
+<pre><code>## proportion of the CIs that contains the true lambda using mean: 0.91 
+## proportion of the CIs that contains the true lambda using variance: 0.892</code></pre>
 </div>
 <div id="problem-c" class="section level4">
 <h4>problem (c)</h4>

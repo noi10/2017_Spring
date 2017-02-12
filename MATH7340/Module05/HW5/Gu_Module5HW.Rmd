@@ -47,6 +47,10 @@ From (a) we have $\lambda=\frac{1}{\bar{X}}$ which could be calculated using the
 ```
 Numerical Optimization:
 ```{r}
+lik <- function(theta) prod(dexp(obs, rate = theta))
+nlik <- function(theta) -lik(theta)
+suppressWarnings(optim(par = 1, nlik)$par)
+
 nloglik <- function(theta) {
   -sum(log(dexp(obs, rate = theta)))
 }

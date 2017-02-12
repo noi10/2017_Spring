@@ -9,6 +9,13 @@ obs <- c(1.636, 0.374, 0.534, 3.015, 0.932, 0.179)
 1/mean(obs)
 
 # Numerical Optimization
+
+# negative likelihood
+lik <- function(theta) prod(dexp(obs, rate = theta))
+nlik <- function(theta) -lik(theta)
+optim(par = 1, nlik)$par
+
+# negative log-likelihood
 nloglik <- function(theta) {
   -sum(log(dexp(obs, rate = theta)))
 }

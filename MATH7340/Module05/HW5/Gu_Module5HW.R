@@ -1,21 +1,25 @@
 # problem 1
 # ln(L) = nln(theta) - n(theta)*(mean of X)
-# qiu dao shu
+# Derivative
 # 1/theta - mean of X = 0
 # theta = 1/ mean of X
 
 obs <- c(1.636, 0.374, 0.534, 3.015, 0.932, 0.179)
+# Analytic formula
+1/mean(obs)
+
+# Numerical Optimization
 nloglik <- function(theta) {
   -sum(log(dexp(obs, rate = theta)))
 }
-optim(par = 1, nloglik)
+optim(par = 1, nloglik)$par
 
-1/mean(obs)
+
 
 # problem 2
 # (a) m = sample mean = 100.8
 100.8+qt(0.1, df=52)*(12.4/sqrt(53))
-# 98.5891 ~ Inf
+print("98.5891 ~ Inf")
 
 # problem 3
 data(golub, package = 'multtest')
@@ -55,18 +59,20 @@ quantile(boot.median.AML,c(0.025,0.975))
 # (b)
 # mean
 ci.mean.ALL <- mean(Zyxin.ALL) + qt(c(0.025,0.975), df=length.ALL-1)*sd(Zyxin.ALL)/sqrt(length.ALL)
+ci.mean.ALL
 ci.mean.AML <- mean(Zyxin.AML) + qt(c(0.025,0.975), df=length.AML-1)*sd(Zyxin.AML)/sqrt(length.AML)
+ci.mean.AML
 
 # variance
 ci.variance.ALL <- c (var(Zyxin.ALL)*(length.ALL-1)/ qchisq(0.975, df=length.ALL-1),
                       var(Zyxin.ALL)*(length.ALL-1)/ qchisq(0.025, df=length.ALL-1))
+ci.variance.ALL
 ci.variance.AML <- c (var(Zyxin.AML)*(length.AML-1)/ qchisq(0.975, df=length.AML-1),
                       var(Zyxin.AML)*(length.AML-1)/ qchisq(0.025, df=length.AML-1))
+ci.variance.AML
 
-
-
-# lecture page 39
 # problem 4
+# (a)
 MCsim <- function(nsim, lamb){
   dataset <- matrix(rpois(nsim*50, lambda = lamb), nrow = nsim)
   t0.05 <- qt(0.05, 49)
@@ -75,21 +81,34 @@ MCsim <- function(nsim, lamb){
   kai0.05 <- qchisq(0.05, 49)
   means <- apply(dataset, 1, mean)
   vars <- apply(dataset, 1, var)
-  interval.method1 <- matrix(data=NA, nrow=nsim, ncol=2)
-  interval.method2 <- matrix(data=NA, nrow=nsim, ncol=2)
-  counter1 <- 0
-  counter2 <- 0
+  in.method1 <- rep(0, nsim)
+  in.method2 <- rep(0, nsim)
   for (i in 1:nsim) {
-    interval.method1[i,] <- means[i] + c( t0.05*sqrt(means[i]/50) , t0.95*sqrt(means[i]/50))
-    interval.method2[i,] <- 49*vars[i]/ ( c( kai0.95, kai0.05) )
-    if (interval.method1[i,1] <= lamb && interval.method1[i,2] >= lamb) {
-      counter1 <- counter1 + 1
+    lower1 <- means[i] + t0.05*sqrt(means[i]/50)
+    upper1 <- means[i] + t0.95*sqrt(means[i]/50)
+    lower2 <- 49*vars[i]/ kai0.95
+    upper2 <- 49*vars[i]/kai0.05
+    if (lower1 < lamb && upper1 > lamb) {
+      in.method1[i] <- 1
     }
-    if (interval.method2[i,1] <= lamb && interval.method2[i,2] >= lamb) {
-      counter2 <- counter2 + 1
+    if (lower2 < lamb && upper2 > lamb) {
+      in.method2[i] <- 1
     }
   }
-  print(counter1/nsim)
-  print(counter2/nsim)
-
+  cat("proportion of the CIs that contains the true lambda using mean:", mean(in.method1), "\n")
+  cat("proportion of the CIs that contains the true lambda using variance:", mean(in.method2), "\n")
 }
+
+# (b)
+MCsim(1000, 0.1)
+MCsim(1000, 1)
+MCsim(1000, 10)
+
+# (c)
+# I would choose sample mean as my CI formula in practice. 
+# If we look into the formulas deeply, we could draw the conclusion about the lengths of CIs of these two 
+# methods. The lengths of CIs are related to $\sqrt{\bar{X}}$ and $s^2$ for sample mean and sample 
+# variance. That is to say, the CI would be too short when $\lambda$ is small for the method of sample 
+# variance. Similarly, the CI would be too long when $\lambda$ is large. In other words, the performance 
+# of sample variance method is not stable so I prefer to choose sample mean method for estimating the 
+# parameter $\lambda$ of poisson distribution.

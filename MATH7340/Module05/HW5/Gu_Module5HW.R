@@ -1,4 +1,5 @@
 # problem 1
+# (a)
 # ln(L) = nln(theta) - n(theta)*(mean of X)
 # Derivative
 # 1/theta - mean of X = 0
@@ -8,6 +9,7 @@ obs <- c(1.636, 0.374, 0.534, 3.015, 0.932, 0.179)
 # Analytic formula
 1/mean(obs)
 
+# (b)
 # Numerical Optimization
 
 # negative likelihood
@@ -25,6 +27,8 @@ optim(par = 1, nloglik)$par
 
 # problem 2
 # (a) m = sample mean = 100.8
+
+# (b)
 100.8+qt(0.1, df=52)*(12.4/sqrt(53))
 print("98.5891 ~ Inf")
 

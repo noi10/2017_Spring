@@ -2,8 +2,8 @@
 title: "Math7340 HW5"
 author: "Chengbo Gu"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 

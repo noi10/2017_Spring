@@ -12,5 +12,13 @@ for (i in 1:nsim) {
   p.bon[i,]<-p.adjust(p.sim[i,],method='bonferroni') 
   p.fdr[i,]<-p.adjust(p.sim[i,],method='fdr') 
 } 
+
+
 n.disc<-apply(p.sim,1,function(x) sum(x<0.05)) 
 n.fdisc<-apply(p.sim[,-(1:n.true)],1,function(x) sum(x<0.05))
+
+mean(n.fdisc)
+mean(n.disc-n.fdisc)
+
+fdr.tmp<-n.fdisc/n.disc
+fdr.tmp[n.disc==0] <- 0

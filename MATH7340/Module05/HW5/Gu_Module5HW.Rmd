@@ -216,6 +216,7 @@ MCsim <- function(nsim, lamb){
 MCsim(1000, 0.1)
 MCsim(1000, 1)
 MCsim(1000, 10)
+
 ```
 
 #### problem (c)

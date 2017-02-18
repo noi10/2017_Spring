@@ -1,0 +1,116 @@
+---
+title: "Math7340 HW6"
+author: "Chengbo Gu"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(multtest)
+```
+
+### Problem 1 (50 points)
+
+##### On the Golub et al. (1999) data, consider the ¡°H4/j gene¡± gene (row 2972) and the ¡°APS Prostate specific antigen¡± gene (row 2989). Setup the appropriate hypothesis for proving the following claims. Chose and carry out the appropriate tests.
+
+```{r}
+data(golub)
+gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
+
+```
+
+##### (a) The mean ¡°H4/j gene¡± gene expression value in the ALL group is greater than -0.9.
+\[H_{0}:\mu_{ALL,H4/j}=-0.9,\quad H_{A}:\mu_{ALL,H4/j}>-0.9\]
+
+```{r}
+t.test(golub[2972, gol.fac=="ALL"], mu=-0.9, alternative = "greater")
+```
+The p-value is smaller than 0.05. Hence, we reject the null hypothesis and conclude that the mean "H4/j gene" gene expression value in ALL group is greater than -0.9.
+
+##### (b) The mean ¡°H4/j gene¡± gene expression value in ALL group differs from the mean ¡°H4/j gene¡± gene expression value in the AML group.
+
+\[H_{0}:\mu_{ALL,H4/j}=\mu_{AML,H4/j},\quad H_{A}:\mu_{ALL,H4/j}\neq\mu_{AML,H4/j}\]
+
+```{r}
+t.test(golub[2972, gol.fac=="ALL"],golub[2972, gol.fac=="AML"])
+```
+The p-value is larger than 0.05. We accept the null hypothesis that mean "H4/j gene" genge expression values from ALL and AML groups are the same.
+
+##### (c) In the ALL group, the mean expression value for the ¡°H4/j gene¡± gene is lower than the mean expression value for the ¡°APS Prostate specific antigen¡± gene.
+\[H_{0}:\mu_{ALL,H4/j}=\mu_{ALL,APS},\quad H_{A}:\mu_{ALL,H4/j}<\mu_{ALL,APS}\]
+
+```{r}
+t.test(golub[2972, gol.fac=="ALL"]-golub[2989, gol.fac=="ALL"], alternative = "less")
+```
+The p-value here is smaller than 0.05. Hence, we reject the null hypothesis and conclude that mean expression value for "H4/j" gene is lower than that for "APS Prostate specific antigen" gene in the ALL group.
+
+##### (d) Let $p_{low}$ denote the proportion of patients for whom the ¡°H4/j gene¡± expression is lower than the ¡°APS Prostate specific antigen¡± expression. We wish to show that $p_{low}$ in the ALL group is greater than half. Does this test conclusion agree with the conclusion in part (c)?
+
+\[H_{0}:p_{low}=\frac{1}{2},\quad H_{A}:p_{low}>\frac{1}{2}\]
+```{r}
+res <- golub[2972, gol.fac=="ALL"] < golub[2989, gol.fac=="ALL"]
+binom.test(sum(res), length(res), p=1/2, alternative = "greater")
+```
+Since the p-value here is greater than 0.05, we accept the null hypothesis that $p_{low}$ is exactly $\frac{1}{2}$.
+
+##### (e) Let $p_{H4j}$ denotes the proportion of patients for whom the ¡°H4/j gene¡± expression values is greater than -0.6. We wish to show that $p_{H4j}$ in the ALL group is less than 0.5.
+
+\[H_{0}:p_{H4J}=0.5,\quad H_{A}:p_{H4J}<0.5\]
+```{r}
+res <- golub[2972,] < -0.6
+binom.test(sum(res), length(res), p=0.5, alternative = "less")
+```
+The p-value here is greater than 0.05. Thus we accept the null hypothesis that $p_{H4j}$ equals to 0.5.
+
+
+##### (f) The proportion $p_{H4j}$ in the ALL group differs from the proportion pH4j in the AML group.
+\[H_{0}:p_{ALL,H4J}=p_{AML,H4J},\quad H_{A}:p_{ALL,H4J}\neq p_{AML,H4J}\]
+
+```{r}
+resALL <- golub[2972, gol.fac=="ALL"] < -0.6
+obsALL <- sum(resALL); nALL <- length(resALL)
+resAML <- golub[2972, gol.fac=="AML"] < -0.6
+obsAML <- sum(resAML); nAML <- length(resAML)
+prop.test( x=c(obsALL, obsAML), n=c( nALL, nAML ), alternative="two.sided")
+```
+The p-value is greater than 0.05. So we accept the null hypothesis that $p_{H4j}$ proportions are the same in ALL and AML groups.
+
+### Problem 2 (10 points)
+
+##### Suppose that the probability to reject a biological hypothesis by the results of a certain experiment is 0.05. This experiment is repeated 2000 times.
+The number of rejections $X\backsim Binom(size=2000,\quad prob=0.05)$.
+
+##### (a) How many rejections do you expect?
+\[ E(X)=size*prob=2000*0.05=100\]
+
+##### (b) What is the probability of less than 90 rejections?
+\[P(X<90)=P(X\leq89)=pbinom(89, size=2000, prob=0.05)= 0.1400\]
+
+```{r}
+pbinom(89, size=2000, prob=0.05)
+```
+
+
+### Problem 3 (10 points)
+
+##### For testing $H_{0}:\mu=3$ versus $H_{A}:\mu>3$, we considers a new $\alpha=0.1$ level test which rejects when $t_{obs}=\frac{\bar{X}-3}{s/\sqrt{n}}$ falls between $t_{0.3,n-1}$ and $t_{0.4,n-1}$.
+
+##### (a) Use a Monte Carlo simulation to estimate the Type $\rm I$ error rate of this test when n=20. Do 10,000 simulation runs of data sets from the $N(\mu=3,\sigma=4)$. Please show the R script for the simulation, and the R outputs for running the script. Provide your numerical estimate for the Type $\rm I$ error rate. Is this test valid?
+
+##### (b) Should we use this new test in practice? Why or why not?
+
+
+```{r}
+x.sim <- matrix(rnorm(10000*20, mean=3, sd=4), ncol=20)
+tstat <- function(x) (mean(x)-3)/sd(x)*sqrt(length(x))
+tstat.sim <- apply(x.sim, 1, tstat)
+power.sim <- mean(tstat.sim > qt(0.3, df=19) & tstat.sim < qt(0.4, df=19))
+power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
+
+# original one
+x.sim <- matrix(rnorm(10000*20, mean=3, sd=4), ncol=20)
+tstat <- function(x) (mean(x)-3)/sd(x)*sqrt(length(x))
+tstat.sim <- apply(x.sim, 1, tstat)
+power.sim <- mean(tstat.sim > qt(0.9, df=19) )
+power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
+```

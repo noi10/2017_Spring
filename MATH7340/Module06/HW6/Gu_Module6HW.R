@@ -49,3 +49,59 @@ power.sim <- mean(tstat.sim > qt(0.9, df=19) )
 power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
 
 # problem 4
+# (a)
+data(golub, package = "multtest")
+gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
+p.values <- apply(golub, 1, function(x) 
+  {
+    xALL = t(as.matrix(x))[,gol.fac=="ALL"]
+    xAML = t(as.matrix(x))[,gol.fac=="AML"]
+    t.test(xALL, xAML)$p.value
+  }
+)
+p.bon <-p.adjust(p=p.values, method="bonferroni")
+p.fdr <-p.adjust(p=p.values, method="fdr")
+sum(p.values<0.05)
+sum(p.bon<0.05)
+sum(p.fdr<0.05)
+
+# (b)
+golub.gnames[,2][order(p.values)][1:3]
+golub.gnames[,2][order(p.bon)][1:3]
+golub.gnames[,2][order(p.fdr)][1:3]
+
+# problem 5
+
+# (a)
+# Wald.CI
+Wald.CI <- function(x, n, conf.level) {
+  p <- x/n
+  z <- qnorm(1-(1-conf.level)/2)
+  p + c(-1,1)*z*sqrt(p*(1-p)/n)
+}
+# Wilson.CI
+Wilson.CI <- function(x, n, conf.level) {
+  p <- x/n
+  z <- qnorm(1-(1-conf.level)/2)
+  (x+z^2/2)/(n+z^2) + c(-1, 1)*(z*sqrt(n)/(n+z^2))*sqrt(p*(1-p)+z^2/(4*n))
+}
+# AC.CI
+AC.CI <- function(x, n, conf.level) {
+  z <- qnorm(1-(1-conf.level)/2)
+  x.s <- x + z^2/2
+  n.s <- n + z^2
+  p.s <- x.s/n.s
+  q.s <- 1-p.s
+  p.s + c(-1, 1)*z*sqrt(p.s*q.s/n.s)
+}
+
+# (b)
+n <- 40
+p <- 0.2
+x.sim <- rbinom(10000, size=n, prob=p)
+Wald.sim <- matrix(Wald.CI(x.sim, n=n, conf.level=0.95), nrow=2)
+mean(Wald.sim[1,] < p & Wald.sim[2,] > p)
+Wilson.sim <- matrix(Wilson.CI(x.sim, n=n, conf.level=0.95), nrow=2)
+mean(Wilson.sim[1,] < p & Wilson.sim[2,] > p)
+AC.sim <- matrix(AC.CI(x.sim, n=n, conf.level=0.95), nrow=2)
+mean(AC.sim[1,] < p & AC.sim[2,] > p)

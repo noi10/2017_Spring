@@ -114,3 +114,32 @@ tstat.sim <- apply(x.sim, 1, tstat)
 power.sim <- mean(tstat.sim > qt(0.9, df=19) )
 power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
 ```
+
+### Problem 4 (20 points)
+
+##### On the Golub et al. (1999) data set, do Welch two-sample t-tests to compare every gene¡¯s expression values in ALL group versus in AML group.
+##### (a) Use Bonferroni and FDR adjustments both at 0.05 level. How many genes are differentially expressed according to these two criteria?
+
+```{r}
+data(golub, package = "multtest")
+gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
+p.values <- apply(golub, 1, function(x) t.test(x~gol.fac)$p.value)
+p.bon <-p.adjust(p=p.values, method="bonferroni")
+p.fdr <-p.adjust(p=p.values, method="fdr")
+sum(p.values<0.05)
+sum(p.bon<0.05)
+sum(p.fdr<0.05)
+```
+103 genes are differentially expressed according to Bonferroni.
+
+695 genes are differentially expressed according to FDR.
+
+##### (b) Find the gene names for the top three strongest differentially expressed genes (i.e., minimum p-values). Hint: the gene names are stored in golub.gnames.
+
+```{r}
+golub.gnames[,2][order(p.values)][1:3]
+golub.gnames[,2][order(p.bon)][1:3]
+golub.gnames[,2][order(p.fdr)][1:3]
+```
+
+The top three strongest differentially expressed genes are Zyxin, FAH Fumarylacetoacetate and APLP2 Amyloid beta (A4) precursor-like protein 2.

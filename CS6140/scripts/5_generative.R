@@ -1,0 +1,167 @@
+setwd("/Users/ovitek/Dropbox/Olga/Teaching/CS6140/Spring17/LectureNotes/5_generative")
+library(Biobase)
+
+
+########################################################################
+#                   Example of generative classifiers
+#######################################################################
+library(faraway)
+data(pima)
+?pima
+head(pima)
+
+
+################################################################
+# Separation of the training and the validation datasets 
+################################################################
+# select training set (as example, here only use 1/4 of the data to build the model)
+# set seed for reproducible result of random sampling
+set.seed(123)
+train <- sample(x=1:nrow(pima), size=nrow(pima)/4)
+pimaTrain <- pima[train,]
+pimaValid <- pima[-train,]
+
+################################################################
+#                 				LDA
+################################################################
+# LDA
+library(MASS)
+fit.lda <- lda(x=as.matrix(pimaTrain[,-9]), grouping= pimaTrain[,9], cv=TRUE)
+
+# prediction on the training set
+predict.lda <- predict(fit.lda, pimaTrain[,-9])
+table(true= pimaTrain[,9], predict=predict.lda$class)
+
+# alternative visualization
+library(gmodels)
+CrossTable(predict.lda$class,pimaTrain[,9])
+
+# ROC on the training set
+library(ROCR)
+scores <- predict(fit.lda, newdata= pimaTrain[,-9])$posterior[,2]
+pred <- prediction( scores, labels= pimaTrain$test )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, main="LDA")
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# ROC on the validation set
+# prediction on the validation set
+predict.lda <- predict(fit.lda, pimaValid[,-9])
+table(true= pimaValid[,9], predict=predict.lda$class)
+
+scores <- predict(fit.lda, newdata= pimaValid[,-9])$posterior[,2]
+pred <- prediction( scores, labels= pimaValid$test )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, main="LDA", add=TRUE)
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# QDA training
+fit.qda <- qda(x=as.matrix(pimaTrain[,-9]), grouping= pimaTrain[,9], cv=TRUE)
+predict.qda <- predict(fit.qda, pimaTrain[,-9])
+table(true= pimaTrain[,9], predict=predict.qda$class)
+
+# QDA validation
+predict.qda <- predict(fit.qda, pimaValid[,-9])
+table(true= pimaValid[,9], predict=predict.qda$class)
+
+# *** In the followin examples, I only use a subset of evaluations for brievity
+# *** Please use them fully for homeworks/projects  
+################################################################
+#                 			Naive Bayes
+################################################################
+library(e1071)
+fit.nb <- naiveBayes(pimaTrain[,-9], as.factor(pimaTrain[,9]))
+
+# Naive Bayes training
+predict.nb <- predict(fit.nb, pimaTrain[,-9], type="class")
+table(true= pimaTrain[,9], predict=predict.nb)
+
+
+#######################################################################
+# Nearest shrunken centroids 
+#######################################################################
+#Prediction Analysis of Microarrays for R
+library(pamr)
+
+# Reformat the dataset for parm
+pamrTrain <- list(x=t(as.matrix(pimaTrain[,-9])), y=pimaTrain[,9])
+pamrValid <- list(x=t(as.matrix(pimaValid[,-9])), y=pimaValid[,9])
+
+# Fit the classifier on the entire training set
+fit.pamr <- pamr.train(pamrTrain)
+
+# Use cross-validation to select the best regularization parameter
+fit.cv.pamr <- pamr.cv(fit.pamr, pamrTrain)
+
+# Manually select the threshold depending on the plots and on the confusion matrix
+pamr.plotcv(fit.cv.pamr)
+
+#Let's compare thresholds=1 and 2 to illustrate the effect of shrinkage
+pamr.confusion(fit.cv.pamr, threshold=0.197)
+pamr.confusion(fit.cv.pamr, threshold=4.928)
+
+# Refit the classifier on the full dataset, but using the threshold
+fit.pamr <- pamr.train(pamrTrain, threshold=0.197)
+
+
+
+# ----------ROC curve using nearest shrunken centroids----------------
+# ROC on the training set
+library(ROCR)
+pred.pamr.train <- pamr.predict(fit.pamr, newx=pamrTrain$x, threshold=1.380, type="posterior")[,2]
+pred <- prediction(predictions=pred.pamr.train, labels= pimaTrain$test)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, main="Nearest shrunken centroids")
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+# ROC on the validation set
+library(ROCR)
+pred.pamr.valid <- pamr.predict(fit.pamr, newx=pamrValid$x, threshold=1.380, type="posterior")[,2]
+pred <- prediction(predictions=pred.pamr.valid, labels= pimaValid$test)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, main="Nearest shrunken centroids", add=TRUE)
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+
+#######################################################################
+# Extra: unsupervised class discovery with principle component analysis 
+#######################################################################
+# prcomp - based on singular value decomposition - preferred
+?prcomp
+
+# princomp - decomposition of covariance/correlation matrix 
+# exists for backward compatibility
+?princomp
+
+pc <- prcomp(x=as.matrix(pimaTrain[,-9]), center=TRUE, scale.=TRUE)
+summary(pc)
+
+# parts of the output
+names(pc)
+
+# proportion of explained variance
+# look up the description of 'sdev' in the help of prcomp
+barplot( pc$sdev^2/sum(pc$sdev^2) , xlab="principle component", 
+         ylab="% of variance")
+barplot( cumsum( pc$sdev^2/sum(pc$sdev^2) ) , xlab="principle component", 
+         ylab="cumulative % of variance" )
+# Conclusion: the two first principle components are not sufficient 
+# to fully represent the dataset        
+
+# define a color for each sample 
+myColor <- rep(NA, nrow(pimaTrain))
+myColor[pimaTrain[,9]==1] <- "red" 
+myColor[pimaTrain[,9]==0] <- "blue" 
+
+# score plot
+plot(pc$x[,1:2], col=myColor, pch=16, cex=2)
+legend("topleft", pch=16, col=c("red", "blue"), c("test=1", "test=0"))
+# Conclusion: not enough separation in the first two dimensions       
+

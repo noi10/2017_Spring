@@ -13,10 +13,10 @@ library(knitr)
 
 ```{r}
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
-Mydata[,6][Mydata[,6]=="Present"] <- 1
-Mydata[,6][Mydata[,6]=="Absent"] <- 0
 Mydata <- Mydata[,-1]
-Mydata[,6] <- as.integer(Mydata[,6])
+Mydata[,5][Mydata[,5]=="Present"] <- 1
+Mydata[,5][Mydata[,5]=="Absent"] <- 0
+Mydata[,5] <- as.integer(Mydata[,5])
 predictors <- Mydata[,1:9]
 response <- Mydata[,10]
 train <- sample(x=1:nrow(Mydata), size=nrow(Mydata)/2)
@@ -37,18 +37,14 @@ pairs(trainSet)
 ```
 
 ```{r}
-glmulti.logistic.out <-
-  glmulti(chd ~ ., data = trainSet,
-          level = 1,               # Interaction considered
-          method = "h",            # Exhaustive approach
-          crit = "aic",            # AIC as criteria
-          confsetsize = 3,         # Keep 3 best models
-          plotty = F, report = F,  # No plot or interim reports
-          fitfunction = "glm",     # glm function
-          family = binomial)       # binomial family for logistic regression
-
-glmulti.logistic.out@formulas
+glmulti.logistic.out <- 
+  glmulti(chd~. , data=trainSet, level=1, fitfunction="glm", crit = "aic", 
+          confsetsize=512, plotty = F, report = F)
+plot(glmulti.logistic.out)
 ```
+
+With level = 1, we stick to models with main effects only. This implies that there are 
+2^7=128 possible models in the candidate set to consider. Since I want to keep the results for all these models (the default is to only keep up to 100 model fits), I set confsetsize=128 (or I could have set this to some very large value). With crit="aicc", we select the information criterion (in this example: the AICc or corrected AIC) that we would like to compute for each model and that should be used for model selection and multimodel inference. For more information about the AIC (and AICc), see, for example, the entry for the Akaike Information Criterion on Wikipedia. As the function runs, you should receive information about the progress of the model fitting. Fitting the 128 models should only take a few seconds.
 
 ```{r}
 fit.cv.glmpath <- cv.glmpath(x=as.matrix(predictors[train,]),

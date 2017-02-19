@@ -11,13 +11,14 @@ t.test(golub[2972, gol.fac=="ALL"],golub[2972, gol.fac=="AML"])
 
 # (c)
 t.test(golub[2972, gol.fac=="ALL"]-golub[2989, gol.fac=="ALL"], alternative = "less")
+t.test(golub[2972, gol.fac=="ALL"], golub[2989, gol.fac=="ALL"], alternative = "less", paired=T )
 
 # (d)
 res <- golub[2972, gol.fac=="ALL"] < golub[2989, gol.fac=="ALL"]
 binom.test(sum(res), length(res), p=1/2, alternative = "greater")
 
 # (e)
-res <- golub[2972,] < -0.6
+res <- golub[2972,gol.fac=="ALL"] > -0.6
 binom.test(sum(res), length(res), p=0.5, alternative = "less")
 
 # (f)
@@ -44,11 +45,8 @@ tstat.sim <- apply(x.sim, 1, tstat)
 power.sim <- mean(tstat.sim > qt(0.3, df=19) & tstat.sim < qt(0.4, df=19))
 power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
 
-x.sim <- matrix(rnorm(10000*20, mean=3, sd=4), ncol=20)
-tstat <- function(x) (mean(x)-3)/sd(x)*sqrt(length(x))
-tstat.sim <- apply(x.sim, 1, tstat)
-power.sim <- mean(tstat.sim > qt(0.9, df=19) )
-power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
+#(b)
+# No, we shouldn't.
 
 # problem 4
 rm(list=ls())
@@ -82,12 +80,14 @@ Wald.CI <- function(x, n, conf.level) {
   z <- qnorm(1-(1-conf.level)/2)
   p + c(-1,1)*z*sqrt(p*(1-p)/n)
 }
+
 # Wilson.CI
 Wilson.CI <- function(x, n, conf.level) {
   p <- x/n
   z <- qnorm(1-(1-conf.level)/2)
   (x+z^2/2)/(n+z^2) + c(-1, 1)*(z*sqrt(n)/(n+z^2))*sqrt(p*(1-p)+z^2/(4*n))
 }
+
 # AC.CI
 AC.CI <- function(x, n, conf.level) {
   z <- qnorm(1-(1-conf.level)/2)

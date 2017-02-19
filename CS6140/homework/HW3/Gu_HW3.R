@@ -31,11 +31,14 @@ pairs(trainSet)
 #          level = 1,               # Interaction considered
 #          method = "h",            # Exhaustive approach
 #          crit = "aic",            # AIC as criteria
-#          confsetsize = 3,         # Keep 3 best models
-#          plotty = F, report = F,  # No plot or interim reports
+#          confsetsize = 10,         # Keep 3 best models
+#          plotty = T, report = T,  # No plot or interim reports
 #          fitfunction = "glm",     # glm function
 #          family = binomial)       # binomial family for logistic regression
+glmulti.logistic.out <- glmulti(chd~. , data=trainSet, level=1, fitfunction="glm", crit = "aic", confsetsize=512)
+plot(glmulti.logistic.out)
 
+#glmulti.summary <- summary(glmulti.logistic.out)
 #glmulti.logistic.out@formulas
 #summary(glmulti.logistic.out@objects[[1]])
 

@@ -271,14 +271,14 @@ tstat &lt;- function(x) (mean(x)-3)/sd(x)*sqrt(length(x))
 tstat.sim &lt;- apply(x.sim, 1, tstat)
 power.sim &lt;- mean(tstat.sim &gt; qt(0.3, df=19) &amp; tstat.sim &lt; qt(0.4, df=19))
 power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)</code></pre>
-<pre><code>## [1] 0.09353582 0.09940000 0.10526418</code></pre>
+<pre><code>## [1] 0.09509407 0.10100000 0.10690593</code></pre>
 <pre class="r"><code># original one
 x.sim &lt;- matrix(rnorm(10000*20, mean=3, sd=4), ncol=20)
 tstat &lt;- function(x) (mean(x)-3)/sd(x)*sqrt(length(x))
 tstat.sim &lt;- apply(x.sim, 1, tstat)
 power.sim &lt;- mean(tstat.sim &gt; qt(0.9, df=19) )
 power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)</code></pre>
-<pre><code>## [1] 0.09665277 0.10260000 0.10854723</code></pre>
+<pre><code>## [1] 0.09558111 0.10150000 0.10741889</code></pre>
 </div>
 </div>
 <div id="problem-4-20-points" class="section level3">
@@ -290,13 +290,7 @@ power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)</code></pre
 <h5>(a) Use Bonferroni and FDR adjustments both at 0.05 level. How many genes are differentially expressed according to these two criteria?</h5>
 <pre class="r"><code>data(golub, package = &quot;multtest&quot;)
 gol.fac &lt;- factor(golub.cl, levels=0:1, labels=c(&quot;ALL&quot;, &quot;AML&quot;))
-p.values &lt;- apply(golub, 1, function(x) 
-  {
-    xALL = t(as.matrix(x))[,gol.fac==&quot;ALL&quot;]
-    xAML = t(as.matrix(x))[,gol.fac==&quot;AML&quot;]
-    t.test(xALL, xAML)$p.value
-  }
-)
+p.values &lt;- apply(golub, 1, function(x) t.test(x~gol.fac)$p.value)
 p.bon &lt;-p.adjust(p=p.values, method=&quot;bonferroni&quot;)
 p.fdr &lt;-p.adjust(p=p.values, method=&quot;fdr&quot;)
 sum(p.values&lt;0.05)</code></pre>
@@ -323,6 +317,51 @@ sum(p.values&lt;0.05)</code></pre>
 ## [2] &quot;FAH Fumarylacetoacetate&quot;                         
 ## [3] &quot;APLP2 Amyloid beta (A4) precursor-like protein 2&quot;</code></pre>
 <p>The top three strongest differentially expressed genes are Zyxin, FAH Fumarylacetoacetate and APLP2 Amyloid beta (A4) precursor-like protein 2.</p>
+</div>
+</div>
+<div id="problem-5-10-points" class="section level3">
+<h3>Problem 5 (10 points)</h3>
+<div id="read-the-paper-interval-estimation-for-a-binomial-proportion-by-lawrence-d-brown-t-tony-cai-anirban-dasgupta-2001-statistical-science-pages-101-117." class="section level5">
+<h5>Read the paper “Interval estimation for a binomial proportion” by Lawrence D Brown, T Tony Cai, Anirban DasGupta (2001) Statistical Science pages 101-117.</h5>
+</div>
+<div id="a-program-r-functions-to-calculate-the-wald-ci-the-wilson-ci-and-the-agresticoull-ci-for-binomial-proportion." class="section level5">
+<h5>(a) Program R functions to calculate the Wald CI, the Wilson CI and the Agresti–Coull CI for binomial proportion.</h5>
+<pre class="r"><code># Wald.CI
+Wald.CI &lt;- function(x, n, conf.level) {
+  p &lt;- x/n
+  z &lt;- qnorm(1-(1-conf.level)/2)
+  p + c(-1,1)*z*sqrt(p*(1-p)/n)
+}
+# Wilson.CI
+Wilson.CI &lt;- function(x, n, conf.level) {
+  p &lt;- x/n
+  z &lt;- qnorm(1-(1-conf.level)/2)
+  (x+z^2/2)/(n+z^2) + c(-1, 1)*(z*sqrt(n)/(n+z^2))*sqrt(p*(1-p)+z^2/(4*n))
+}
+# AC.CI
+AC.CI &lt;- function(x, n, conf.level) {
+  z &lt;- qnorm(1-(1-conf.level)/2)
+  x.s &lt;- x + z^2/2
+  n.s &lt;- n + z^2
+  p.s &lt;- x.s/n.s
+  q.s &lt;- 1-p.s
+  p.s + c(-1, 1)*z*sqrt(p.s*q.s/n.s)
+}</code></pre>
+</div>
+<div id="b-run-a-monte-carlo-simulation-to-check-the-coverage-of-the-wald-ci-the-wilson-ci-and-the-agresticoull-ci-for-n40-and-p0.2-at-the-nominal-confidence-level-of-95.-do-10000-simulation-runs-for-calculating-the-empirical-coverages." class="section level5">
+<h5>(b) Run a Monte Carlo simulation to check the coverage of the Wald CI, the Wilson CI and the Agresti–Coull CI for n=40 and p=0.2 at the nominal confidence level of 95%. Do 10,000 simulation runs for calculating the empirical coverages.</h5>
+<pre class="r"><code>n &lt;- 40
+p &lt;- 0.2
+x.sim &lt;- rbinom(10000, size=n, prob=p)
+Wald.sim &lt;- matrix(Wald.CI(x.sim, n=n, conf.level=0.95), nrow=2)
+mean(Wald.sim[1,] &lt; p &amp; Wald.sim[2,] &gt; p)</code></pre>
+<pre><code>## [1] 0.913</code></pre>
+<pre class="r"><code>Wilson.sim &lt;- matrix(Wilson.CI(x.sim, n=n, conf.level=0.95), nrow=2)
+mean(Wilson.sim[1,] &lt; p &amp; Wilson.sim[2,] &gt; p)</code></pre>
+<pre><code>## [1] 0.9312</code></pre>
+<pre class="r"><code>AC.sim &lt;- matrix(AC.CI(x.sim, n=n, conf.level=0.95), nrow=2)
+mean(AC.sim[1,] &lt; p &amp; AC.sim[2,] &gt; p)</code></pre>
+<pre><code>## [1] 0.9496</code></pre>
 </div>
 </div>
 

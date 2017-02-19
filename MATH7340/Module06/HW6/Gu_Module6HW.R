@@ -28,6 +28,7 @@ obsAML <- sum(resAML); nAML <- length(resAML)
 prop.test( x=c(obsALL, obsAML), n=c( nALL, nAML ), alternative="two.sided")
 
 # problem 2
+rm(list=ls())
 # (a)
 2000*0.05
 
@@ -35,6 +36,7 @@ prop.test( x=c(obsALL, obsAML), n=c( nALL, nAML ), alternative="two.sided")
 pbinom(89, size=2000, prob=0.05)
 
 # problem 3
+rm(list=ls())
 #(a)
 x.sim <- matrix(rnorm(10000*20, mean=3, sd=4), ncol=20)
 tstat <- function(x) (mean(x)-3)/sd(x)*sqrt(length(x))
@@ -49,6 +51,7 @@ power.sim <- mean(tstat.sim > qt(0.9, df=19) )
 power.sim+c(-1,0,1)*qnorm(0.975)*sqrt(power.sim*(1-power.sim)/10000)
 
 # problem 4
+rm(list=ls())
 # (a)
 data(golub, package = "multtest")
 gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
@@ -71,7 +74,7 @@ golub.gnames[,2][order(p.bon)][1:3]
 golub.gnames[,2][order(p.fdr)][1:3]
 
 # problem 5
-
+rm(list=ls())
 # (a)
 # Wald.CI
 Wald.CI <- function(x, n, conf.level) {

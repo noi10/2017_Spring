@@ -50,4 +50,15 @@ With level = 1, we stick to models with main effects only. This implies that the
 fit.cv.glmpath <- cv.glmpath(x=as.matrix(predictors[train,]),
                              y=response[train], 
                              family=binomial, nfold=10, plot.it=T)
+
+# cross-validated prediction on the training set
+fit.cv.glmpath1 <- cv.glmpath(x=as.matrix(predictors[train,]),
+                  y=response[train], 
+                  family=binomial, nfold=10, plot.it=T , type="response")
+
+cv.s <- fit.cv.glmpath$fraction[which.min(fit.cv.glmpath$cv.error)]
+
+fit.glmpath <- glmpath(x=as.matrix(predictors[train,]),
+                       y=response[train], family=binomial)
+predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
 ```

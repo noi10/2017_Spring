@@ -85,6 +85,7 @@ table(true=response[train], predicted=pred.glmpath.train > 0.5)
 
 # predictive accuracy on a validation set
 pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+pred.coef
 pred.glmpath.valid <- predict(fit.glmpath, newx=as.matrix(predictors[-train,]), s=cv.s, 
 			mode="norm.fraction", type="response")
 table(true=response[-train], predicted=pred.glmpath.valid > 0.5)

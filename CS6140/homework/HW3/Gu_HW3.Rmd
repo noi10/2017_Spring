@@ -9,9 +9,12 @@ library(glmulti)
 library(glmpath)
 library(pastecs)
 library(knitr)
+library(ROCR)
+setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 ```
 
 ```{r}
+
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
 Mydata <- Mydata[,-1]
 Mydata[,5][Mydata[,5]=="Present"] <- 1
@@ -36,6 +39,7 @@ round(cor(trainSet), digits=2)
 pairs(trainSet)
 ```
 
+#### All subset selection
 ```{r}
 glmulti.logistic.out <- 
   glmulti(chd~. , data=trainSet, level=1, fitfunction="glm", crit = "aic", 
@@ -46,6 +50,8 @@ plot(glmulti.logistic.out)
 With level = 1, we stick to models with main effects only. This implies that there are 
 2^7=128 possible models in the candidate set to consider. Since I want to keep the results for all these models (the default is to only keep up to 100 model fits), I set confsetsize=128 (or I could have set this to some very large value). With crit="aicc", we select the information criterion (in this example: the AICc or corrected AIC) that we would like to compute for each model and that should be used for model selection and multimodel inference. For more information about the AIC (and AICc), see, for example, the entry for the Akaike Information Criterion on Wikipedia. As the function runs, you should receive information about the progress of the model fitting. Fitting the 128 models should only take a few seconds.
 
+
+#### regularization
 ```{r}
 fit.cv.glmpath <- cv.glmpath(x=as.matrix(predictors[train,]),
                              y=response[train], 
@@ -58,7 +64,45 @@ fit.cv.glmpath1 <- cv.glmpath(x=as.matrix(predictors[train,]),
 
 cv.s <- fit.cv.glmpath$fraction[which.min(fit.cv.glmpath$cv.error)]
 
+# refit the model without cross-validation
 fit.glmpath <- glmpath(x=as.matrix(predictors[train,]),
                        y=response[train], family=binomial)
 predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+
+
+# plot the path
+par(mfrow=c(1,1), mar=c(4,4,4,8))
+plot(fit.glmpath, xvar="lambda")
+
+# in-sample predictive accuracy
+pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+pred.glmpath.train <- predict(fit.glmpath, newx=as.matrix(predictors[train,]), s=cv.s, 
+			mode="norm.fraction", type="response")
+table(true=response[train], predicted=pred.glmpath.train > 0.5)
+
+# predictive accuracy on a validation set
+pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+pred.glmpath.valid <- predict(fit.glmpath, newx=as.matrix(predictors[-train,]), s=cv.s, 
+			mode="norm.fraction", type="response")
+table(true=response[-train], predicted=pred.glmpath.valid > 0.5)
+```
+
+
+
+#### ROC
+```{r}
+# ROC on the training set
+pred <- prediction( predictions=pred.glmpath.train, labels=response[train] )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, main="glmpath")
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# ROC on the validation set
+pred <- prediction( predictions=pred.glmpath.valid, labels=response[-train] )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, add=TRUE)
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
 ```

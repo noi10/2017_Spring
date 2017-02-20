@@ -2,6 +2,7 @@ library(glmulti)
 library(glmpath)
 library(pastecs)
 library(knitr)
+library(ROCR)
 
 setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)

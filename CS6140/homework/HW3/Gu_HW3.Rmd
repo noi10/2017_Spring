@@ -191,10 +191,19 @@ fit.pamr <- pamr.train(pamrTrain)
 fit.pamr
 # Use cross-validation to select the best regularization parameter
 fit.cv.pamr <- pamr.cv(fit.pamr, pamrTrain)
-
+```
+```{r}
+names(fit.cv.pamr)
+#fit.cv.pamr$y
+#fit.cv.pamr$threshold
+fit.cv.pamr$error
+#fit.cv.pamr$cv.objects
+```
 # Manually select the threshold depending on the plots and on the confusion matrix
 pamr.plotcv(fit.cv.pamr)
 
+
+```{r}
 print(fit.cv.pamr)
 #Let's compare thresholds=1 and 2 to illustrate the effect of shrinkage
 pamr.confusion(fit.cv.pamr, threshold=0.128)

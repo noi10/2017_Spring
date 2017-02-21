@@ -4,7 +4,8 @@ library(pastecs)
 library(knitr)
 library(ROCR)
 
-setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
+setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
+#setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
 Mydata <- Mydata[,-1]
 Mydata[,5][Mydata[,5]=="Present"] <- 2
@@ -63,4 +64,5 @@ cv.s <- fit.cv.glmpath$fraction[which.min(fit.cv.glmpath$cv.error)]
 
 fit.glmpath <- glmpath(x=as.matrix(predictors[train,]),
                        y=response[train], family=binomial)
+
 predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")

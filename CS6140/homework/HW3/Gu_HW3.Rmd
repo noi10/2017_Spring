@@ -10,11 +10,14 @@ library(glmpath)
 library(pastecs)
 library(knitr)
 library(ROCR)
-setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
+library(MASS)
+library(pamr)
+setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
+#setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 ```
 
 ```{r}
-
+set.seed(123)
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
 Mydata <- Mydata[,-1]
 Mydata[,5][Mydata[,5]=="Present"] <- 1
@@ -24,6 +27,7 @@ predictors <- Mydata[,1:9]
 response <- Mydata[,10]
 train <- sample(x=1:nrow(Mydata), size=nrow(Mydata)/2)
 trainSet <- Mydata[train,]
+testSet <- Mydata[-train,]
 ```
 
 ```{r}
@@ -43,12 +47,84 @@ pairs(trainSet)
 ```{r}
 glmulti.logistic.out <- 
   glmulti(chd~. , data=trainSet, level=1, fitfunction="glm", crit = "aic", 
-          confsetsize=512, plotty = F, report = F)
+          confsetsize=512, plotty = F, report = F, family = binomial, method = "h")
 plot(glmulti.logistic.out)
+summary(glmulti.logistic.out@objects[[1]])
+print(glmulti.logistic.out)
+
+#allsubset.fit <- glm(chd ~ 1 + tobacco + ldl + famhist + typea + age, family=binomial, data=trainSet)
+#summary(allsubset.fit)
+
+allsubset.fit <- glm(chd ~ 1 + tobacco + ldl + famhist + typea + age, family=binomial, data=trainSet)
+summary(allsubset.fit)
+
+
+# calculate predicted probabilities on the same training set
+scores <- predict(allsubset.fit, newdata=trainSet, type="response")
+
+# compare predicted probabilities to labels, for varying probability cutoffs
+pred <- prediction(scores, labels=trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+table(true=response[train], predicted = scores > 0.5)
+
+# plot the ROC curve
+plot(perf, colorize=F, main="All subset")
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+# calculate predicted probabilities on the same training set
+scores <- predict(allsubset.fit, newdata=testSet, type="response")
+
+# compare predicted probabilities to labels, for varying probability cutoffs
+pred <- prediction(scores, labels=testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+table(true=response[train], predicted = scores > 0.5)
+# plot the ROC curve
+plot(perf, colorize=T, add=TRUE)
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
 ```
+
+
 
 With level = 1, we stick to models with main effects only. This implies that there are 
 2^7=128 possible models in the candidate set to consider. Since I want to keep the results for all these models (the default is to only keep up to 100 model fits), I set confsetsize=128 (or I could have set this to some very large value). With crit="aicc", we select the information criterion (in this example: the AICc or corrected AIC) that we would like to compute for each model and that should be used for model selection and multimodel inference. For more information about the AIC (and AICc), see, for example, the entry for the Akaike Information Criterion on Wikipedia. As the function runs, you should receive information about the progress of the model fitting. Fitting the 128 models should only take a few seconds.
+
+
+
+
+
+#### LDA
+```{r}
+lda.fit <- lda(x=as.matrix(trainSet[,-10]), grouping= trainSet[,10], cv=TRUE)
+
+# prediction on the training set
+pred.lda.train <- predict(lda.fit, newx=trainSet[,-10])
+table(true= response[train], predicted=pred.lda.train$class)
+
+# prediction on the validation set
+pred.lda.test <- predict(lda.fit, newx=testSet[,-10])
+table(true= testSet[,10], predicted=pred.lda.test$class)
+
+
+# ROC on the training set
+scores <- predict(lda.fit, newdata= trainSet[,-10])$posterior[,2]
+pred <- prediction( scores, labels= trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=F, main="LDA")
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# ROC on the validation set
+scores <- predict(lda.fit, newdata= testSet[,-10])$posterior[,2]
+pred <- prediction( scores, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, add=TRUE)
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+```
 
 
 #### regularization
@@ -76,25 +152,23 @@ plot(fit.glmpath, xvar="lambda")
 
 # in-sample predictive accuracy
 pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+pred.coef
 pred.glmpath.train <- predict(fit.glmpath, newx=as.matrix(predictors[train,]), s=cv.s, 
 			mode="norm.fraction", type="response")
 table(true=response[train], predicted=pred.glmpath.train > 0.5)
 
 # predictive accuracy on a validation set
 pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+pred.coef
 pred.glmpath.valid <- predict(fit.glmpath, newx=as.matrix(predictors[-train,]), s=cv.s, 
 			mode="norm.fraction", type="response")
 table(true=response[-train], predicted=pred.glmpath.valid > 0.5)
-```
-
-
 
 #### ROC
-```{r}
 # ROC on the training set
 pred <- prediction( predictions=pred.glmpath.train, labels=response[train] )
 perf <- performance(pred, "tpr", "fpr")
-plot(perf, colorize=T, main="glmpath")
+plot(perf, colorize=F, main="glmpath")
 # print out the area under the curve
 unlist(attributes(performance(pred, "auc"))$y.values)
 
@@ -105,4 +179,51 @@ perf <- performance(pred, "tpr", "fpr")
 plot(perf, colorize=T, add=TRUE)
 # print out the area under the curve
 unlist(attributes(performance(pred, "auc"))$y.values)
+```
+
+```{r}
+# Reformat the dataset for parm
+pamrTrain <- list(x=t(as.matrix(trainSet[,-10])), y=trainSet[,10])
+pamrValid <- list(x=t(as.matrix(testSet[,-10])), y=testSet[,10])
+
+# Fit the classifier on the entire training set
+fit.pamr <- pamr.train(pamrTrain)
+fit.pamr
+# Use cross-validation to select the best regularization parameter
+fit.cv.pamr <- pamr.cv(fit.pamr, pamrTrain)
+
+# Manually select the threshold depending on the plots and on the confusion matrix
+pamr.plotcv(fit.cv.pamr)
+
+print(fit.cv.pamr)
+#Let's compare thresholds=1 and 2 to illustrate the effect of shrinkage
+pamr.confusion(fit.cv.pamr, threshold=0.128)
+pamr.confusion(fit.cv.pamr, threshold=0.640)
+
+# Refit the classifier on the full dataset, but using the threshold
+fit.pamr <- pamr.train(pamrTrain, threshold=0.640)
+
+```
+
+
+```{r}
+# ----------ROC curve using nearest shrunken centroids----------------
+# ROC on the training set
+
+pred.pamr.train <- pamr.predict(fit.pamr, newx=pamrTrain$x, threshold=0.640, type="posterior")[,2]
+pred <- prediction(predictions=pred.pamr.train, labels= trainSet$chd)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=F, main="Nearest shrunken centroids")
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+# ROC on the validation set
+pred.pamr.valid <- pamr.predict(fit.pamr, newx=pamrValid$x, threshold=0.640, type="posterior")[,2]
+pred <- prediction(predictions=pred.pamr.valid, labels= testSet$chd)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, colorize=T, add=TRUE)
+# print out the area under the curve
+unlist(attributes(performance(pred, "auc"))$y.values)
+
+
 ```

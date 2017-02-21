@@ -12,12 +12,12 @@ library(knitr)
 library(ROCR)
 library(MASS)
 library(pamr)
-setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
-#setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
+#setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
+setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 ```
 
 ```{r}
-set.seed(123)
+set.seed(234)
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
 Mydata <- Mydata[,-1]
 Mydata[,5][Mydata[,5]=="Present"] <- 1
@@ -128,7 +128,7 @@ unlist(attributes(performance(pred, "auc"))$y.values)
 
 
 #### regularization
-```{r}
+```{r results="hide"}
 fit.cv.glmpath <- cv.glmpath(x=as.matrix(predictors[train,]),
                              y=response[train], 
                              family=binomial, nfold=10, plot.it=T)
@@ -144,8 +144,9 @@ cv.s <- fit.cv.glmpath$fraction[which.min(fit.cv.glmpath$cv.error)]
 fit.glmpath <- glmpath(x=as.matrix(predictors[train,]),
                        y=response[train], family=binomial)
 predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+```
 
-
+```{r}
 # plot the path
 par(mfrow=c(1,1), mar=c(4,4,4,8))
 plot(fit.glmpath, xvar="lambda")
@@ -181,7 +182,10 @@ plot(perf, colorize=T, add=TRUE)
 unlist(attributes(performance(pred, "auc"))$y.values)
 ```
 
-```{r}
+
+
+#### nearest shrunken centroids
+```{r results="hide" }
 # Reformat the dataset for parm
 pamrTrain <- list(x=t(as.matrix(trainSet[,-10])), y=trainSet[,10])
 pamrValid <- list(x=t(as.matrix(testSet[,-10])), y=testSet[,10])
@@ -192,15 +196,56 @@ fit.pamr
 # Use cross-validation to select the best regularization parameter
 fit.cv.pamr <- pamr.cv(fit.pamr, pamrTrain)
 ```
-```{r}
-names(fit.cv.pamr)
-#fit.cv.pamr$y
-#fit.cv.pamr$threshold
-fit.cv.pamr$error
-#fit.cv.pamr$cv.objects
+```{r fig.width=8.5}
+
+error.bars <- function(x, lower, upper, length=0.1,...){
+   arrows(x,lower, x, upper, angle=90, code=3, length=length, ...)
+}
+fit <- fit.cv.pamr
+par(mar = c(5, 4.5, 5, 0))
+par(mfrow = c(1, 2))
+n <- nrow(fit$yhat)
+y <- fit$y
+if (!is.null(fit$newy)) {
+    y <- fit$newy[fit$sample.subset]
+}
+nc <- length(table(y))
+nfolds <- length(fit$folds)
+err <- matrix(NA, ncol = ncol(fit$yhat), nrow = nfolds)
+temp <- matrix(y, ncol = ncol(fit$yhat), nrow = n)
+ni <- rep(NA, nfolds)
+for (i in 1:nfolds) {
+    ii <- fit$folds[[i]]
+    ni[i] <- length(fit$folds[[i]])
+    err[i, ] <- apply(temp[ii, ] != fit$yhat[ii, ], 2, sum)/ni[i]
+}
+se <- sqrt(apply(err, 2, var)/nfolds)
+plot(fit$threshold, fit$error, ylim = c(-0.1, 1), xlab = "Value of threshold",ylab = "Misclassification Error", type = "n", yaxt = "n", cex=0.6)
+
+axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
+mtext("Number of variables", 3, 2, cex = 1)
+axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
+lines(fit$threshold, fit$error, col = 2)
+o <- fit$err == min(fit$err)
+points(fit$threshold[o], fit$error[o], pch = "x")
+error.bars(fit$threshold, fit$err - se, fit$err + se)
+err2 <- matrix(NA, nrow = length(unique(y)), ncol = length(fit$threshold))
+for (i in 1:(length(fit$threshold) - 1)) {
+    s <- pamr.confusion(fit, fit$threshold[i], extra = FALSE)
+    diag(s) <- 0
+    err2[, i] <- apply(s, 1, sum)/table(y)
+}
+plot(fit$threshold, err2[1, ], ylim = c(-0.1, 1.1), xlab = "Value of threshold ", 
+    ylab = "Misclassification Error", type = "n", yaxt = "n")
+mtext("Number of variables", 3, 2, cex = 1)
+axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
+axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
+for (i in 1:nrow(err2)) {
+    lines(fit$threshold, err2[i, ], col = i + 1)
+}
+legend(2.5, 0.4, dimnames(table(y))[[1]], col = (2:(nc + 1)), lty = 1)
+title("Nearest Shrunken Centroids", line = -1, outer=TRUE, adj=0.6)
 ```
-# Manually select the threshold depending on the plots and on the confusion matrix
-pamr.plotcv(fit.cv.pamr)
 
 
 ```{r}

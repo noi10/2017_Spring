@@ -12,12 +12,12 @@ library(knitr)
 library(ROCR)
 library(MASS)
 library(pamr)
-#setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
-setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
+setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
+#setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 ```
 
 ```{r}
-set.seed(234)
+set.seed(123)
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
 Mydata <- Mydata[,-1]
 Mydata[,5][Mydata[,5]=="Present"] <- 1
@@ -31,6 +31,7 @@ testSet <- Mydata[-train,]
 ```
 
 ```{r}
+options(width=100)
 sum(is.na(Mydata))
 
 one.variable.summary <- summary(trainSet, digits=2)
@@ -40,7 +41,7 @@ format(round(stat.desc(trainSet, basic=F), 2), nsmall = 2)
 format(round(stat.desc(trainSet, desc=F), 2), nsmall=2)
 
 round(cor(trainSet), digits=2)
-pairs(trainSet)
+pairs(trainSet, col=c("green", "blue"))
 ```
 
 #### All subset selection
@@ -70,7 +71,7 @@ table(true=response[train], predicted = scores > 0.5)
 # plot the ROC curve
 plot(perf, colorize=F, main="All subset")
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+allsubset.train <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 # calculate predicted probabilities on the same training set
 scores <- predict(allsubset.fit, newdata=testSet, type="response")
@@ -82,7 +83,7 @@ table(true=response[train], predicted = scores > 0.5)
 # plot the ROC curve
 plot(perf, colorize=T, add=TRUE)
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+allsubset.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 ```
 
 
@@ -98,6 +99,7 @@ With level = 1, we stick to models with main effects only. This implies that the
 ```{r}
 lda.fit <- lda(x=as.matrix(trainSet[,-10]), grouping= trainSet[,10], cv=TRUE)
 
+plot(lda.fit)
 # prediction on the training set
 pred.lda.train <- predict(lda.fit, newx=trainSet[,-10])
 table(true= response[train], predicted=pred.lda.train$class)
@@ -113,7 +115,7 @@ pred <- prediction( scores, labels= trainSet$chd )
 perf <- performance(pred, "tpr", "fpr")
 plot(perf, colorize=F, main="LDA")
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+lda.train <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 
 # ROC on the validation set
@@ -122,7 +124,7 @@ pred <- prediction( scores, labels= testSet$chd )
 perf <- performance(pred, "tpr", "fpr")
 plot(perf, colorize=T, add=TRUE)
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+lda.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 ```
 
@@ -171,7 +173,7 @@ pred <- prediction( predictions=pred.glmpath.train, labels=response[train] )
 perf <- performance(pred, "tpr", "fpr")
 plot(perf, colorize=F, main="glmpath")
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+lasso.train <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 
 # ROC on the validation set
@@ -179,7 +181,7 @@ pred <- prediction( predictions=pred.glmpath.valid, labels=response[-train] )
 perf <- performance(pred, "tpr", "fpr")
 plot(perf, colorize=T, add=TRUE)
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+lasso.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 ```
 
 
@@ -202,7 +204,7 @@ error.bars <- function(x, lower, upper, length=0.1,...){
    arrows(x,lower, x, upper, angle=90, code=3, length=length, ...)
 }
 fit <- fit.cv.pamr
-par(mar = c(5, 4.5, 5, 0))
+par(mar = c(5, 4.5, 5, 0.5))
 par(mfrow = c(1, 2))
 n <- nrow(fit$yhat)
 y <- fit$y
@@ -269,7 +271,7 @@ pred <- prediction(predictions=pred.pamr.train, labels= trainSet$chd)
 perf <- performance(pred, "tpr", "fpr")
 plot(perf, colorize=F, main="Nearest shrunken centroids")
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+nearest.train <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 # ROC on the validation set
 pred.pamr.valid <- pamr.predict(fit.pamr, newx=pamrValid$x, threshold=0.640, type="posterior")[,2]
@@ -277,7 +279,11 @@ pred <- prediction(predictions=pred.pamr.valid, labels= testSet$chd)
 perf <- performance(pred, "tpr", "fpr")
 plot(perf, colorize=T, add=TRUE)
 # print out the area under the curve
-unlist(attributes(performance(pred, "auc"))$y.values)
+nearest.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 
+```
+
+```{r}
+t(matrix(c(allsubset.train, allsubset.test, lasso.train, lasso.test, lda.train, lda.test, nearest.train, nearest.test), nrow = 2, dimnames = list(c("trainSet","testSet"),c("allsubset", "lasso", "lda", "nearest"))))
 ```

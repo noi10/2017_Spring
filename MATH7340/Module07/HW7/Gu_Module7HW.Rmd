@@ -1,0 +1,23 @@
+---
+title: "Gu_Module7HW.Rmd"
+author: "Chengbo Gu"
+date: "2017Äê2ÔÂ23ÈÕ"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(multtest)
+```
+
+
+```{r}
+data(golub)
+len <- nrow(golub)
+p.values <- rep(NA, len)
+gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
+#for (i in 1:len) {
+#  p.values[i] <- wilcox.test(golub[i,] ~ gol.fac, paired = F, alternative = "greater")
+#}
+wilcox.test(golub[i,] ~ gol.fac, paired = F, alternative = "greater")$p.value
+
+```

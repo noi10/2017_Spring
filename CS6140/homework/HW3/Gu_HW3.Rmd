@@ -12,10 +12,14 @@ library(knitr)
 library(ROCR)
 library(MASS)
 library(pamr)
-setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
-#setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
+#setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
+setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 ```
-
+## 1 Data preparation and exploration
+### (a) Select the training set
+I downloaded the data from the website and read it using read.table().
+Then I used sample function to partition the dataset into a training set and a validatoin set of equal size.
+Notice that there is a categorical feature famhist, I set "Present" to be 1 and "Absent" to be 0 accordingly.
 ```{r}
 set.seed(123)
 Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
@@ -30,36 +34,142 @@ trainSet <- Mydata[train,]
 testSet <- Mydata[-train,]
 ```
 
+### (b) Data exploration
 ```{r}
 options(width=100)
+# missing values
 sum(is.na(Mydata))
 
+# outliers
+boxplot(trainSet, las = 2)
+```
+
+As we can see above, there is no missing value in our dataset.
+Besides, the boxplot indicates that there seems to be some outliers according to sbp and alchohol. However, different from the rest doesn't necessarily mean wrong as we discussed in class. Since data is scarce, we decided not to remove these "outliers". After this, we can apply one-variable and two-variable summary.
+
+
+#### one variable summary
+
+simple one variable summary
+```{r}
+# One variable summary
 one.variable.summary <- summary(trainSet, digits=2)
 one.variable.summary
+```
 
+
+#### two variable summary
+```{r}
 format(round(stat.desc(trainSet, basic=F), 2), nsmall = 2)
 format(round(stat.desc(trainSet, desc=F), 2), nsmall=2)
 
+# Two variable summary
 round(cor(trainSet), digits=2)
 pairs(trainSet, col=c("green", "blue"))
 ```
 
+famhist is the only categorical predictor in our dataset which has the value of either 0 or 1.
+adiposity vs obesity, adiposity vs age are the paris which are highly correlated predictors. We will see how our models select variables later.
+
+## 2 logistic regression 
 #### All subset selection
 ```{r}
 glmulti.logistic.out <- 
   glmulti(chd~. , data=trainSet, level=1, fitfunction="glm", crit = "aic", 
           confsetsize=512, plotty = F, report = F, family = binomial, method = "h")
 plot(glmulti.logistic.out)
-summary(glmulti.logistic.out@objects[[1]])
 print(glmulti.logistic.out)
 
-#allsubset.fit <- glm(chd ~ 1 + tobacco + ldl + famhist + typea + age, family=binomial, data=trainSet)
-#summary(allsubset.fit)
+
+tmp <- weightable(glmulti.logistic.out)
+tmp <- tmp[tmp$aic <= min(tmp$aic) + 2, ]
+tmp
+```
+
+Here we used glmulti package which is similar as bestglm to do variable selection. With level = 1, we say that we didn't consider statistical interactions first. Thus, there are $2^9=512$ possible models to consider here. With crit="aic", we selected the information criterion to be Akaike Information Criterion.
+
+The plot above show the AIC values of all 512 models. The horizaontal read line differentiates between models in which AIC is less versus more than 2 units away from that of the best model with loweast AIC. 
+
+The output above shows that there are 7 models whose AIC is less than 2 units away from that of the best model.
+And we stored them in tmp and listed them out.
+
+
+```{r}
+summary(glmulti.logistic.out@objects[[1]])
 
 allsubset.fit <- glm(chd ~ 1 + tobacco + ldl + famhist + typea + age, family=binomial, data=trainSet)
 summary(allsubset.fit)
+```
+
+We see that the best model includes tobacco, ldl, famhist, typea and age as predictors. Highly correlated pairs adiposity vs obesity and adiposity vs age are not involved. The coeffients are reported above.
 
 
+## 3 LDA 
+
+```{r}
+lda.fit <- lda(x=as.matrix(trainSet[,-10]), grouping= trainSet[,10], cv=TRUE)
+
+lda.fit
+
+plot(lda.fit)
+```
+The LDA output indicates that estimated $\pi_{1}=0.6450$ and $\pi_{2}=0.3550$.
+Also, it provides group means which were used by LDA as estimates of $\mu_{k}$.
+
+The coefficients of linear discriminants output provides the linear combination of all the 9 predictors that are used to form LDA decision rule. If $\beta^TX$ is large, then the LDA classifier will predict chd = 1, and if it is small, then the LDA classifier will predict chd = 0.
+
+The plot() function produces plots of the linear discriminants which are approximately bell-shaped, obtained by computing $\beta^TX$ for each of the training observations. 
+
+
+
+
+
+## logistic regression with Lasso regularization
+In this section, we used glmpath package to implement lasso regularization.
+
+#### Coefficients path
+```{r}
+# fit the model with glmpath to plot the path
+fit.glmpath <- glmpath(x=as.matrix(predictors[train,]),
+                       y=response[train], family=binomial)
+
+# plot the path
+par(mfrow=c(1,1), mar=c(4,4,4,8))
+plot(fit.glmpath, xvar="lambda")
+
+```
+From the coefficients path, we concluded that the rank of these 9 predictors regarding "importance" is age, famhist, typea, ldl, tobacco, adiposity, alcohol, sbp and obesity (from high to low).
+
+#### Cross-validated predicted error plot
+```{r results="hide"}
+# cross-validated prediction on the training set using prediction error
+fit.cv.glmpath <- cv.glmpath(x=as.matrix(predictors[train,]),
+                  y=response[train], 
+                  family=binomial, nfold=10, plot.it=T , type="response")
+cv.glmpath
+cv.s <- fit.cv.glmpath$fraction[which.min(fit.cv.glmpath$cv.error)]
+abline(v=cv.s, lty = 2, col = "red")
+
+```
+We used a dash red line to mark the "norm fraction of lambda" that holds minimum cross-validation errors. Note that the curve of minus log-likelihood vs norm fraction is smooth while the one of cross-validation errors vs norm fraction is rugged. That's because there is probability that the errors remain the same even if the model changes slightly due to lambda.
+
+
+#### regularization parameter
+```{r}
+# get the cv.s with lowest cross-validated predicted error
+cv.s
+predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
+
+```
+
+For this Lasso model, we got the norm fraction of lambda `r cv.s`.
+And the coefficients of predictors are showed. We find that adiposity and obesity are dropped because they are less "important".
+
+#### Fit without lambda
+```{r}
+```
+
+```{r logistic prediction}
 # calculate predicted probabilities on the same training set
 scores <- predict(allsubset.fit, newdata=trainSet, type="response")
 
@@ -85,21 +195,7 @@ plot(perf, colorize=T, add=TRUE)
 # print out the area under the curve
 allsubset.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 ```
-
-
-
-With level = 1, we stick to models with main effects only. This implies that there are 
-2^7=128 possible models in the candidate set to consider. Since I want to keep the results for all these models (the default is to only keep up to 100 model fits), I set confsetsize=128 (or I could have set this to some very large value). With crit="aicc", we select the information criterion (in this example: the AICc or corrected AIC) that we would like to compute for each model and that should be used for model selection and multimodel inference. For more information about the AIC (and AICc), see, for example, the entry for the Akaike Information Criterion on Wikipedia. As the function runs, you should receive information about the progress of the model fitting. Fitting the 128 models should only take a few seconds.
-
-
-
-
-
-#### LDA
-```{r}
-lda.fit <- lda(x=as.matrix(trainSet[,-10]), grouping= trainSet[,10], cv=TRUE)
-
-plot(lda.fit)
+```{r lda prediction}
 # prediction on the training set
 pred.lda.train <- predict(lda.fit, newx=trainSet[,-10])
 table(true= response[train], predicted=pred.lda.train$class)
@@ -127,32 +223,7 @@ plot(perf, colorize=T, add=TRUE)
 lda.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 ```
-
-
-#### regularization
-```{r results="hide"}
-fit.cv.glmpath <- cv.glmpath(x=as.matrix(predictors[train,]),
-                             y=response[train], 
-                             family=binomial, nfold=10, plot.it=T)
-
-# cross-validated prediction on the training set
-fit.cv.glmpath1 <- cv.glmpath(x=as.matrix(predictors[train,]),
-                  y=response[train], 
-                  family=binomial, nfold=10, plot.it=T , type="response")
-
-cv.s <- fit.cv.glmpath$fraction[which.min(fit.cv.glmpath$cv.error)]
-
-# refit the model without cross-validation
-fit.glmpath <- glmpath(x=as.matrix(predictors[train,]),
-                       y=response[train], family=binomial)
-predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
-```
-
-```{r}
-# plot the path
-par(mfrow=c(1,1), mar=c(4,4,4,8))
-plot(fit.glmpath, xvar="lambda")
-
+```{r Lasso prediction}
 # in-sample predictive accuracy
 pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
 pred.coef

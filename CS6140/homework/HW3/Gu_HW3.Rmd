@@ -1,6 +1,10 @@
 ---
-title: "Gu_HW3"
-output: html_document
+title: "CS6140 Assignment 3"
+author: "Chengbo Gu"
+output:
+  pdf_document: default
+  html_document: default
+  geometry: margin=1in
 ---
 
 ```{r setup, include=FALSE}
@@ -12,17 +16,18 @@ library(knitr)
 library(ROCR)
 library(MASS)
 library(pamr)
-#setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
-setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
+setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW3")
+#setwd("C:/Users/Bobo/Desktop/2017_Spring/CS6140/homework/HW3")
 ```
-## 1 Data preparation and exploration
+## 1. Data preparation and exploration
 ### (a) Select the training set
 I downloaded the data from the website and read it using read.table().
 Then I used sample function to partition the dataset into a training set and a validatoin set of equal size.
 Notice that there is a categorical feature famhist, I set "Present" to be 1 and "Absent" to be 0 accordingly.
 ```{r}
 set.seed(123)
-Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", stringsAsFactors = FALSE, header = TRUE)
+Mydata <- read.table("SouthAfricanHeartDisease.txt", sep=",", 
+                     stringsAsFactors = FALSE, header = TRUE)
 Mydata <- Mydata[,-1]
 Mydata[,5][Mydata[,5]=="Present"] <- 1
 Mydata[,5][Mydata[,5]=="Absent"] <- 0
@@ -57,22 +62,28 @@ one.variable.summary <- summary(trainSet, digits=2)
 one.variable.summary
 ```
 
-
-#### two variable summary
+We could see more details using the following commands.
 ```{r}
 format(round(stat.desc(trainSet, basic=F), 2), nsmall = 2)
 format(round(stat.desc(trainSet, desc=F), 2), nsmall=2)
+```
 
+#### two variable summary
+```{r}
 # Two variable summary
 round(cor(trainSet), digits=2)
 pairs(trainSet, col=c("green", "blue"))
 ```
 
 famhist is the only categorical predictor in our dataset which has the value of either 0 or 1.
-adiposity vs obesity, adiposity vs age are the paris which are highly correlated predictors. We will see how our models select variables later.
+adiposity vs obesity, adiposity vs age are the pairs which are highly correlated predictors. We will see how our models select variables later.
 
-## 2 logistic regression 
+\newpage
+## 2. logistic regression 
 #### All subset selection
+
+In this section, we used glmulti package which is similar as bestglm to do all subset selection.
+
 ```{r}
 glmulti.logistic.out <- 
   glmulti(chd~. , data=trainSet, level=1, fitfunction="glm", crit = "aic", 
@@ -86,7 +97,7 @@ tmp <- tmp[tmp$aic <= min(tmp$aic) + 2, ]
 tmp
 ```
 
-Here we used glmulti package which is similar as bestglm to do variable selection. With level = 1, we say that we didn't consider statistical interactions first. Thus, there are $2^9=512$ possible models to consider here. With crit="aic", we selected the information criterion to be Akaike Information Criterion.
+With level = 1, we say that we didn't consider statistical interactions first. Thus, there are $2^9=512$ possible models to consider here. With crit="aic", we selected the information criterion to be Akaike Information Criterion.
 
 The plot above show the AIC values of all 512 models. The horizaontal read line differentiates between models in which AIC is less versus more than 2 units away from that of the best model with loweast AIC. 
 
@@ -96,23 +107,31 @@ And we stored them in tmp and listed them out.
 
 ```{r}
 summary(glmulti.logistic.out@objects[[1]])
-
+```
+```{r include=FALSE}
 allsubset.fit <- glm(chd ~ 1 + tobacco + ldl + famhist + typea + age, family=binomial, data=trainSet)
 summary(allsubset.fit)
 ```
 
 We see that the best model includes tobacco, ldl, famhist, typea and age as predictors. Highly correlated pairs adiposity vs obesity and adiposity vs age are not involved. The coeffients are reported above.
 
+We would like to try statistical interactions and it is not hard to do that. One could do that by changing the level from 1 to 2 of glmulti(). However, it seems that even with 9 predictors, the computational workload is extremely large. I submitted it using R running on my CPU and waited for about 30 minutes but couldn't get the result.
 
-## 3 LDA 
+I would do it again using GPU or HPC if possible in the future.
 
-```{r}
+\newpage
+## 3. LDA 
+In this section, we used MASS package to do linear discriminant analysis.
+```{r fig.height=5}
 lda.fit <- lda(x=as.matrix(trainSet[,-10]), grouping= trainSet[,10], cv=TRUE)
 
 lda.fit
 
+par(mar=c(5.1,4.1,0,2.1))
 plot(lda.fit)
 ```
+
+
 The LDA output indicates that estimated $\pi_{1}=0.6450$ and $\pi_{2}=0.3550$.
 Also, it provides group means which were used by LDA as estimates of $\mu_{k}$.
 
@@ -123,8 +142,8 @@ The plot() function produces plots of the linear discriminants which are approxi
 
 
 
-
-## logistic regression with Lasso regularization
+\newpage
+## 4. logistic regression with Lasso regularization
 In this section, we used glmpath package to implement lasso regularization.
 
 #### Coefficients path
@@ -138,6 +157,7 @@ par(mfrow=c(1,1), mar=c(4,4,4,8))
 plot(fit.glmpath, xvar="lambda")
 
 ```
+
 From the coefficients path, we concluded that the rank of these 9 predictors regarding "importance" is age, famhist, typea, ldl, tobacco, adiposity, alcohol, sbp and obesity (from high to low).
 
 #### Cross-validated predicted error plot
@@ -151,7 +171,8 @@ cv.s <- fit.cv.glmpath$fraction[which.min(fit.cv.glmpath$cv.error)]
 abline(v=cv.s, lty = 2, col = "red")
 
 ```
-We used a dash red line to mark the "norm fraction of lambda" that holds minimum cross-validation errors. Note that the curve of minus log-likelihood vs norm fraction is smooth while the one of cross-validation errors vs norm fraction is rugged. That's because there is probability that the errors remain the same even if the model changes slightly due to lambda.
+
+We used a dash red line to mark the "norm fraction of lambda" that holds minimum cross-validation errors. Note that the curve of minus log-likelihood vs norm fraction is smooth while the one of cross-validation errors vs norm fraction is rugged with ties. That's because there is no correlation between likelihood and prediction errors.
 
 
 #### regularization parameter
@@ -163,198 +184,440 @@ predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
 ```
 
 For this Lasso model, we got the norm fraction of lambda `r cv.s`.
-And the coefficients of predictors are showed. We find that adiposity and obesity are dropped because they are less "important".
+And the coefficients of predictors are showed. We find that sbp, adiposity and obesity are dropped because they are less "important".
 
 #### Fit without lambda
 ```{r}
+lasso.without.fit <- glm(chd ~ 1 + tobacco + ldl + famhist + typea + alcohol +age, 
+                         family=binomial, data=trainSet)
+summary(lasso.without.fit)
 ```
 
-```{r logistic prediction}
-# calculate predicted probabilities on the same training set
-scores <- predict(allsubset.fit, newdata=trainSet, type="response")
+Here we used the selected variables to refit the trainSet without bias. Notice that the logistic model of chd ~ 1 + tobacco + ldl + famhist + typea + alcohol +age did appear in out 7 best models in the result of glmulti.
+We would evaluate the performances of the two models (with and without lambda) in the section later. 
 
-# compare predicted probabilities to labels, for varying probability cutoffs
-pred <- prediction(scores, labels=trainSet$chd )
-perf <- performance(pred, "tpr", "fpr")
-table(true=response[train], predicted = scores > 0.5)
+\newpage
+## 5. Nearest shrunken centroids
+In this section, we used pamr package to do nearest shrunken centroids.
 
-# plot the ROC curve
-plot(perf, colorize=F, main="All subset")
-# print out the area under the curve
-allsubset.train <- unlist(attributes(performance(pred, "auc"))$y.values)
-
-# calculate predicted probabilities on the same training set
-scores <- predict(allsubset.fit, newdata=testSet, type="response")
-
-# compare predicted probabilities to labels, for varying probability cutoffs
-pred <- prediction(scores, labels=testSet$chd )
-perf <- performance(pred, "tpr", "fpr")
-table(true=response[train], predicted = scores > 0.5)
-# plot the ROC curve
-plot(perf, colorize=T, add=TRUE)
-# print out the area under the curve
-allsubset.test <- unlist(attributes(performance(pred, "auc"))$y.values)
-```
-```{r lda prediction}
-# prediction on the training set
-pred.lda.train <- predict(lda.fit, newx=trainSet[,-10])
-table(true= response[train], predicted=pred.lda.train$class)
-
-# prediction on the validation set
-pred.lda.test <- predict(lda.fit, newx=testSet[,-10])
-table(true= testSet[,10], predicted=pred.lda.test$class)
-
-
-# ROC on the training set
-scores <- predict(lda.fit, newdata= trainSet[,-10])$posterior[,2]
-pred <- prediction( scores, labels= trainSet$chd )
-perf <- performance(pred, "tpr", "fpr")
-plot(perf, colorize=F, main="LDA")
-# print out the area under the curve
-lda.train <- unlist(attributes(performance(pred, "auc"))$y.values)
-
-
-# ROC on the validation set
-scores <- predict(lda.fit, newdata= testSet[,-10])$posterior[,2]
-pred <- prediction( scores, labels= testSet$chd )
-perf <- performance(pred, "tpr", "fpr")
-plot(perf, colorize=T, add=TRUE)
-# print out the area under the curve
-lda.test <- unlist(attributes(performance(pred, "auc"))$y.values)
-
-```
-```{r Lasso prediction}
-# in-sample predictive accuracy
-pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
-pred.coef
-pred.glmpath.train <- predict(fit.glmpath, newx=as.matrix(predictors[train,]), s=cv.s, 
-			mode="norm.fraction", type="response")
-table(true=response[train], predicted=pred.glmpath.train > 0.5)
-
-# predictive accuracy on a validation set
-pred.coef <- predict(fit.glmpath, s=cv.s, mode="norm.fraction", type="coefficients")
-pred.coef
-pred.glmpath.valid <- predict(fit.glmpath, newx=as.matrix(predictors[-train,]), s=cv.s, 
-			mode="norm.fraction", type="response")
-table(true=response[-train], predicted=pred.glmpath.valid > 0.5)
-
-#### ROC
-# ROC on the training set
-pred <- prediction( predictions=pred.glmpath.train, labels=response[train] )
-perf <- performance(pred, "tpr", "fpr")
-plot(perf, colorize=F, main="glmpath")
-# print out the area under the curve
-lasso.train <- unlist(attributes(performance(pred, "auc"))$y.values)
-
-
-# ROC on the validation set
-pred <- prediction( predictions=pred.glmpath.valid, labels=response[-train] )
-perf <- performance(pred, "tpr", "fpr")
-plot(perf, colorize=T, add=TRUE)
-# print out the area under the curve
-lasso.test <- unlist(attributes(performance(pred, "auc"))$y.values)
-```
-
-
-
-#### nearest shrunken centroids
-```{r results="hide" }
+#### Cross validation to select threshold 
+```{r results="hide"}
 # Reformat the dataset for parm
 pamrTrain <- list(x=t(as.matrix(trainSet[,-10])), y=trainSet[,10])
 pamrValid <- list(x=t(as.matrix(testSet[,-10])), y=testSet[,10])
 
 # Fit the classifier on the entire training set
 fit.pamr <- pamr.train(pamrTrain)
-fit.pamr
+
 # Use cross-validation to select the best regularization parameter
 fit.cv.pamr <- pamr.cv(fit.pamr, pamrTrain)
+
 ```
-```{r fig.width=8.5}
-
-error.bars <- function(x, lower, upper, length=0.1,...){
-   arrows(x,lower, x, upper, angle=90, code=3, length=length, ...)
-}
-fit <- fit.cv.pamr
-par(mar = c(5, 4.5, 5, 0.5))
-par(mfrow = c(1, 2))
-n <- nrow(fit$yhat)
-y <- fit$y
-if (!is.null(fit$newy)) {
-    y <- fit$newy[fit$sample.subset]
-}
-nc <- length(table(y))
-nfolds <- length(fit$folds)
-err <- matrix(NA, ncol = ncol(fit$yhat), nrow = nfolds)
-temp <- matrix(y, ncol = ncol(fit$yhat), nrow = n)
-ni <- rep(NA, nfolds)
-for (i in 1:nfolds) {
-    ii <- fit$folds[[i]]
-    ni[i] <- length(fit$folds[[i]])
-    err[i, ] <- apply(temp[ii, ] != fit$yhat[ii, ], 2, sum)/ni[i]
-}
-se <- sqrt(apply(err, 2, var)/nfolds)
-plot(fit$threshold, fit$error, ylim = c(-0.1, 1), xlab = "Value of threshold",ylab = "Misclassification Error", type = "n", yaxt = "n", cex=0.6)
-
-axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
-mtext("Number of variables", 3, 2, cex = 1)
-axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
-lines(fit$threshold, fit$error, col = 2)
-o <- fit$err == min(fit$err)
-points(fit$threshold[o], fit$error[o], pch = "x")
-error.bars(fit$threshold, fit$err - se, fit$err + se)
-err2 <- matrix(NA, nrow = length(unique(y)), ncol = length(fit$threshold))
-for (i in 1:(length(fit$threshold) - 1)) {
-    s <- pamr.confusion(fit, fit$threshold[i], extra = FALSE)
-    diag(s) <- 0
-    err2[, i] <- apply(s, 1, sum)/table(y)
-}
-plot(fit$threshold, err2[1, ], ylim = c(-0.1, 1.1), xlab = "Value of threshold ", 
-    ylab = "Misclassification Error", type = "n", yaxt = "n")
-mtext("Number of variables", 3, 2, cex = 1)
-axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
-axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
-for (i in 1:nrow(err2)) {
-    lines(fit$threshold, err2[i, ], col = i + 1)
-}
-legend(2.5, 0.4, dimnames(table(y))[[1]], col = (2:(nc + 1)), lty = 1)
-title("Nearest Shrunken Centroids", line = -1, outer=TRUE, adj=0.6)
-```
-
-
 ```{r}
-print(fit.cv.pamr)
-#Let's compare thresholds=1 and 2 to illustrate the effect of shrinkage
-pamr.confusion(fit.cv.pamr, threshold=0.128)
-pamr.confusion(fit.cv.pamr, threshold=0.640)
+fit.cv.pamr
+```
 
+```{r echo=FALSE}
+cv.plot <- function(fit.cv.pamr){
+  error.bars <- function(x, lower, upper, length=0.1,...){
+     arrows(x,lower, x, upper, angle=90, code=3, length=length, ...)
+  }
+  fit <- fit.cv.pamr
+  par(mar = c(5, 4.5, 5, 0.5))
+  #par(mfrow = c(1, 2))
+  n <- nrow(fit$yhat)
+  y <- fit$y
+  if (!is.null(fit$newy)) {
+      y <- fit$newy[fit$sample.subset]
+  }
+  nc <- length(table(y))
+  nfolds <- length(fit$folds)
+  err <- matrix(NA, ncol = ncol(fit$yhat), nrow = nfolds)
+  temp <- matrix(y, ncol = ncol(fit$yhat), nrow = n)
+  ni <- rep(NA, nfolds)
+  for (i in 1:nfolds) {
+      ii <- fit$folds[[i]]
+      ni[i] <- length(fit$folds[[i]])
+      err[i, ] <- apply(temp[ii, ] != fit$yhat[ii, ], 2, sum)/ni[i]
+  }
+  se <- sqrt(apply(err, 2, var)/nfolds)
+  plot(fit$threshold, fit$error, ylim = c(-0.1, 1), xlab = "Value of threshold",ylab = "Misclassification Error", type = "n", yaxt = "n", cex=0.6)
+  
+  axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
+  mtext("Number of variables", 3, 2, cex = 1)
+  axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
+  lines(fit$threshold, fit$error, col = 2)
+  o <- fit$err == min(fit$err)
+  points(fit$threshold[o], fit$error[o], pch = "x")
+  error.bars(fit$threshold, fit$err - se, fit$err + se)
+  err2 <- matrix(NA, nrow = length(unique(y)), ncol = length(fit$threshold))
+  for (i in 1:(length(fit$threshold) - 1)) {
+      s <- pamr.confusion(fit, fit$threshold[i], extra = FALSE)
+      diag(s) <- 0
+      err2[, i] <- apply(s, 1, sum)/table(y)
+  }
+  plot(fit$threshold, err2[1, ], ylim = c(-0.1, 1.1), xlab = "Value of threshold ", 
+      ylab = "Misclassification Error", type = "n", yaxt = "n")
+  mtext("Number of variables", 3, 2, cex = 1)
+  axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
+  axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
+  for (i in 1:nrow(err2)) {
+      lines(fit$threshold, err2[i, ], col = i + 1)
+  }
+  legend(3, 0.85, dimnames(table(y))[[1]], col = (2:(nc + 1)), lty = 1)
+}
+```
+
+To visualize the process of cross validation, I modified pamr.plotcv() function to make the figures more elegant.
+
+```{r fig.height=15, fig.width=10, echo=FALSE}
+par(mfrow=c(2,1))
+cv.plot(fit.cv.pamr)
+```
+
+We would like to choose the best threshold to be 0.512 since it drop considerable predictors with acceptable errors.
+
+#### Refit the model with selected threshold
+```{r results="hide"}
 # Refit the classifier on the full dataset, but using the threshold
-fit.pamr <- pamr.train(pamrTrain, threshold=0.640)
-
+fit.pamr <- pamr.train(pamrTrain, threshold=0.512)
 ```
 
+#### Visualize centroids of selected model
 
+Here I defined a plot.centroids() function that is slightly different from pamr.plotcen() function because there is nothing to do with genes.
+
+```{r echo=FALSE}
+plot.centroids <- function (fit, data, threshold) 
+{
+     genenames <- c("sbp", "tobacco", "ldl", "adiposity", "famhist", "typea", "obesity", "alcohol", "age")
+     x <- data$x[fit$gene.subset, fit$sample.subset]
+     clabs <- c("chd = 0", "chd = 1")
+     scen <- pamr.predict(fit, data$x, threshold = threshold, 
+         type = "cent")
+     dif <- (scen - fit$centroid.overall)/fit$sd
+     if (!is.null(fit$y)) {
+         nc <- length(unique(fit$y))
+     }
+     if (is.null(fit$y)) {
+         nc <- ncol(fit$proby)
+     }
+     o <- drop(abs(dif) %*% rep(1, nc)) > 0
+     d <- dif[o, ]
+     nd <- sum(o)
+     genenames <- genenames[o]
+     xx <- x[o, ]
+     oo <- order(apply(abs(d), 1, max))
+     d <- d[oo, ]
+     genenames <- genenames[oo]
+     par(mar = c(1, 5, 1, 1), col = 1)
+     plot(rep(2, nd) + d[, 1], 1:nd, xlim = c(0, 2 * nc + 1), 
+         ylim = c(1, nd + 3), type = "n", xlab = "", ylab = "", 
+         axes = FALSE)
+     box()
+     abline(h = seq(nd), lty = 3, col = 7)
+     jj <- rep(0, nd)
+     for (j in 1:nc) {
+         segments(jj + 2 * j, seq(nd), jj + 2 * j + d[, j], seq(nd), 
+           col = j + 1, lwd = 4)
+         lines(c(2 * j, 2 * j), c(1, nd), col = j + 1)
+         text(2 * j, nd + 2, label = clabs[j], col = j + 1)
+     }
+     g <- substring(genenames, 1, 20)
+     text(rep(0, nd), seq(nd), label = g, cex = 0.8, adj = 0, 
+         col = 1)
+}
+```
 ```{r}
-# ----------ROC curve using nearest shrunken centroids----------------
-# ROC on the training set
+plot.centroids(fit.pamr, pamrTrain, 0.512)
+```
 
-pred.pamr.train <- pamr.predict(fit.pamr, newx=pamrTrain$x, threshold=0.640, type="posterior")[,2]
+Using Nearest Shrunken Centroids, we selected 7 out of 9 predictors. Notice that famhist and obesity were dropped by this method. According to domain knowledge, famihist is truely an important predictor. So eliminating famhist would lead to the low AUC value.
+
+\newpage
+## 6. Evaluate the performance of the classifiers
+In this section we would evaluate the performance of the classifiers using ROC curves and try to summarize our findings.
+
+
+#### Evaluate the performance of the classifiers on the training set.
+```{r training}
+# logistic regression
+# calculate predicted probabilities on the same training set
+scores <- predict(allsubset.fit, newdata=trainSet, type="response")
+
+# compare predicted probabilities to labels, for varying probability cutoffs
+pred <- prediction(scores, labels=trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+
+# plot the ROC curve
+plot(perf, col= 1, main="ROCs on training set")
+# print out the area under the curve
+allsubset.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# lda
+# prediction on the training set
+pred.lda.train <- predict(lda.fit, newx=trainSet[,-10])
+
+# ROC on the training set
+scores <- predict(lda.fit, newdata= trainSet[,-10])$posterior[,2]
+pred <- prediction( scores, labels= trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col = 2, add=T)
+# print out the area under the curve
+lda.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# lasso with lambda
+
+# in-sample predictive accuracy
+pred.glmpath.train <- predict(fit.glmpath, newx=as.matrix(predictors[train,]), s=cv.s, 
+			mode="norm.fraction", type="response")
+
+# ROC on the training set
+pred <- prediction( predictions=pred.glmpath.train, labels=response[train] )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col = 3, add=T)
+# print out the area under the curve
+lasso.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# lasso refit without lambda
+# calculate predicted probabilities on the same training set
+scores <- predict(lasso.without.fit, newdata=trainSet, type="response")
+
+# compare predicted probabilities to labels, for varying probability cutoffs
+pred <- prediction(scores, labels=trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+
+# plot the ROC curve
+plot(perf, col = 4, add=T)
+# print out the area under the curve
+lasso.without.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# Nearest Shrunken Centroids
+
+# ROC on the training set
+pred.pamr.train <- pamr.predict(fit.pamr, newx=pamrTrain$x,  
+                                threshold=0.512, type="posterior")[,2]
 pred <- prediction(predictions=pred.pamr.train, labels= trainSet$chd)
 perf <- performance(pred, "tpr", "fpr")
-plot(perf, colorize=F, main="Nearest shrunken centroids")
+plot(perf, col = 5, add=T)
 # print out the area under the curve
 nearest.train <- unlist(attributes(performance(pred, "auc"))$y.values)
 
-# ROC on the validation set
-pred.pamr.valid <- pamr.predict(fit.pamr, newx=pamrValid$x, threshold=0.640, type="posterior")[,2]
-pred <- prediction(predictions=pred.pamr.valid, labels= testSet$chd)
-perf <- performance(pred, "tpr", "fpr")
-plot(perf, colorize=T, add=TRUE)
-# print out the area under the curve
-nearest.test <- unlist(attributes(performance(pred, "auc"))$y.values)
-
+legend(0.7, 0.8, c("Logistic","LDA", "Lasso", "Lasso refit", "NSC"), lty=c(1,1), col=c(1:5))
 
 ```
 
+
+#### Evaluate the performance of the classifiers on the validation set.
+```{r validation}
+
+# logistic regression
+
+# calculate predicted probabilities on validation set
+scores <- predict(allsubset.fit, newdata=testSet, type="response")
+
+# compare predicted probabilities to labels, for varying probability cutoffs
+pred <- prediction(scores, labels=testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+# plot the ROC curve
+plot(perf, col=1, main = "ROCs on validation set")
+# print out the area under the curve
+allsubset.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# lda
+
+# prediction on the validation set
+pred.lda.test <- predict(lda.fit, newx=testSet[,-10])
+
+# ROC on the validation set
+scores <- predict(lda.fit, newdata= testSet[,-10])$posterior[,2]
+pred <- prediction( scores, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col=2, add=TRUE)
+# print out the area under the curve
+lda.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# lasso
+
+# predictive accuracy on a validation set
+pred.glmpath.valid <- predict(fit.glmpath, newx=as.matrix(predictors[-train,]), s=cv.s, 
+			mode="norm.fraction", type="response")
+
+
+# ROC on the validation set
+pred <- prediction( predictions=pred.glmpath.valid, labels=response[-train] )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col=3, add=TRUE)
+# print out the area under the curve
+lasso.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# lasso refit
+
+# calculate predicted probabilities on validation set
+scores <- predict(lasso.without.fit, newdata=testSet, type="response")
+
+# compare predicted probabilities to labels, for varying probability cutoffs
+pred <- prediction(scores, labels=testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+# plot the ROC curve
+plot(perf, col=4, add=TRUE)
+# print out the area under the curve
+lasso.without.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# NSC
+
+# ROC on the validation set
+pred.pamr.valid <- pamr.predict(fit.pamr, newx=pamrValid$x, 
+                                threshold=0.512, type="posterior")[,2]
+pred <- prediction(predictions=pred.pamr.valid, labels= testSet$chd)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col=5, add=TRUE)
+# print out the area under the curve
+nearest.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+legend(0.7, 0.8, c("Logistic","LDA", "Lasso", "Lasso refit", "NSC"), lty=c(1,1), col=c(1:5))
+```
+
+#### Summary
+Here we concluded the AUC results to get a table.
+
 ```{r}
-t(matrix(c(allsubset.train, allsubset.test, lasso.train, lasso.test, lda.train, lda.test, nearest.train, nearest.test), nrow = 2, dimnames = list(c("trainSet","testSet"),c("allsubset", "lasso", "lda", "nearest"))))
+res <- matrix(c(allsubset.train, allsubset.test, lda.train, lda.test, 
+                lasso.train, lasso.test, lasso.without.train, lasso.without.test, 
+                nearest.train, nearest.test), 
+              nrow = 2, dimnames = list(c("trainingSet","validationSet"),
+                                        c("Logistic", "LDA", "Lasso", "Lasso refit", "NSC")))
+
+kable(res, title="AUCs of models")
+```
+
+Among these 5 models, Logistic, LDA and Lasso refit have larger AUC in training set than that in validation set while Lasso and NSC have larger AUC in validation set. This is not hard to understand because it is only one experiment. If repeating several times, on average the performance on the validation set is worse than on the training set I believe.
+
+We also find that though the AUC of validation set in NSC model is larger than that in training set, these two values are relatively small. The reason maybe that it is not the best situation to apply NSC. Nearest shrunken centroid classifier would outperform others if noise exists. Since here the number of features is relative small compared with the number of observations, it may not be a good choice to apply NSC.
+
+The pair Lasso vs Lasso refit tells us whether to introduce bias or not. According to the AUC values, the one with bias (with lambda) outperforms. So introducing bias here seems to be a good choice to make our model more stable. 
+
+The numbers of predictors in these 5 models are 5, 9, 7, 7, 7 respectively (Logistic, LDA, Lasso, Lasso refit, NSC). So the allsubset logistic model is the most interpretable followed by Lasso, Lasso refit and NSC. LDA is the least interpretable model.
+
+One last thing we want to mention is the set.seed() function which helps us to split the dataset. Different seed would influence the result slightly. My results above are derived from the seed 123.
+
+## 7. KM problem 4.20
+##### (a) $GaussI\leq LinLog$ 
+These two models both have linear features. Logit function is linear regarding to X in $Linlog$ while discriminant function is linear regarding to X in $GaussI$. But in LDA we maximize the joint likelihood while in Logistic regression we maximize the conditional likelihood. So $Linlog$ is the one that maximize the conditional likelihood at this level.
+
+##### (b) $GaussX\leq QuadLog$
+The reason is similar as the one above except that Logit function and discriminant function are quadratic regarding to X. So $QuadLog$ is the one that maximize the conditional likelihood at this level.
+
+##### (c) $Linlog\leq QuadLog$
+Generally speaking, the models with linear features belongs to the models with quadratic features. In other words, models with quadratic features form a superclass of models with linear features. So the inequation holds.
+
+##### (d) $GaussI\leq QuadLog$
+Combined (a) with (c), we can conclude this inequation.
+
+##### (e) False
+A model or a classifier that has a larger likelihood does not necessarilly mean that it would has a lower misclassification rate. One counter example can be the `minus likelihood plot` and `prediction errors plot` produced by the sample script 4_glmpath.R. We could see that the minus likelihood curve is smooth while the prediction errors curve is rugged and with ties. That implies there is probability that the misclassification error rate would remain the same even if the likelihood changes. Or more extremely, the misclassification error has the chance to increase even though the likelihood increases. Thus, we can safely draw the conclusion that the statement $L(M)>L(M')$ implies that $R(M)<R(M')$ is False. 
+
+
+\newpage
+
+## Appendix
+
+##### cv.plot function
+```{r}
+cv.plot <- function(fit.cv.pamr){
+  error.bars <- function(x, lower, upper, length=0.1,...){
+     arrows(x,lower, x, upper, angle=90, code=3, length=length, ...)
+  }
+  fit <- fit.cv.pamr
+  par(mar = c(5, 4.5, 5, 0.5))
+  #par(mfrow = c(1, 2))
+  n <- nrow(fit$yhat)
+  y <- fit$y
+  if (!is.null(fit$newy)) {
+      y <- fit$newy[fit$sample.subset]
+  }
+  nc <- length(table(y))
+  nfolds <- length(fit$folds)
+  err <- matrix(NA, ncol = ncol(fit$yhat), nrow = nfolds)
+  temp <- matrix(y, ncol = ncol(fit$yhat), nrow = n)
+  ni <- rep(NA, nfolds)
+  for (i in 1:nfolds) {
+      ii <- fit$folds[[i]]
+      ni[i] <- length(fit$folds[[i]])
+      err[i, ] <- apply(temp[ii, ] != fit$yhat[ii, ], 2, sum)/ni[i]
+  }
+  se <- sqrt(apply(err, 2, var)/nfolds)
+  plot(fit$threshold, fit$error, ylim = c(-0.1, 1), 
+       xlab = "Value of threshold",ylab = "Misclassification Error", 
+       type = "n", yaxt = "n", cex=0.6)
+  
+  axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
+  mtext("Number of variables", 3, 2, cex = 1)
+  axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
+  lines(fit$threshold, fit$error, col = 2)
+  o <- fit$err == min(fit$err)
+  points(fit$threshold[o], fit$error[o], pch = "x")
+  error.bars(fit$threshold, fit$err - se, fit$err + se)
+  err2 <- matrix(NA, nrow = length(unique(y)), ncol = length(fit$threshold))
+  for (i in 1:(length(fit$threshold) - 1)) {
+      s <- pamr.confusion(fit, fit$threshold[i], extra = FALSE)
+      diag(s) <- 0
+      err2[, i] <- apply(s, 1, sum)/table(y)
+  }
+  plot(fit$threshold, err2[1, ], ylim = c(-0.1, 1.1), xlab = "Value of threshold ", 
+      ylab = "Misclassification Error", type = "n", yaxt = "n")
+  mtext("Number of variables", 3, 2, cex = 1)
+  axis(3, at = fit$threshold, labels = paste(fit$size), srt = 90, adj = 0)
+  axis(2, at = c(0, 0.2, 0.4, 0.6, 0.8, 1.0))
+  for (i in 1:nrow(err2)) {
+      lines(fit$threshold, err2[i, ], col = i + 1)
+  }
+  legend(3, 0.85, dimnames(table(y))[[1]], col = (2:(nc + 1)), lty = 1)
+}
+```
+#### plot.centroids function
+```{r}
+plot.centroids <- function (fit, data, threshold) 
+{
+     genenames <- c("sbp", "tobacco", "ldl", "adiposity", 
+                    "famhist", "typea", "obesity", "alcohol", "age")
+     x <- data$x[fit$gene.subset, fit$sample.subset]
+     clabs <- c("chd = 0", "chd = 1")
+     scen <- pamr.predict(fit, data$x, threshold = threshold, 
+         type = "cent")
+     dif <- (scen - fit$centroid.overall)/fit$sd
+     if (!is.null(fit$y)) {
+         nc <- length(unique(fit$y))
+     }
+     if (is.null(fit$y)) {
+         nc <- ncol(fit$proby)
+     }
+     o <- drop(abs(dif) %*% rep(1, nc)) > 0
+     d <- dif[o, ]
+     nd <- sum(o)
+     genenames <- genenames[o]
+     xx <- x[o, ]
+     oo <- order(apply(abs(d), 1, max))
+     d <- d[oo, ]
+     genenames <- genenames[oo]
+     par(mar = c(1, 5, 1, 1), col = 1)
+     plot(rep(2, nd) + d[, 1], 1:nd, xlim = c(0, 2 * nc + 1), 
+         ylim = c(1, nd + 3), type = "n", xlab = "", ylab = "", 
+         axes = FALSE)
+     box()
+     abline(h = seq(nd), lty = 3, col = 7)
+     jj <- rep(0, nd)
+     for (j in 1:nc) {
+         segments(jj + 2 * j, seq(nd), jj + 2 * j + d[, j], seq(nd), 
+           col = j + 1, lwd = 4)
+         lines(c(2 * j, 2 * j), c(1, nd), col = j + 1)
+         text(2 * j, nd + 2, label = clabs[j], col = j + 1)
+     }
+     g <- substring(genenames, 1, 20)
+     text(rep(0, nd), seq(nd), label = g, cex = 0.8, adj = 0, 
+         col = 1)
+}
 ```

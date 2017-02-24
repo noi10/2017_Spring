@@ -1,4 +1,4 @@
-setwd("/Users/ovitek/Dropbox/Olga/Teaching/CS6140/Spring17/LectureNotes/5_generative")
+#setwd("/Users/ovitek/Dropbox/Olga/Teaching/CS6140/Spring17/LectureNotes/5_generative")
 library(Biobase)
 
 
@@ -99,6 +99,7 @@ fit.cv.pamr <- pamr.cv(fit.pamr, pamrTrain)
 
 # Manually select the threshold depending on the plots and on the confusion matrix
 pamr.plotcv(fit.cv.pamr)
+
 
 #Let's compare thresholds=1 and 2 to illustrate the effect of shrinkage
 pamr.confusion(fit.cv.pamr, threshold=0.197)

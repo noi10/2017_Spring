@@ -1,28 +1,48 @@
 ---
-title: "Gu_Module7HW.Rmd"
+title: "Math7340 HW7"
 author: "Chengbo Gu"
-date: "2017ƒÍ2‘¬23»’"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 library(multtest)
+options(width=100)
 ```
 
+### Problem 1 (30 points)
 
-```{r}
-```
+##### For the Golub et al. (1999) data set, use appropriate Wilcoxon two-sample tests to find the genes whose mean expression values are higher in the ALL group than in the AML group.
 
-```{r}
+##### a) Use FDR adjustments at the 0.05 level. How many genes are expressed higher in the ALL group?
+
+```{r warning = FALSE}
 data(golub)
 gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
 p.values <- apply(golub, 1, function(x) 
   wilcox.test(x~gol.fac, paired = F, alternative = "greater")$p.value )
 p.fdr <-p.adjust(p=p.values, method="fdr")
 sum(p.fdr < 0.05)
+```
+There are `r sum(p.fdr < 0.05)` genes that are expressed higher in the ALL group.
+
+
+##### b) Find the gene names for the top three genes with smallest p-values. Are they the same three genes with largest difference between the means in the ALL group and the AML group?
+
+```{r}
 golub.gnames[,2][order(p.fdr)][1:3]
 ```
 
+The top three genes with smallest p-values are Macmarcks, VIL2 villin 2 and TCF3 Transcription factor 3.
+
+They are different with the three genes with largest difference between the means in the ALL group and the AML group.
+
+
+
+### Problem 2 (15 points)
+
+##### For the Golub et al. (1999) data set, apply the Shapiro-Wilk test of normality to every gene‚Äôs expression values in the AML group. How many genes do not pass the test at 0.05 level with FDR adjustment? Please submit your R script with the answer.
 
 ```{r}
 rm(list=ls())
@@ -33,7 +53,13 @@ p.fdr <-p.adjust(p=p.values, method="fdr")
 sum(p.fdr < 0.05)
 ```
 
-```{r}
+There are `r sum(p.fdr<0.05)` genes that do not pass the test at 0.05 level with FDR adjustment.
+
+
+### Problem 3 (15 points)
+##### Gene "HOXA9 Homeo box A9" can cause leukemia (Golub et al., 1999). Use appropriate Wilcoxon two-sample tests to test if, for the ALL patients, the gene "HOXA9 Homeo box A9" expresses at the same level as the ‚ÄúCD33‚Äù gene. Please submit your R script with the answer.
+
+```{r warning = FALSE}
 rm(list=ls())
 data(golub)
 gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
@@ -48,22 +74,57 @@ wilcox.test (x= golub[index.HOXA9, gol.fac == "ALL"],
 
 ```
 
-```{r}
-# Sign Test
-data(golub, package='multtest') 
-diff<-golub[808,]-golub[1042,] 
-binom.test(x=sum(diff>0), n=length(diff), p=0.5, alternative="two.sided")
+Since p-value = 0.01242 is very small, we reject the null hypothesis.
 
-# Signed-ranks Test
-data(golub, package='multtest') 
-wilcox.test (x= golub[808,], y= golub[1042,], paired=T, alternative="two.sided")
-```
+We conclude that the two genes do express differently.
+
+
+
+### Problem 4 (20 points)
+##### The data set ‚ÄúUCBAdmissions‚Äù in R contains admission decisions by gender at six departments of UC Berkeley. For this data set, carry out appropriate test for independence between the admission decision and gender for each of the departments.
 
 ```{r}
 apply(UCBAdmissions, 3, function(x) fisher.test(x)$p.value)
 ```
 
+The p-value of department A is less than 0.05 while the p-values of other 5 departments are greater than 0.05.
+Thus, we conclude that admission decision and gender are not independent of department A while admission decision and gender are independent of B, C, D, E and F departments.
 
+
+```{r include = FALSE}
+testTable<- matrix(c(512, 313, 89, 19), 
+                   nrow=2, dimnames=list("Admit"=c("Admitted","Rejected"), 
+                                         "Gender"=c("Male","Female")))
+fisher.test(testTable)
+testTable<- matrix(c(353, 207, 17, 8), 
+                   nrow=2, dimnames=list("Admit"=c("Admitted","Rejected"), 
+                                         "Gender"=c("Male","Female")))
+fisher.test(testTable)
+testTable<- matrix(c(120, 205, 202, 391), 
+                   nrow=2, dimnames=list("Admit"=c("Admitted","Rejected"), 
+                                         "Gender"=c("Male","Female")))
+fisher.test(testTable)
+testTable<- matrix(c(138, 279, 131, 244), 
+                   nrow=2, dimnames=list("Admit"=c("Admitted","Rejected"), 
+                                         "Gender"=c("Male","Female")))
+fisher.test(testTable)
+testTable<- matrix(c(53, 138, 94, 299), 
+                   nrow=2, dimnames=list("Admit"=c("Admitted","Rejected"), 
+                                         "Gender"=c("Male","Female")))
+fisher.test(testTable)
+testTable<- matrix(c(22, 351, 24, 317), 
+                   nrow=2, dimnames=list("Admit"=c("Admitted","Rejected"), 
+                                         "Gender"=c("Male","Female")))
+fisher.test(testTable)
+
+```
+
+
+
+### Problem 5 (20 points)
+##### There are two random samples $X_{1}...X_{n}$ and $Y_{1}...Y_{m}$ with population means $\mu_{X}$ and $\mu_{Y}$ and population variances $\sigma^{2}_{X}$ and $\sigma^{2}_{Y}$ . For testing $H_{0}:\sigma^{2}_{X}=\sigma^{2}_{Y}$ versus $H_{A}:\sigma^{2}_{X}<\sigma^{2}_{Y}$ we can use a permutation test for the statistic $S=\frac{S^{2}_{X}}{S^{2}_{Y}}$.
+
+##### Please program this permutation test in R. Use this nonparametric test on the "CD33" gene of the Golub et al. (1999) data set. Test whether the variance in the ALL group is smaller than the variance in the AML group. Please submit your R code with the answer.
 
 ```{r}
 rm(list=ls())
@@ -79,13 +140,14 @@ n.perm=2000
 T.perm = rep(NA, n.perm)
 for(i in 1:n.perm) {
   data.perm = sample(data, n, replace=F) #permute data
-  #print(data.perm)
   T.perm[i] = var(data.perm[gol.fac=="ALL"])/var(data.perm[gol.fac=="AML"]) #Permuted statistic
 }
 mean(T.perm<=T.obs) #p-value
-#T.perm
 ```
+The p-value is `r mean(T.perm<=T.obs)` that is less than 0.05. 
 
-```{r}
+Thus, we reject the null hypothesis and conclude that the variance in the ALL group is smaller than the variance in the AML group.
+
+```{r include=FALSE}
 var.test(golub[index.CD33,]~ gol.fac, alternative = "less")
 ```

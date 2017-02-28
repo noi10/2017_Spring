@@ -4,7 +4,7 @@
 
 # Set up work directory
 #------------------------------------------------------------------
-setwd('/Users/ovitek/Dropbox/Olga/Teaching/CS6140/Spring17/LectureNotes/3-linearRegression/R')
+setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/scripts")
 
 # Read data
 #------------------------------------------------------------------

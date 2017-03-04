@@ -1,7 +1,9 @@
 ---
 title: "Math7340 HW8"
 author: "Chengbo Gu"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -9,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ALL)
 library(lmtest)
 ```
+
 ### Problem 1 (40 points)
 
 ##### On the ALL data set, consider the ANOVA on the gene with the probe “109_at” expression values on B-cell patients in 5 groups: B, B1, B2, B3 and B4.
@@ -21,12 +24,15 @@ y <- exprs(ALLBgroups)["109_at",]
 anova( lm( y ~ ALLBgroups$BT ) )
 ```
 
+Since the p-value for BT is `r anova(lm( y ~ ALLBgroups$BT ))$P[1]` which is less than 0.05, we reject the null hypothesis and conclude that the disease stages do affect the mean gene expression value.
+
 
 ##### (b) From the linear model fits, find the mean gene expression value among B3 patients.
 
 ```{r}
 summary( lm( y ~ ALLBgroups$BT ) )
 ```
+The mean gene expression value among B3 patients is $6.8102-0.1249=$`r 6.8102-0.1249`.
 
 ##### (c) Which group’s mean gene expression value is different from that of group B?
 
@@ -34,17 +40,26 @@ summary( lm( y ~ ALLBgroups$BT ) )
 pairwise.t.test(y, ALLBgroups$BT)
 ```
 
+All the p-values of pairs related to group B is greater than 0.05. So there is no group that has different mean gene expression from that of group B.
+
 ##### (d) Use the pairwise comparisons at FDR=0.05 to find which group means are different. What is your conclusion?
 
 ```{r}
 pairwise.t.test(y,ALLBgroups$BT, p.adjust.method='fdr')
 ```
 
+
+The p-value of group B2 and group B4 is 0.01 which is less than 0.05. So group B2 and group B4 have different group means.
+
+
 ##### (e) Check the ANOVA model assumptions with diagnostic tests? Do we need to apply robust ANOVA tests here? If yes, apply the appropriate tests and state your conclusion.
 ```{r}
 shapiro.test( residuals( lm( y ~ ALLBgroups$BT )))
 bptest( lm( y ~ ALLBgroups$BT ), studentize = FALSE)
 ```
+
+The p-values of Shapiro-Wilk normality test and Breusch-Pagan test are greater than 0.05. So both the normality and the homoscedasticity assumptions are met. There is no need to apply robust ANOVA tests here.
+
 
 ### Problem 2 (20 points)
 
@@ -58,15 +73,21 @@ data(ALL)
 ALLBgroups <- ALL[,ALL$BT %in% c("B", "B1", "B2", "B3", "B4")]
 y <- exprs(ALLBgroups)
 p.values <- apply(y, 1, function(x) kruskal.test(x ~ ALLBgroups$BT)$p.value)
-sum(p.values < 0.05)
+p.fdr <-p.adjust(p=p.values, method="fdr")
+sum(p.fdr < 0.05)
 ```
+
+There are 423 genes are expressed differently in some of the groups.
 
 
 ##### (b) Find the probe names for the top five genes with smallest p-values.
 
 ```{r}
-rownames(exprs(ALLBgroups))[order(p.values)][1:3]
+rownames(exprs(ALLBgroups))[order(p.fdr)][1:5]
 ```
+
+The probe names for the top five genes with smallest p-values are "1389_at", "38555_at",  "40268_at", "1866_g_at", "40155_at".
+
 
 ### Problem 3 (20 points)
 
@@ -84,12 +105,18 @@ sex <- ALLBs$sex
 anova( lm( y ~ Bcell*sex ) )
 ```
 
+The p-value of Bcell is 1.818e-09. So disease stage (Bcell/BT) affects the gene expression values.
+
+Since the p-value of Bcell*sex is 0.9095 which is greater than 0.05, we accept the null hypothesis. That is, there is no interaction between the two factors.
+
 ##### (b) Check the ANOVA model assumption with diagnostic tests? Are any of the assumptions violated?
 ```{r}
-shapiro.test( residuals( lm( y ~ Bcell + sex )))
+shapiro.test( residuals( lm( y ~ Bcell*sex )))
 
-bptest(lm(y ~ Bcell + sex), studentize = FALSE)
+bptest(lm(y ~ Bcell*sex), studentize = FALSE)
 ```
+
+The normality assumption is violated because the p-value of Shapiro-Wilk normality test is 0.03291 which is less than 0.05.
 
 
 ### Problem 4 (20 points)
@@ -98,31 +125,41 @@ bptest(lm(y ~ Bcell + sex), studentize = FALSE)
 
 ##### (a) Program this permutation test in R.
 
+```{r}
+rm(list=ls())
+
+permutation.test <- function(probe, groups) {
+  data(ALL)
+  ALLB123 <- ALL[,ALL$BT %in% groups]
+  data<- exprs(ALLB123)[probe,]
+  group<-ALLB123$BT[,drop=T]
+  n.group <- length(groups)
+  n <- length(data)
+
+  estimatedMean <- sum( by(data, group, mean) ) / n.group
+  T.obs <- sum( (by(data, group, mean) - estimatedMean) ^ 2) / (n.group - 1)
+
+  n.perm <- 2000
+  T.perm <- rep(NA, n.perm)
+  for(i in 1:n.perm) {
+    data.perm <- sample(data, n, replace=F) #permute data
+    estimatedMean <- sum( by(data.perm, group, mean) ) / n.group
+    T.perm[i] <- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) / (n.group - 1) #Permuted statistic
+  }
+  mean(T.perm >= T.obs) #p-value
+
+}
+```
+
 ##### (b) Run this permutation test on the Ets2 repressor gene 1242_at on the patients in stage B1, B2 and B3 from the ALL data set.
 
 ```{r}
-rm(list=ls())
-data(ALL)
-ALLB123 <- ALL[,ALL$BT %in% c("B1","B2","B3")]
-data<- exprs(ALLB123)["1242_at",]
-group<-ALLB123$BT[,drop=T]
-n <- length(data)
-estimatedMean <- mean(by(data, group, mean))
-
-T.obs <- sum( (by(data, group, mean) - estimatedMean) ^ 2) / 2
-
-n.perm <- 2000
-T.perm <- rep(NA, n.perm)
-for(i in 1:n.perm) {
-  data.perm <- sample(data, n, replace=F) #permute data
-  estimatedMean <- mean(by(data.perm, group, mean))
-  T.perm[i] <- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) / 2#Permuted statistic
-}
-mean(T.perm>=T.obs) #p-value
+permutation.test("1242_at", c("B1", "B2", "B3"))
 ```
 
-
-```{r}
+The p-value here is `r permutation.test("1242_at", c("B1", "B2", "B3"))` which is greater than 0.05.
+Thus, we accept the null hypothesis of ANOVA test that the group means are equal (probe: "1242_at", group: B1, B2, B3).
+```{r include=FALSE}
 data(ALL,package="ALL");library(ALL)
 ALLB123 <- ALL[,ALL$BT %in% c("B1","B2","B3")] 
 data<- exprs(ALLB123)["1866_g_at",] #gene 1866_g_at expression values

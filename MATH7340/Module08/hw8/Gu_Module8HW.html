@@ -141,6 +141,7 @@ anova( lm( y ~ ALLBgroups$BT ) )</code></pre>
 ## Residuals     90 13.6006 0.15112                  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<p>Since the p-value for BT is 0.0108235 which is less than 0.05, we reject the null hypothesis and conclude that the disease stages do affect the mean gene expression value.</p>
 </div>
 <div id="b-from-the-linear-model-fits-find-the-mean-gene-expression-value-among-b3-patients." class="section level5">
 <h5>(b) From the linear model fits, find the mean gene expression value among B3 patients.</h5>
@@ -166,6 +167,7 @@ anova( lm( y ~ ALLBgroups$BT ) )</code></pre>
 ## Residual standard error: 0.3887 on 90 degrees of freedom
 ## Multiple R-squared:  0.134,  Adjusted R-squared:  0.09556 
 ## F-statistic: 3.483 on 4 and 90 DF,  p-value: 0.01082</code></pre>
+<p>The mean gene expression value among B3 patients is $6.8102-0.1249=$6.6853.</p>
 </div>
 <div id="c-which-groups-mean-gene-expression-value-is-different-from-that-of-group-b" class="section level5">
 <h5>(c) Which group’s mean gene expression value is different from that of group B?</h5>
@@ -182,6 +184,7 @@ anova( lm( y ~ ALLBgroups$BT ) )</code></pre>
 ## B4 1.00 0.20 0.01 0.61
 ## 
 ## P value adjustment method: holm</code></pre>
+<p>All the p-values of pairs related to group B is greater than 0.05. So there is no group that has different mean gene expression from that of group B.</p>
 </div>
 <div id="d-use-the-pairwise-comparisons-at-fdr0.05-to-find-which-group-means-are-different.-what-is-your-conclusion" class="section level5">
 <h5>(d) Use the pairwise comparisons at FDR=0.05 to find which group means are different. What is your conclusion?</h5>
@@ -198,6 +201,7 @@ anova( lm( y ~ ALLBgroups$BT ) )</code></pre>
 ## B4 0.62 0.11 0.01 0.20
 ## 
 ## P value adjustment method: fdr</code></pre>
+<p>The p-value of group B2 and group B4 is 0.01 which is less than 0.05. So group B2 and group B4 have different group means.</p>
 </div>
 <div id="e-check-the-anova-model-assumptions-with-diagnostic-tests-do-we-need-to-apply-robust-anova-tests-here-if-yes-apply-the-appropriate-tests-and-state-your-conclusion." class="section level5">
 <h5>(e) Check the ANOVA model assumptions with diagnostic tests? Do we need to apply robust ANOVA tests here? If yes, apply the appropriate tests and state your conclusion.</h5>
@@ -213,6 +217,7 @@ anova( lm( y ~ ALLBgroups$BT ) )</code></pre>
 ## 
 ## data:  lm(y ~ ALLBgroups$BT)
 ## BP = 1.1702, df = 4, p-value = 0.883</code></pre>
+<p>The p-values of Shapiro-Wilk normality test and Breusch-Pagan test are greater than 0.05. So both the normality and the homoscedasticity assumptions are met. There is no need to apply robust ANOVA tests here.</p>
 </div>
 </div>
 <div id="problem-2-20-points" class="section level3">
@@ -227,13 +232,16 @@ data(ALL)
 ALLBgroups &lt;- ALL[,ALL$BT %in% c(&quot;B&quot;, &quot;B1&quot;, &quot;B2&quot;, &quot;B3&quot;, &quot;B4&quot;)]
 y &lt;- exprs(ALLBgroups)
 p.values &lt;- apply(y, 1, function(x) kruskal.test(x ~ ALLBgroups$BT)$p.value)
-sum(p.values &lt; 0.05)</code></pre>
-<pre><code>## [1] 2241</code></pre>
+p.fdr &lt;-p.adjust(p=p.values, method=&quot;fdr&quot;)
+sum(p.fdr &lt; 0.05)</code></pre>
+<pre><code>## [1] 423</code></pre>
+<p>There are 423 genes are expressed differently in some of the groups.</p>
 </div>
 <div id="b-find-the-probe-names-for-the-top-five-genes-with-smallest-p-values." class="section level5">
 <h5>(b) Find the probe names for the top five genes with smallest p-values.</h5>
-<pre class="r"><code>rownames(exprs(ALLBgroups))[order(p.values)][1:3]</code></pre>
-<pre><code>## [1] &quot;1389_at&quot;  &quot;40268_at&quot; &quot;38555_at&quot;</code></pre>
+<pre class="r"><code>rownames(exprs(ALLBgroups))[order(p.fdr)][1:5]</code></pre>
+<pre><code>## [1] &quot;1389_at&quot;   &quot;38555_at&quot;  &quot;40268_at&quot;  &quot;1866_g_at&quot; &quot;40155_at&quot;</code></pre>
+<p>The probe names for the top five genes with smallest p-values are “1389_at”, “38555_at”, “40268_at”, “1866_g_at”, “40155_at”.</p>
 </div>
 </div>
 <div id="problem-3-20-points" class="section level3">
@@ -260,21 +268,24 @@ anova( lm( y ~ Bcell*sex ) )</code></pre>
 ## Residuals 81 34.511  0.4261                      
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+<p>The p-value of Bcell is 1.818e-09. So disease stage (Bcell/BT) affects the gene expression values.</p>
+<p>Since the p-value of Bcell*sex is 0.9095 which is greater than 0.05, we accept the null hypothesis. That is, there is no interaction between the two factors.</p>
 </div>
 <div id="b-check-the-anova-model-assumption-with-diagnostic-tests-are-any-of-the-assumptions-violated" class="section level5">
 <h5>(b) Check the ANOVA model assumption with diagnostic tests? Are any of the assumptions violated?</h5>
-<pre class="r"><code>shapiro.test( residuals( lm( y ~ Bcell + sex )))</code></pre>
+<pre class="r"><code>shapiro.test( residuals( lm( y ~ Bcell*sex )))</code></pre>
 <pre><code>## 
 ##  Shapiro-Wilk normality test
 ## 
-## data:  residuals(lm(y ~ Bcell + sex))
-## W = 0.97097, p-value = 0.04335</code></pre>
-<pre class="r"><code>bptest(lm(y ~ Bcell + sex), studentize = FALSE)</code></pre>
+## data:  residuals(lm(y ~ Bcell * sex))
+## W = 0.96926, p-value = 0.03291</code></pre>
+<pre class="r"><code>bptest(lm(y ~ Bcell*sex), studentize = FALSE)</code></pre>
 <pre><code>## 
 ##  Breusch-Pagan test
 ## 
-## data:  lm(y ~ Bcell + sex)
-## BP = 4.5761, df = 4, p-value = 0.3336</code></pre>
+## data:  lm(y ~ Bcell * sex)
+## BP = 6.7635, df = 7, p-value = 0.4539</code></pre>
+<p>The normality assumption is violated because the p-value of Shapiro-Wilk normality test is 0.03291 which is less than 0.05.</p>
 </div>
 </div>
 <div id="problem-4-20-points" class="section level3">
@@ -284,42 +295,35 @@ anova( lm( y ~ Bcell*sex ) )</code></pre>
 </div>
 <div id="a-program-this-permutation-test-in-r." class="section level5">
 <h5>(a) Program this permutation test in R.</h5>
+<pre class="r"><code>rm(list=ls())
+
+permutation.test &lt;- function(probe, groups) {
+  data(ALL)
+  ALLB123 &lt;- ALL[,ALL$BT %in% groups]
+  data&lt;- exprs(ALLB123)[probe,]
+  group&lt;-ALLB123$BT[,drop=T]
+  n.group &lt;- length(groups)
+  n &lt;- length(data)
+
+  estimatedMean &lt;- sum( by(data, group, mean) ) / n.group
+  T.obs &lt;- sum( (by(data, group, mean) - estimatedMean) ^ 2) / (n.group - 1)
+
+  n.perm &lt;- 2000
+  T.perm &lt;- rep(NA, n.perm)
+  for(i in 1:n.perm) {
+    data.perm &lt;- sample(data, n, replace=F) #permute data
+    estimatedMean &lt;- sum( by(data.perm, group, mean) ) / n.group
+    T.perm[i] &lt;- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) / (n.group - 1) #Permuted statistic
+  }
+  mean(T.perm &gt;= T.obs) #p-value
+
+}</code></pre>
 </div>
 <div id="b-run-this-permutation-test-on-the-ets2-repressor-gene-1242_at-on-the-patients-in-stage-b1-b2-and-b3-from-the-all-data-set." class="section level5">
 <h5>(b) Run this permutation test on the Ets2 repressor gene 1242_at on the patients in stage B1, B2 and B3 from the ALL data set.</h5>
-<pre class="r"><code>rm(list=ls())
-data(ALL)
-ALLB123 &lt;- ALL[,ALL$BT %in% c(&quot;B1&quot;,&quot;B2&quot;,&quot;B3&quot;)]
-data&lt;- exprs(ALLB123)[&quot;1242_at&quot;,]
-group&lt;-ALLB123$BT[,drop=T]
-n &lt;- length(data)
-estimatedMean &lt;- mean(by(data, group, mean))
-
-T.obs &lt;- sum( (by(data, group, mean) - estimatedMean) ^ 2) / 2
-
-n.perm &lt;- 2000
-T.perm &lt;- rep(NA, n.perm)
-for(i in 1:n.perm) {
-  data.perm &lt;- sample(data, n, replace=F) #permute data
-  estimatedMean &lt;- mean(by(data.perm, group, mean))
-  T.perm[i] &lt;- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) / 2#Permuted statistic
-}
-mean(T.perm&gt;=T.obs) #p-value</code></pre>
-<pre><code>## [1] 0.4985</code></pre>
-<pre class="r"><code>data(ALL,package=&quot;ALL&quot;);library(ALL)
-ALLB123 &lt;- ALL[,ALL$BT %in% c(&quot;B1&quot;,&quot;B2&quot;,&quot;B3&quot;)] 
-data&lt;- exprs(ALLB123)[&quot;1866_g_at&quot;,] #gene 1866_g_at expression values
-group&lt;-ALLB123$BT[,drop=T] #drop unused levels, keep only B1,B2,B3
-n&lt;-length(data) #sample size n
-T.obs&lt;- anova(lm(data~group))$F[1] #Observed statistic = F-statistic
-n.perm=2000 # we will do 2000 permutations
-T.perm = rep(NA, n.perm) #A vector to save permutated statistic
-for(i in 1:n.perm) {
-data.perm = sample(data, n, replace=F) #permute data
-T.perm[i] = anova(lm(data.perm~group))$F[1] #Permuted statistic
-}
-mean(T.perm&gt;=T.obs)</code></pre>
-<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>permutation.test(&quot;1242_at&quot;, c(&quot;B1&quot;, &quot;B2&quot;, &quot;B3&quot;))</code></pre>
+<pre><code>## [1] 0.512</code></pre>
+<p>The p-value here is 0.5375 which is greater than 0.05. Thus, we accept the null hypothesis of ANOVA test that the group means are equal (probe: “1242_at”, group: B1, B2, B3).</p>
 </div>
 </div>
 

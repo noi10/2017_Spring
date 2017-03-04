@@ -55,20 +55,27 @@ bptest(lm(y ~ Bcell + sex), studentize = FALSE)
 
 # problem 4
 rm(list=ls())
-data(ALL)
-ALLB123 <- ALL[,ALL$BT %in% c("B1","B2","B3")]
-data<- exprs(ALLB123)["1242_at",]
-group<-ALLB123$BT[,drop=T]
-n <- length(data)
-estimatedMean <- mean(by(data, group, mean))
 
-T.obs <- sum( (by(data, group, mean) - estimatedMean) ^ 2) / 2
+# (a)
+permutation.test <- function(probe, groups) {
+  data(ALL)
+  ALLB123 <- ALL[,ALL$BT %in% groups]
+  data<- exprs(ALLB123)[probe,]
+  group<-ALLB123$BT[,drop=T]
+  n <- length(data)
+  
+  estimatedMean <- mean(by(data, group, mean))
+  T.obs <- sum( (by(data, group, mean) - estimatedMean) ^ 2) / 2
+  
+  n.perm <- 2000
+  T.perm <- rep(NA, n.perm)
+  for(i in 1:n.perm) {
+    data.perm <- sample(data, n, replace=F) #permute data
+    estimatedMean <- mean( by(data.perm, group, mean) )
+    T.perm[i] <- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) / 2 #Permuted statistic
+  }
+  mean(T.perm >= T.obs) #p-value
+}  
 
-n.perm <- 2000
-T.perm <- rep(NA, n.perm)
-for(i in 1:n.perm) {
-  data.perm <- sample(data, n, replace=F) #permute data
-  estimatedMean <- mean(by(data.perm, group, mean))
-  T.perm[i] <- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) / 2#Permuted statistic
-}
-mean(T.perm>=T.obs) #p-value
+# (b)
+permutation.test("1242_at", c("B1", "B2", "B3"))

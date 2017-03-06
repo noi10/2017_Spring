@@ -1,0 +1,59 @@
+---
+title: "Math7340 Midterm"
+author: "Chengbo Gu"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(multtest)
+```
+
+
+### Problem 1 (10 points)
+Module03
+
+### Problem 2 (10 points)
+Module04 Monte Carlo
+
+### Problem 3 (10 points)
+Notice the number of CIs capturing the true mean in fact follow a binomial(size=100, prob=0.95) distribution, 
+so you would get different numbers in different runs.
+
+binom
+
+### Problem 4 (10 points)
+```{r}
+obs <-as.numeric(t(read.table(file = "normalData.txt", header=T)))
+
+nloglik <- function(paras) {
+  mu <- paras[1]
+  sigma <- paras[2]
+  -sum ( log(dnorm(obs, mean=mu, sd=sigma)))
+}
+optim(par=c(2,2), nloglik)
+```
+
+```{r}
+c(mean(obs), sqrt(sum((obs-mean(obs))^2)/length(obs)))
+```
+
+### Problem 5 (10 points)
+
+```{r}
+data(golub)
+p.values <- apply(golub, 1, function(x) t.test(x, mu=0.6, alternative = "greater")$p.value)
+p.fdr <- p.adjust(p=p.values, method = "fdr")
+sum(p.values<0.1)
+
+golub.gnames[,2][order(p.fdr)][1:5]
+```
+
+### Problem 6 (35 points)
+c) paired t-test
+d) normality test
+e) welcon- rank test?
+f) 
+g) module05 last
+
+### Problem 7 (15 points)
+d) module5 p43

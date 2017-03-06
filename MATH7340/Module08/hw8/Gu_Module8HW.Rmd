@@ -2,8 +2,8 @@
 title: "Math7340 HW8"
 author: "Chengbo Gu"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -32,7 +32,7 @@ Since the p-value for BT is `r anova(lm( y ~ ALLBgroups$BT ))$P[1]` which is les
 ```{r}
 summary( lm( y ~ ALLBgroups$BT ) )
 ```
-The mean gene expression value among B3 patients is $6.8102-0.1249=$`r 6.8102-0.1249`.
+The mean gene expression value among B3 patients is $6.8102-0.1249=6.6853$.
 
 ##### (c) Which group’s mean gene expression value is different from that of group B?
 
@@ -144,7 +144,8 @@ permutation.test <- function(probe, groups) {
   for(i in 1:n.perm) {
     data.perm <- sample(data, n, replace=F) #permute data
     estimatedMean <- sum( by(data.perm, group, mean) ) / n.group
-    T.perm[i] <- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) / (n.group - 1) #Permuted statistic
+    T.perm[i] <- sum( (by(data.perm, group, mean) - estimatedMean) ^ 2) /
+                 (n.group - 1) #Permuted statistic
   }
   mean(T.perm >= T.obs) #p-value
 
@@ -154,10 +155,11 @@ permutation.test <- function(probe, groups) {
 ##### (b) Run this permutation test on the Ets2 repressor gene 1242_at on the patients in stage B1, B2 and B3 from the ALL data set.
 
 ```{r}
-permutation.test("1242_at", c("B1", "B2", "B3"))
+p.value <- permutation.test("1242_at", c("B1", "B2", "B3"))
+p.value
 ```
 
-The p-value here is `r permutation.test("1242_at", c("B1", "B2", "B3"))` which is greater than 0.05.
+The p-value here is `r p.value` which is greater than 0.05.
 Thus, we accept the null hypothesis of ANOVA test that the group means are equal (probe: "1242_at", group: B1, B2, B3).
 ```{r include=FALSE}
 data(ALL,package="ALL");library(ALL)

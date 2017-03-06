@@ -31,10 +31,11 @@ data(ALL)
 ALLBgroups <- ALL[,ALL$BT %in% c("B", "B1", "B2", "B3", "B4")]
 y <- exprs(ALLBgroups)
 p.values <- apply(y, 1, function(x) kruskal.test(x ~ ALLBgroups$BT)$p.value)
-sum(p.values < 0.05)
+p.fdr <-p.adjust(p=p.values, method="fdr")
+sum(p.fdr < 0.05)
 
 # (b)
-rownames(exprs(ALLBgroups))[order(p.values)][1:3]
+rownames(exprs(ALLBgroups))[order(p.fdr)][1:5]
 
 
 # problem 3
@@ -49,8 +50,8 @@ sex <- ALLBs$sex
 anova( lm( y ~ Bcell*sex ) )
 
 # (b)
-shapiro.test( residuals( lm( y ~ Bcell + sex )))
-bptest(lm(y ~ Bcell + sex), studentize = FALSE)
+shapiro.test( residuals( lm( y ~ Bcell*sex )))
+bptest(lm(y ~ Bcell*sex), studentize = FALSE)
 
 
 # problem 4

@@ -223,8 +223,8 @@ sum(p.values&lt;0.1)</code></pre>
 </div>
 <div id="problem-6-35-points" class="section level3">
 <h3>Problem 6 (35 points)</h3>
-<div id="on-the-golub-et-al.-1999-data-set-compare-the-gro3-gro3-oncogene-at-row-2715-with-the-myc-v-myc-avian-myelocytomatosis-viral-oncogene-homolog-at-row-2302." class="section level5">
-<h5>On the Golub et al. (1999) data set, compare the “GRO3 GRO3 oncogene” (at row 2715) with the “MYC V-myc avian myelocytomatosis viral oncogene homolog” (at row 2302).</h5>
+<div id="on-the-golub-et-al.-1999-data-set-compare-the-ro3-gro3-oncogene-at-row-2715-with-the-yc-v-myc-avian-myelocytomatosis-viral-oncogene-homolog-at-row-2302." class="section level5">
+<h5>On the Golub et al. (1999) data set, compare the 鈥淕RO3 GRO3 oncogene鈥? (at row 2715) with the 鈥淢YC V-myc avian myelocytomatosis viral oncogene homolog鈥? (at row 2302).</h5>
 <pre class="r"><code>data(golub)</code></pre>
 </div>
 <div id="a-draw-a-histogram-of-the-gro3-gene-expression-values." class="section level5">
@@ -283,8 +283,6 @@ legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)</code></pre>
 <div id="e-use-a-nonparametric-test-to-check-the-alternative-hypothesis-if-the-median-difference-between-the-expression-values-of-gro3-gene-and-the-expression-values-of-myc-gene-is-less-than-zero." class="section level5">
 <h5>e) Use a nonparametric test to check (the alternative hypothesis) if the median difference between the expression values of GRO3 gene and the expression values of MYC gene is less than zero.</h5>
 <pre class="r"><code>wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative=&quot;less&quot;)</code></pre>
-<pre><code>## Warning in wilcox.test.default(x = golub[2715, ], y = golub[2302, ], paired
-## = T, : cannot compute exact p-value with zeroes</code></pre>
 <pre><code>## 
 ##  Wilcoxon signed rank test with continuity correction
 ## 
@@ -295,10 +293,6 @@ legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)</code></pre>
 <div id="f-calculate-a-nonparametric-95-one-sided-upper-confidence-interval-for-the-median-difference-between-the-expression-values-of-gro3-gene-and-of-myc-gene." class="section level5">
 <h5>f) Calculate a nonparametric 95% one-sided upper confidence interval for the median difference between the expression values of GRO3 gene and of MYC gene.</h5>
 <pre class="r"><code>wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative=&quot;less&quot;, conf.int = TRUE)</code></pre>
-<pre><code>## Warning in wilcox.test.default(x = golub[2715, ], y = golub[2302, ], paired
-## = T, : cannot compute exact p-value with zeroes</code></pre>
-<pre><code>## Warning in wilcox.test.default(x = golub[2715, ], y = golub[2302, ], paired
-## = T, : cannot compute exact confidence interval with zeroes</code></pre>
 <pre><code>## 
 ##  Wilcoxon signed rank test with continuity correction
 ## 
@@ -323,7 +317,8 @@ for (i in 1:nboot) {
 } 
 quantile(boot.dif,c(0.95))</code></pre>
 <pre><code>##         95% 
-## -0.04723732</code></pre>
+## -0.04420416</code></pre>
+<p>So the one-sided upper confidence interval for the mean difference between the expression values of GRO3 gene and of MYC gene is <span class="math inline">\((-\infty\)</span>,-0.0442042<span class="math inline">\()\)</span>.</p>
 </div>
 </div>
 <div id="problem-7-15-points" class="section level3">
@@ -331,14 +326,14 @@ quantile(boot.dif,c(0.95))</code></pre>
 <div id="on-the-golub-et-al.-1999-data-set-complete-the-following-1" class="section level5">
 <h5>On the Golub et al. (1999) data set, complete the following:</h5>
 </div>
-<div id="a-find-the-row-number-of-the-hpca-hippocalcin-gene." class="section level5">
-<h5>a) Find the row number of the “HPCA Hippocalcin” gene.</h5>
+<div id="a-find-the-row-number-of-the-pca-hippocalcin-gene." class="section level5">
+<h5>a) Find the row number of the 鈥淗PCA Hippocalcin鈥? gene.</h5>
 <pre class="r"><code>data(golub)
 grep(&quot;HPCA Hippocalcin&quot;, golub.gnames[,2])</code></pre>
 <pre><code>## [1] 118</code></pre>
 </div>
-<div id="b-find-the-proportion-among-all-patients-that-the-hpca-hippocalcin-gene-is-negatively-expressed-expression-value0." class="section level5">
-<h5>b) Find the proportion among ALL patients that the “HPCA Hippocalcin” gene is negatively expressed (expression value&lt;0).</h5>
+<div id="b-find-the-proportion-among-all-patients-that-the-pca-hippocalcin-gene-is-negatively-expressed-expression-value0." class="section level5">
+<h5>b) Find the proportion among ALL patients that the 鈥淗PCA Hippocalcin鈥? gene is negatively expressed (expression value&lt;0).</h5>
 <pre class="r"><code>gol.fac &lt;- factor(golub.cl, levels=0:1, labels=c(&quot;ALL&quot;, &quot;AML&quot;))
 resALL &lt;- golub[118, gol.fac==&quot;ALL&quot;] &lt; 0
 lengthALL &lt;- length(resALL)
@@ -346,8 +341,8 @@ numALL &lt;- sum(resALL)
 numALL/lengthALL</code></pre>
 <pre><code>## [1] 0.5925926</code></pre>
 </div>
-<div id="c-we-want-to-show-that-hpca-hippocalcin-gene-is-negatively-expressed-in-at-least-half-of-the-population-of-the-all-patients.-state-the-null-hypothesis-and-the-alternative-hypothesis.-carry-out-the-appropriate-test." class="section level5">
-<h5>c) We want to show that “HPCA Hippocalcin” gene is negatively expressed in at least half of the population of the ALL patients. State the null hypothesis and the alternative hypothesis. Carry out the appropriate test.</h5>
+<div id="c-we-want-to-show-that-pca-hippocalcin-gene-is-negatively-expressed-in-at-least-half-of-the-population-of-the-all-patients.-state-the-null-hypothesis-and-the-alternative-hypothesis.-carry-out-the-appropriate-test." class="section level5">
+<h5>c) We want to show that 鈥淗PCA Hippocalcin鈥? gene is negatively expressed in at least half of the population of the ALL patients. State the null hypothesis and the alternative hypothesis. Carry out the appropriate test.</h5>
 <p>Let <span class="math inline">\(p_{HPCA}\)</span> denotes the proportion of patients for whom the “HPCA Hippocalcin” gene expression values is nagatively expressed.</p>
 <p><span class="math display">\[H_{0}:p_{ALL,HPCA}=0.5,\quad H_{A}:p_{ALL,HPCA}&lt;0.5\]</span></p>
 <pre class="r"><code>binom.test(numALL, lengthALL, p=0.5, alternative = &quot;less&quot;)</code></pre>
@@ -362,10 +357,10 @@ numALL/lengthALL</code></pre>
 ## sample estimates:
 ## probability of success 
 ##              0.5925926</code></pre>
-<p>Since the p-value here is greater than 0.05, we reject the alternative hypothesis that <span class="math inline">\(p_{ALL,HPCA}&lt;0.5\)</span>. Thus, “HPCA Hippocalcin” gene is negatively expressed in at least half of the population of the ALL patients.</p>
+<p>Since the p-value here is greater than 0.05, we reject the alternative hypothesis that <span class="math inline">\(p_{ALL,HPCA}&lt;0.5\)</span>. Thus, 鈥淗PCA Hippocalcin鈥? gene is negatively expressed in at least half of the population of the ALL patients.</p>
 </div>
-<div id="d-find-a-95-confidence-interval-for-the-difference-of-proportions-in-the-all-group-versus-in-the-aml-group-of-patients-with-negatively-expressed-hpca-hippocalcin-gene." class="section level5">
-<h5>d) Find a 95% confidence interval for the difference of proportions in the ALL group versus in the AML group of patients with negatively expressed “HPCA Hippocalcin” gene.</h5>
+<div id="d-find-a-95-confidence-interval-for-the-difference-of-proportions-in-the-all-group-versus-in-the-aml-group-of-patients-with-negatively-expressed-pca-hippocalcin-gene." class="section level5">
+<h5>d) Find a 95% confidence interval for the difference of proportions in the ALL group versus in the AML group of patients with negatively expressed 鈥淗PCA Hippocalcin鈥? gene.</h5>
 <pre class="r"><code>resAML &lt;- golub[118, gol.fac==&quot;AML&quot;] &lt; 0
 lengthAML &lt;- length(resAML)
 numAML &lt;- sum(resAML)

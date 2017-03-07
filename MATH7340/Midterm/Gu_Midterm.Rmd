@@ -105,7 +105,7 @@ golub.gnames[,2][order(p.fdr)][1:5]
 ```
 
 ### Problem 6 (35 points)
-##### On the Golub et al. (1999) data set, compare the “GRO3 GRO3 oncogene” (at row 2715) with the “MYC V-myc avian myelocytomatosis viral oncogene homolog” (at row 2302).
+##### On the Golub et al. (1999) data set, compare the 鈥淕RO3 GRO3 oncogene鈥? (at row 2715) with the 鈥淢YC V-myc avian myelocytomatosis viral oncogene homolog鈥? (at row 2302).
 ```{r}
 data(golub)
 ```
@@ -146,12 +146,12 @@ The usage of t test if not appropriate here.
 
 ##### e) Use a nonparametric test to check (the alternative hypothesis) if the median difference between the expression values of GRO3 gene and the expression values of MYC gene is less than zero.
 
-```{r}
+```{r warning=FALSE}
 wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less")
 ```
 
 ##### f) Calculate a nonparametric 95% one-sided upper confidence interval for the median difference between the expression values of GRO3 gene and of MYC gene.
-```{r}
+```{r warning=FALSE}
 wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less", conf.int = TRUE)
 ```
 
@@ -169,15 +169,16 @@ for (i in 1:nboot) {
 quantile(boot.dif,c(0.95))
 ```
 
+So the one-sided upper confidence interval for the mean difference between the expression values of GRO3 gene and of MYC gene is $(-\infty$,`r quantile(boot.dif,c(0.95))[[1]]`$)$.
 
 ### Problem 7 (15 points)
 ##### On the Golub et al. (1999) data set, complete the following:
-##### a) Find the row number of the “HPCA Hippocalcin” gene.
+##### a) Find the row number of the 鈥淗PCA Hippocalcin鈥? gene.
 ```{r}
 data(golub)
 grep("HPCA Hippocalcin", golub.gnames[,2])
 ```
-##### b) Find the proportion among ALL patients that the “HPCA Hippocalcin” gene is negatively expressed (expression value<0).
+##### b) Find the proportion among ALL patients that the 鈥淗PCA Hippocalcin鈥? gene is negatively expressed (expression value<0).
 
 ```{r}
 gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
@@ -187,7 +188,7 @@ numALL <- sum(resALL)
 numALL/lengthALL
 ```
 
-##### c) We want to show that “HPCA Hippocalcin” gene is negatively expressed in at least half of the population of the ALL patients. State the null hypothesis and the alternative hypothesis. Carry out the appropriate test.
+##### c) We want to show that 鈥淗PCA Hippocalcin鈥? gene is negatively expressed in at least half of the population of the ALL patients. State the null hypothesis and the alternative hypothesis. Carry out the appropriate test.
 
 Let $p_{HPCA}$ denotes the proportion of patients for whom the "HPCA Hippocalcin" gene expression values is nagatively expressed.
 
@@ -196,9 +197,9 @@ Let $p_{HPCA}$ denotes the proportion of patients for whom the "HPCA Hippocalcin
 binom.test(numALL, lengthALL, p=0.5, alternative = "less")
 ```
 
-Since the p-value here is greater than 0.05, we reject the alternative hypothesis that $p_{ALL,HPCA}<0.5$. Thus, “HPCA Hippocalcin” gene is negatively expressed in at least half of the population of the ALL patients.
+Since the p-value here is greater than 0.05, we reject the alternative hypothesis that $p_{ALL,HPCA}<0.5$. Thus, 鈥淗PCA Hippocalcin鈥? gene is negatively expressed in at least half of the population of the ALL patients.
 
-##### d) Find a 95% confidence interval for the difference of proportions in the ALL group versus in the AML group of patients with negatively expressed “HPCA Hippocalcin” gene.
+##### d) Find a 95% confidence interval for the difference of proportions in the ALL group versus in the AML group of patients with negatively expressed 鈥淗PCA Hippocalcin鈥? gene.
 
 ```{r warning=FALSE}
 resAML <- golub[118, gol.fac=="AML"] < 0

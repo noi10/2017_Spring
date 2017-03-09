@@ -121,6 +121,7 @@ gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
 exp2715th = golub[2715,]
 exp2302th = golub[2302,]
 plot(exp2715th ~ exp2302th, col=gol.fac, xlab = "MYC gene expression values", ylab = "GRO3 gene expression values")
+# plot(exp2302th , exp2715th, col=gol.fac, xlab = "MYC gene expression values", ylab = "GRO3 gene expression values")
 legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)
 ```
 

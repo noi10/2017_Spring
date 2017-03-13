@@ -171,7 +171,7 @@ y &lt;- rchisq(100000, df=4)
 z &lt;- x^2/(x^2+y)
 res &lt;- mean(z)
 res</code></pre>
-<pre><code>## [1] 0.2010397</code></pre>
+<pre><code>## [1] 0.1997949</code></pre>
 <pre class="r"><code>format(round(res, 2), nsmall = 2)</code></pre>
 <pre><code>## [1] &quot;0.20&quot;</code></pre>
 </div>
@@ -322,8 +322,8 @@ for (i in 1:nboot) {
 } 
 quantile(boot.dif,c(0.95))</code></pre>
 <pre><code>##         95% 
-## -0.06179996</code></pre>
-<p>So the one-sided upper confidence interval for the mean difference between the expression values of GRO3 gene and of MYC gene is <span class="math inline">\((-\infty\)</span>,-0.0618<span class="math inline">\()\)</span>.</p>
+## -0.04500996</code></pre>
+<p>So the one-sided upper confidence interval for the mean difference between the expression values of GRO3 gene and of MYC gene is <span class="math inline">\((-\infty\)</span>,-0.04501<span class="math inline">\()\)</span>.</p>
 </div>
 </div>
 <div id="problem-7-15-points" class="section level3">

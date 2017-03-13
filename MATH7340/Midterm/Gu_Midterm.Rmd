@@ -1,6 +1,9 @@
 ---
 title: "Math7340 Midterm"
 author: "Chengbo Gu"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -70,9 +73,9 @@ format(round(res, 2), nsmall = 2)
 Let X denote the number of trails that CI contains the true parameter, then we have:
 X~Binom(1000, 0.92).
 
-What we want is $P(X\gt940)$.
+What we want is P(X>940).
 
-\[P(X\gt940)=1-P(X\leq940)=1-pbinom(940, size=1000, prob=0.92)\]
+\[P(X>940)=1-P(X\le940)=1-pbinom(940, size=1000, prob=0.92)\]
 
 ```{r}
 cat("P(X>940)=", 1-pbinom(940, size=1000, prob=0.92), "\n")
@@ -111,7 +114,8 @@ data(golub)
 ```
 ##### a) Draw a histogram of the GRO3 gene expression values.
 ```{r}
-hist(golub[2715,], main = "Histogram of GRO3 expression values", ylim=c(0,30), xlab="expression value")
+hist(golub[2715,], main = "Histogram of GRO3 expression values", 
+     ylim=c(0,30), xlab="expression value")
 ```
 
 ##### b) Draw a scatterplot of the GRO3 gene expression values versus MYC gene expression values, labeled with different colors for ALL and AML patients.
@@ -120,8 +124,8 @@ hist(golub[2715,], main = "Histogram of GRO3 expression values", ylim=c(0,30), x
 gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
 exp2715th = golub[2715,]
 exp2302th = golub[2302,]
-plot(exp2715th ~ exp2302th, col=gol.fac, xlab = "MYC gene expression values", ylab = "GRO3 gene expression values")
-# plot(exp2302th , exp2715th, col=gol.fac, xlab = "MYC gene expression values", ylab = "GRO3 gene expression values")
+plot(exp2715th ~ exp2302th, col=gol.fac, 
+     xlab = "MYC gene expression values", ylab = "GRO3 gene expression values")
 legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)
 ```
 
@@ -130,7 +134,6 @@ legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)
 \[H_{0}:\mu_{GRO3}=\mu_{MYC},\quad H_{A}:\mu_{GRO3}<\mu_{MYC}\]
 ```{r}
 t.test(golub[2715,]-golub[2302,], alternative = "less")
-t.test(golub[2715,], golub[2302,], alternative = "less", paired=T )
 ```
 
 The p-value here is smaller than 0.05. Hence, we reject the null hypothesis and conclude that mean expression value for GRO3 gene is lower than that for MYC gene.
@@ -143,10 +146,13 @@ shapiro.test(golub[2715,]-golub[2302,])
 ```
 
 The p-value here is extremely small, so the normality doesn't hold.
-The usage of t test if not appropriate here. 
+The usage of t test is not appropriate here. 
 
 ##### e) Use a nonparametric test to check (the alternative hypothesis) if the median difference between the expression values of GRO3 gene and the expression values of MYC gene is less than zero.
 
+Let $m_{D}$ denote the population median of the difference between the expression values of GRO3 gene and the expression values of MYC gene.
+
+\[H_{0}:m_{D}=0,\quad H_{A}:m_{D}<0\]
 ```{r warning=FALSE}
 wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less")
 ```
@@ -156,7 +162,8 @@ The p-value here is 0.04208 which is less than 0.05. So we reject the null hypot
 
 ##### f) Calculate a nonparametric 95% one-sided upper confidence interval for the median difference between the expression values of GRO3 gene and of MYC gene.
 ```{r warning=FALSE}
-wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less", conf.int = TRUE)
+wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, 
+             alternative="less", conf.int = TRUE)
 ```
 
 The nonparametric 95% one-sided upper confidence interval for the median difference is $(-\infty, -0.02023244)$.

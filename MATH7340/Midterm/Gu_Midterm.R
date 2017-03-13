@@ -1,0 +1,126 @@
+library(multtest)
+
+# Problem 1
+# (a)
+X_range <- c(1,2,3)
+f.X <- function(x) 2.469862*(x*exp(-x^2))
+f_X <- function(x) f.X(x)*(x %in% X_range)
+# E(X)
+EX <- sum(X_range*f_X(X_range))
+EX
+# sd(X)
+VarX <- sum((X_range-EX)^2*f_X(X_range))
+sdX <- sqrt(VarX)
+sdX
+
+
+f_Y <- function(y) 2*y*exp(-y^2)*(y > 0)
+# E(Y)
+EY <- integrate(function(y) y*f_Y(y), lower=0, upper=Inf)$value
+EY
+
+# sd(Y)
+VarY <- integrate(function(y) (y-EY)^2*f_Y(y), lower=0, upper=Inf)$value
+sdY <- sqrt(VarY)
+sdY
+
+# (b)
+cat("E(2X-3Y)=", 2*EX-3*EY, "\n")
+cat("sd(2X-3Y)=", sqrt(4*VarX+9*VarY), "\n")
+
+
+# Problem 2
+rm(list=ls())
+x <- rnorm(100000, mean=0, sd=1)
+y <- rchisq(100000, df=4)
+z <- x^2/(x^2+y)
+res <- mean(z)
+res
+format(round(res, 2), nsmall = 2)
+
+
+# Problem 3
+rm(list=ls())
+cat("P(X>940)=", 1-pbinom(940, size=1000, prob=0.92), "\n")
+
+
+# Problem 4
+rm(list=ls())
+obs <-as.numeric(t(read.table(file = "normalData.txt", header=T)))
+nloglik <- function(theta) {
+  -sum ( log(dnorm(obs, mean=theta, sd=theta)))
+}
+optim(par=c(2), nloglik)$par
+
+
+# Problem 5
+rm(list=ls())
+# (a)
+data(golub)
+p.values <- apply(golub, 1, function(x) t.test(x, mu=0.6, alternative = "greater")$p.value)
+p.fdr <- p.adjust(p=p.values, method = "fdr")
+sum(p.fdr < 0.1)
+
+# (b)
+golub.gnames[,2][order(p.fdr)][1:5]
+
+
+# Problem 6
+rm(list=ls())
+data(golub)
+# (a)
+hist(golub[2715,], main = "Histogram of GRO3 expression values", ylim=c(0,30), xlab="expression value")
+
+# (b)
+gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
+exp2715th = golub[2715,]
+exp2302th = golub[2302,]
+plot(exp2715th ~ exp2302th, col=gol.fac, xlab = "MYC gene expression values", ylab = "GRO3 gene expression values")
+legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)
+
+# (c)
+t.test(golub[2715,]-golub[2302,], alternative = "less")
+t.test(golub[2715,], golub[2302,], alternative = "less", paired=T )
+
+# (d)
+shapiro.test(golub[2715,]-golub[2302,])
+
+# (e)
+wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less")
+
+# (f)
+wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less", conf.int = TRUE)
+
+# (g)
+dif <- golub[2715,] - golub[2302,] 
+n<-length(dif) 
+nboot<-1000
+boot.dif <- rep(NA, nboot) 
+for (i in 1:nboot) { 
+  data.star <- dif[sample(1:n,replace=TRUE)] 
+  boot.dif[i]<-mean(data.star) 
+} 
+quantile(boot.dif,c(0.95))
+
+
+# Problem 7
+rm(list=ls())
+data(golub)
+# (a)
+grep("HPCA Hippocalcin", golub.gnames[,2])
+
+# (b)
+gol.fac <- factor(golub.cl, levels=0:1, labels=c("ALL", "AML"))
+resALL <- golub[118, gol.fac=="ALL"] < 0
+lengthALL <- length(resALL)
+numALL <- sum(resALL)
+numALL/lengthALL
+
+# (c)
+binom.test(numALL, lengthALL, p=0.5, alternative = "less")
+
+# (d)
+resAML <- golub[118, gol.fac=="AML"] < 0
+lengthAML <- length(resAML)
+numAML <- sum(resAML)
+prop.test(x=c(numALL, numAML), n=c(lengthALL, lengthAML), alternative="two.sided")

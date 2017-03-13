@@ -4,7 +4,6 @@ author: "Chengbo Gu"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 library(multtest)
 ```
 
@@ -61,6 +60,7 @@ x <- rnorm(100000, mean=0, sd=1)
 y <- rchisq(100000, df=4)
 z <- x^2/(x^2+y)
 res <- mean(z)
+res
 format(round(res, 2), nsmall = 2)
 ```
 
@@ -131,7 +131,6 @@ legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)
 ```{r}
 t.test(golub[2715,]-golub[2302,], alternative = "less")
 t.test(golub[2715,], golub[2302,], alternative = "less", paired=T )
-#t.test(golub[2715,], golub[2302,], alternative = "less")
 ```
 
 The p-value here is smaller than 0.05. Hence, we reject the null hypothesis and conclude that mean expression value for GRO3 gene is lower than that for MYC gene.
@@ -152,10 +151,15 @@ The usage of t test if not appropriate here.
 wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less")
 ```
 
+The p-value here is 0.04208 which is less than 0.05. So we reject the null hypothesis and conclude that the median difference between the expression values of GRO3 gene and the expression values of MYC gene is less than zero.
+
+
 ##### f) Calculate a nonparametric 95% one-sided upper confidence interval for the median difference between the expression values of GRO3 gene and of MYC gene.
 ```{r warning=FALSE}
 wilcox.test (x= golub[2715,], y= golub[2302,], paired=T, alternative="less", conf.int = TRUE)
 ```
+
+The nonparametric 95% one-sided upper confidence interval for the median difference is $(-\infty, -0.02023244)$.
 
 ##### g) Calculate a nonparametric bootstrap 95% one-sided upper confidence interval for the mean difference between the expression values of GRO3 gene and of MYC gene.
 
@@ -199,7 +203,7 @@ Let $p_{HPCA}$ denotes the proportion of patients for whom the "HPCA Hippocalcin
 binom.test(numALL, lengthALL, p=0.5, alternative = "less")
 ```
 
-Since the p-value here is greater than 0.05, we reject the alternative hypothesis that $p_{ALL,HPCA}<0.5$. Thus, "HPCA Hippocalcin" gene is negatively expressed in at least half of the population of the ALL patients.
+Since the p-value here is greater than 0.05, we accept the null hypothesis that $p_{ALL,HPCA}=0.5$. Thus, "HPCA Hippocalcin" gene is negatively expressed in at least half of the population of the ALL patients.
 
 ##### d) Find a 95% confidence interval for the difference of proportions in the ALL group versus in the AML group of patients with negatively expressed "HPCA Hippocalcin" gene.
 
@@ -209,3 +213,5 @@ lengthAML <- length(resAML)
 numAML <- sum(resAML)
 prop.test(x=c(numALL, numAML), n=c(lengthALL, lengthAML), alternative="two.sided")
 ```
+
+The 95% confidence interval for the difference of proportions in the ALL group versus in the AML group of patients with negatively expressed "HPCA Hippocalcin" gene is $(-0.3477551, 0.4420312)$.

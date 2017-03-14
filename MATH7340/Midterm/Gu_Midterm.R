@@ -80,7 +80,6 @@ legend(1,0.8 ,unique(gol.fac),col=1:length(gol.fac),pch=1)
 
 # (c)
 t.test(golub[2715,]-golub[2302,], alternative = "less")
-t.test(golub[2715,], golub[2302,], alternative = "less", paired=T )
 
 # (d)
 shapiro.test(golub[2715,]-golub[2302,])

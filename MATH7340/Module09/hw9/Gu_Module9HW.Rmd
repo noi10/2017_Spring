@@ -2,8 +2,8 @@
 title: "Math7340 HW9"
 author: "Chengbo Gu"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -43,7 +43,7 @@ quantile(boot.cor, c(0.05,0.95))
 
 ##### (d) Test the null hypothesis that correlation = 0.64 against the one-sided alternative that correlation > 0.64 at the $\alpha = 0.05$ level. What is your conclusion? Explain you reasoning supported by the appropriate R outputs.
 ```{r}
-cor.test(x=GRO2, y=GRO3, alternative = "greater", conf.level = 0.95)
+#cor.test(x=GRO2, y=GRO3, alternative = "greater", conf.level = 0.95)
 quantile(boot.cor, 0.05)
 ```
 
@@ -92,11 +92,22 @@ The summary provides the two-sided t-statistics and two-sided p-values for testi
 R-squared here is 0.6346, so 63.46% of the GRO3 GRO3 oncogene expression's variation can be explained by the regression on GRO2 GRO2 oncogene expression
 
 ##### (b) Test if the slope parameter is less than 0.5 at the $\alpha = 0.05$ level.
-The one-sided uppder confidence interval of $\beta_{1}$ is $(-\infty, \beta_{1}+t_{1-\alpha,n-2}SE_{\beta_{1}})$
+The one-sided uppder confidence interval of $\beta_{1}$ is $(-\infty, \beta_{1}+t_{1-\alpha,n-2}SE_{\beta_{1}})$.
+
+We can calculate it both using built-in function and manully.
+
+
 ```{r}
+# Using confint
+confint(reg.fit, level=0.9)
+```
+
+```{r}
+# Using formula
 0.35820 + qt(0.95, length(GRO2 <- golub[GRO2index,])-2)*0.04530
 ```
-Thus, the 95% CI for the slope $\beta_{1}$ is $(-\infty, 0.4346799)$ which indicates that the slope parameter is less than 0.5 at the $\alpha = 0.05$ level.
+
+Thus, the 95% CI for the slope $\beta_{1}$ is $(-\infty, 0.43468)$ which indicates that the slope parameter is less than 0.5 at the $\alpha = 0.05$ level.
 
 ##### (c) Find an 80% prediction interval for the GRO3 GRO3 oncogene expression when GRO2 GRO2 oncogene is not expressed (zero expression value).
 ```{r}
@@ -107,15 +118,15 @@ Thus, the 80% PI for GRO3 given GRO2 = 0 is $(-1.267563, -0.4175553)$.
 
 ##### (d) Check the regression model assumptions. Can we trust the statistical inferences from the regression fit?
 
+
 ```{r}
+plot(reg.fit, which=2)
 shapiro.test(resid(reg.fit))
 ```
 
 ```{r}
-plot(reg.fit, which=1)
-```
-```{r}
 #library(lmtest)
+plot(reg.fit, which=1)
 bptest(reg.fit, studentize = FALSE)
 ```
 

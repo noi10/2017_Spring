@@ -85,11 +85,11 @@ GRO3 <- golub[GRO3index,]
 reg.fit <- lm(GRO3 ~ GRO2)
 summary(reg.fit)
 ```
-##### (a) Is there a statistically significant linear relationship between the two genes¡¯ expression? Use appropriate statistical analysis to make the conclusion. What proportion of the GRO3 GRO3 oncogene expression¡¯s variation can be explained by the regression on GRO2 GRO2 oncogene expression?
+##### (a) Is there a statistically significant linear relationship between the two genes' expression? Use appropriate statistical analysis to make the conclusion. What proportion of the GRO3 GRO3 oncogene expression's variation can be explained by the regression on GRO2 GRO2 oncogene expression?
 
 The summary provides the two-sided t-statistics and two-sided p-values for testing $H_{0}: \beta_{0}=0$ and $H_{0}: \beta_{1}=0$. The p-values of 2.62e-16 and 2.20e-09 are very small, so that we conclude both the intercept $\beta_{0}$ and the slope $\beta_{1}$ are nonzero. Thus, there is statistically significant linear relationship between the two genes' expression.
 
-R-squared here is 0.6346, so 63.46% of the GRO3 GRO3 oncogene expression¡¯s variation can be explained by the regression on GRO2 GRO2 oncogene expression
+R-squared here is 0.6346, so 63.46% of the GRO3 GRO3 oncogene expression's variation can be explained by the regression on GRO2 GRO2 oncogene expression
 
 ##### (b) Test if the slope parameter is less than 0.5 at the $\alpha = 0.05$ level.
 The one-sided uppder confidence interval of $\beta_{1}$ is $(-\infty, \beta_{1}+t_{1-\alpha,n-2}SE_{\beta_{1}})$

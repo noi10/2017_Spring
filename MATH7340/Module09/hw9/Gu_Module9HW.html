@@ -163,13 +163,25 @@ for (i in 1:nboot){
 }
 quantile(boot.cor, c(0.05,0.95)) </code></pre>
 <pre><code>##        5%       95% 
-## 0.5978981 0.8945637</code></pre>
+## 0.5714631 0.8916870</code></pre>
 </div>
-<div id="d-test-the-null-hypothesis-that-correlation-0.64-against-the-one-sided-alternative-that-correlation-0.64-at-the--0.05-level.-what-is-your-conclusion-explain-you-reasoning-supported-by-the-appropriate-r-outputs." class="section level5">
-<h5>(d) Test the null hypothesis that correlation = 0.64 against the one-sided alternative that correlation &gt; 0.64 at the α = 0.05 level. What is your conclusion? Explain you reasoning supported by the appropriate R outputs.</h5>
-<pre class="r"><code>quantile(boot.cor, 0.95)</code></pre>
-<pre><code>##       95% 
-## 0.8945637</code></pre>
+<div id="d-test-the-null-hypothesis-that-correlation-0.64-against-the-one-sided-alternative-that-correlation-0.64-at-the-alpha-0.05-level.-what-is-your-conclusion-explain-you-reasoning-supported-by-the-appropriate-r-outputs." class="section level5">
+<h5>(d) Test the null hypothesis that correlation = 0.64 against the one-sided alternative that correlation &gt; 0.64 at the <span class="math inline">\(\alpha = 0.05\)</span> level. What is your conclusion? Explain you reasoning supported by the appropriate R outputs.</h5>
+<pre class="r"><code>cor.test(x=GRO2, y=GRO3, alternative = &quot;greater&quot;, conf.level = 0.95)</code></pre>
+<pre><code>## 
+##  Pearson's product-moment correlation
+## 
+## data:  GRO2 and GRO3
+## t = 7.9074, df = 36, p-value = 1.101e-09
+## alternative hypothesis: true correlation is greater than 0
+## 95 percent confidence interval:
+##  0.6702984 1.0000000
+## sample estimates:
+##       cor 
+## 0.7966283</code></pre>
+<pre class="r"><code>quantile(boot.cor, 0.05)</code></pre>
+<pre><code>##        5% 
+## 0.5714631</code></pre>
 </div>
 </div>
 <div id="problem-2-25-points" class="section level3">

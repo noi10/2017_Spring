@@ -43,7 +43,8 @@ quantile(boot.cor, c(0.05,0.95))
 
 ##### (d) Test the null hypothesis that correlation = 0.64 against the one-sided alternative that correlation > 0.64 at the $\alpha = 0.05$ level. What is your conclusion? Explain you reasoning supported by the appropriate R outputs.
 ```{r}
-quantile(boot.cor, 0.95)
+cor.test(x=GRO2, y=GRO3, alternative = "greater", conf.level = 0.95)
+quantile(boot.cor, 0.05)
 ```
 
 

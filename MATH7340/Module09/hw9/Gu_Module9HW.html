@@ -161,15 +161,15 @@ for (i in 1:nboot){
   dat.star &lt;- data[sample(1:nrow(data),replace=TRUE), ] 
   boot.cor[i] &lt;- cor(dat.star[,1], dat.star[,2]) 
 }
-quantile(boot.cor, c(0.025,0.975)) </code></pre>
-<pre><code>##      2.5%     97.5% 
-## 0.5378848 0.9080695</code></pre>
+quantile(boot.cor, c(0.05,0.95)) </code></pre>
+<pre><code>##        5%       95% 
+## 0.5978981 0.8945637</code></pre>
 </div>
 <div id="d-test-the-null-hypothesis-that-correlation-0.64-against-the-one-sided-alternative-that-correlation-0.64-at-the--0.05-level.-what-is-your-conclusion-explain-you-reasoning-supported-by-the-appropriate-r-outputs." class="section level5">
 <h5>(d) Test the null hypothesis that correlation = 0.64 against the one-sided alternative that correlation &gt; 0.64 at the α = 0.05 level. What is your conclusion? Explain you reasoning supported by the appropriate R outputs.</h5>
 <pre class="r"><code>quantile(boot.cor, 0.95)</code></pre>
 <pre><code>##       95% 
-## 0.8915013</code></pre>
+## 0.8945637</code></pre>
 </div>
 </div>
 <div id="problem-2-25-points" class="section level3">
@@ -319,7 +319,8 @@ summary(lin.reg)</code></pre>
 <pre class="r"><code>predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), interval=&quot;prediction&quot;)</code></pre>
 <pre><code>##        fit      lwr      upr
 ## 1 15.23343 8.075115 22.39175</code></pre>
-<p>90% CI is (13.13195, 17.33492). 90% PI is (8.075115, 22.39175).</p>
+<p>90% CI is (13.13195, 17.33492).</p>
+<p>90% PI is (8.075115, 22.39175).</p>
 </div>
 </div>
 

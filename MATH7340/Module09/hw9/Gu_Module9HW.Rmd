@@ -155,10 +155,12 @@ Acid.Conc. doesn't have such effect because p-value = 0.34405.
 ##### (c) Find a 90% confidence interval and 90% prediction interval for stack.loss when Air.Flow=60, Water.Temp=20 and Acid.Conc.=90.
 
 ```{r}
-predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), interval="confidence")
-predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), interval="prediction")
+predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), 
+        interval="confidence", level = 0.9)
+predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), 
+        interval="prediction", level = 0.9)
 ```
 
-90% CI is (13.13195, 17.33492).
+90% CI is (13.50069, 16.96617).
 
-90% PI is (8.075115, 22.39175).
+90% PI is (9.331184, 21.13568).

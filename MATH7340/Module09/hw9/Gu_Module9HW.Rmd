@@ -2,8 +2,8 @@
 title: "Math7340 HW9"
 author: "Chengbo Gu"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}

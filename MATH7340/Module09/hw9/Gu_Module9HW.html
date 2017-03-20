@@ -163,14 +163,14 @@ for (i in 1:nboot){
 }
 quantile(boot.cor, c(0.05,0.95)) </code></pre>
 <pre><code>##        5%       95% 
-## 0.5844005 0.8975146</code></pre>
+## 0.5993651 0.8955179</code></pre>
 </div>
 <div id="d-test-the-null-hypothesis-that-correlation-0.64-against-the-one-sided-alternative-that-correlation-0.64-at-the-alpha-0.05-level.-what-is-your-conclusion-explain-you-reasoning-supported-by-the-appropriate-r-outputs." class="section level5">
 <h5>(d) Test the null hypothesis that correlation = 0.64 against the one-sided alternative that correlation &gt; 0.64 at the <span class="math inline">\(\alpha = 0.05\)</span> level. What is your conclusion? Explain you reasoning supported by the appropriate R outputs.</h5>
 <pre class="r"><code>#cor.test(x=GRO2, y=GRO3, alternative = &quot;greater&quot;, conf.level = 0.95)
 quantile(boot.cor, 0.05)</code></pre>
 <pre><code>##        5% 
-## 0.5844005</code></pre>
+## 0.5993651</code></pre>
 </div>
 </div>
 <div id="problem-2-25-points" class="section level3">
@@ -323,14 +323,16 @@ summary(lin.reg)</code></pre>
 </div>
 <div id="c-find-a-90-confidence-interval-and-90-prediction-interval-for-stack.loss-when-air.flow60-water.temp20-and-acid.conc.90." class="section level5">
 <h5>(c) Find a 90% confidence interval and 90% prediction interval for stack.loss when Air.Flow=60, Water.Temp=20 and Acid.Conc.=90.</h5>
-<pre class="r"><code>predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), interval=&quot;confidence&quot;)</code></pre>
+<pre class="r"><code>predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), 
+        interval=&quot;confidence&quot;, level = 0.9)</code></pre>
 <pre><code>##        fit      lwr      upr
-## 1 15.23343 13.13195 17.33492</code></pre>
-<pre class="r"><code>predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), interval=&quot;prediction&quot;)</code></pre>
+## 1 15.23343 13.50069 16.96617</code></pre>
+<pre class="r"><code>predict(lin.reg, newdata=data.frame(Air.Flow=60, Water.Temp=20, Acid.Conc.=90), 
+        interval=&quot;prediction&quot;, level = 0.9)</code></pre>
 <pre><code>##        fit      lwr      upr
-## 1 15.23343 8.075115 22.39175</code></pre>
-<p>90% CI is (13.13195, 17.33492).</p>
-<p>90% PI is (8.075115, 22.39175).</p>
+## 1 15.23343 9.331184 21.13568</code></pre>
+<p>90% CI is (13.50069, 16.96617).</p>
+<p>90% PI is (9.331184, 21.13568).</p>
 </div>
 </div>
 

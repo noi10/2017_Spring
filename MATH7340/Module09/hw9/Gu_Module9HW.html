@@ -151,6 +151,7 @@ cor(GRO2, GRO3)</code></pre>
 ## sample estimates:
 ##       cor 
 ## 0.7966283</code></pre>
+<p>The parametric 90% confident interval is <span class="math inline">\((0.6702984, 0.8780861)\)</span>.</p>
 </div>
 <div id="c-find-the-bootstrap-90-confident-interval-for-the-correlation." class="section level5">
 <h5>(c) Find the bootstrap 90% confident interval for the correlation.</h5>
@@ -163,14 +164,14 @@ for (i in 1:nboot){
 }
 quantile(boot.cor, c(0.05,0.95)) </code></pre>
 <pre><code>##        5%       95% 
-## 0.5993651 0.8955179</code></pre>
+## 0.5944739 0.8988302</code></pre>
+<p>The bootstrap 90% confident interval is (0.5944739, 0.8988302).</p>
 </div>
 <div id="d-test-the-null-hypothesis-that-correlation-0.64-against-the-one-sided-alternative-that-correlation-0.64-at-the-alpha-0.05-level.-what-is-your-conclusion-explain-you-reasoning-supported-by-the-appropriate-r-outputs." class="section level5">
 <h5>(d) Test the null hypothesis that correlation = 0.64 against the one-sided alternative that correlation &gt; 0.64 at the <span class="math inline">\(\alpha = 0.05\)</span> level. What is your conclusion? Explain you reasoning supported by the appropriate R outputs.</h5>
-<pre class="r"><code>#cor.test(x=GRO2, y=GRO3, alternative = &quot;greater&quot;, conf.level = 0.95)
-quantile(boot.cor, 0.05)</code></pre>
+<pre class="r"><code>quantile(boot.cor, 0.05)</code></pre>
 <pre><code>##        5% 
-## 0.5993651</code></pre>
+## 0.5944739</code></pre>
 </div>
 </div>
 <div id="problem-2-25-points" class="section level3">

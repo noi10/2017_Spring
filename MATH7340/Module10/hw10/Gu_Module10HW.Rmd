@@ -1,0 +1,10 @@
+---
+title: "Untitled"
+author: "Chengbo Gu"
+date: "2017年3月22日"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```

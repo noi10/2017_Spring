@@ -1,10 +1,185 @@
 ---
-title: "Untitled"
+title: "Math7340 HW10"
 author: "Chengbo Gu"
-date: "2017年3月22日"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Problem 1 (20 points) Preprocessing a data set
+##### Install the "ArrayExpress" package from Bioconductor. Load the yeast microarray data using R commands: 
+##### library(ArrayExpress) 
+##### yeast.raw = ArrayExpress('E-MEXP-1551')
+
+##### (a) Preprocess the raw data set into an expression data set using: the “mas” background correction method, the “quantiles” normalization method, “pmonly” pm correction method and “medianpolish” summary method. Give the R command here for doing this task.
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(ArrayExpress)
+library(affy)
+```
+```{r results='hide', message=FALSE, warning=FALSE}
+yeast.raw <-  ReadAffy(celfile.path= 'E:/yeast' )
+eset <- expresso(yeast.raw, 
+                 bgcorrect.method="mas", 
+                 normalize.method="quantiles", 
+                 pmcorrect.method="pmonly", 
+                 summary.method="medianpolish")
+```
+
+##### (b) Print out the mean expression values for the first five genes across all samples.
+```{r}
+firstFive <- exprs(eset)[1:5,]
+means <- apply(firstFive, 1, mean)
+means
+```
+
+##### (c) How many genes and how many samples are in the preprocessed expression data set?
+```{r}
+dim(eset)
+```
+
+
+### Problem 2 (30 points) Searching Annotations
+##### (a) What is the annotation package for the yeast data set in question 1?
+##### Install the annotation package from Bioconductor.
+```{r}
+anno <- annotation(yeast.raw)
+# db <- paste(anno, ".db", sep="")
+# source("https://bioconductor.org/biocLite.R")
+# biocLite(db)
+```
+##### (b) Search the 1769308_at gene GO numbers related to Molecular Function (MF). How many GO numbers do you get?
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(yeast2.db)
+library(annotate)
+```
+```{r}
+go1769308 <- get("1769308_at", env = yeast2GO)
+gonr <- getOntology(go1769308, "MF")
+gonr
+length(gonr)
+```
+
+##### (c) Find the GO parents of the GO IDs in part (b). How many GO parents are there?
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library("GO.db")
+```
+```{r}
+gP <- getGOParents(gonr)
+pa <- sapply(gP, function(x) x$Parents)
+length(unique(pa))
+```
+
+##### (d) Find the GO children of the GO IDs in part (b). How many GO children are there?
+```{r}
+gC <- getGOChildren(gonr)
+ch <- sapply(gC, function(x) x$Children)
+length(unique(unlist(ch)))
+```
+
+### Problem 3 (30 points) Gene filtering on B-cell ALL patients
+##### We work with the patients in stages "B2","B3".
+
+##### (a) We look for genes expressed differently in stages B2 and B3. Use genefilter to program the Wilcoxon test and the Welch t-test separately for each gene. For each test, we select the genes with p-value<0.001. To save computational time, we set exact=F in the Wilcoxon test function.
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library("genefilter")
+library("ALL")
+```
+```{r}
+data(ALL)
+
+
+patientB2 <- factor(ALL$BT %in% c("B2"))
+patientB3 <- factor(ALL$BT %in% c("B3"))
+wilcox <- function(x) ( wilcox.test (x[patientB2 == TRUE], x[patientB3 == TRUE], 
+                                     paired = F, exact = F)$p.value < 0.001 )
+
+selwilcox <- genefilter(exprs(ALL), filterfun(wilcox))
+
+welch <- function(x) ( t.test(x[patientB2 == TRUE], x[patientB3 == TRUE], 
+                              paired = F) $p.value < 0.001 )
+
+selwelch <- genefilter(exprs(ALL), filterfun(welch))
+```
+
+##### (b) Compute a Venn diagram for the Wilcoxon test and the t-test, and plot it.
+```{r results='hide', message=FALSE, warning=FALSE}
+library(limma)
+```
+```{r}
+x <- apply(cbind(selwilcox, selwelch), 2, as.integer)
+vc <- vennCounts(x, include = "both")
+vennDiagram(vc)
+```
+
+
+##### (c) How many pass the Wilcoxon filter? How many passes both filters?
+```{r}
+ALLwilcoxon <- ALL[selwilcox,]
+nrow(exprs(ALLwilcoxon))
+
+ALLboth <- ALL[selwilcox & selwelch,]
+nrow(exprs(ALLboth))
+```
+
+##### (d) What is the annotation package for the ALL data set? Find the GO numbers for "oncogene".
+```{r}
+annotation(ALL)
+```
+```{r results='hide', message=FALSE, warning=FALSE}
+library("GO.db") 
+library("annotate") 
+library("hgu95av2.db")
+```
+```{r}
+GOTerm2Tag <- function(term) { 
+                GTL <- eapply(GOTERM, function(x) {grep(term, x@Term, value=TRUE)}) 
+                Gl <- sapply(GTL, length)
+                names(GTL[Gl>0])}
+GOTerm2Tag("oncogene")
+```
+
+##### (e) How many genes passing the filters in (a) are oncogenes?
+```{r}
+tran <- hgu95av2GO2ALLPROBES$"GO:0090402"
+inboth <- tran %in% row.names(exprs(ALLboth)) 
+ALLtran <- ALLboth[tran[inboth],]
+dim(ALLtran)
+```
+
+
+### Problem 4 (20 points)
+##### Stages of B-cell ALL in the ALL data. Use the limma package to answer the questions below.
+##### (a) Select the persons with B-cell leukemia which are in stage B1, B2, and B3.
+```{r results='hide', message=FALSE, warning=FALSE}
+library("limma")
+library("ALL")
+```
+```{r}
+data(ALL)
+allB <- ALL[, which(ALL$BT %in% c("B1", "B2", "B3"))]
+```
+
+##### (b) Use the linear model to test the hypothesis of all zero group means. Use “topTable()” to report the top five genes with nonzero means in B3 group.
+```{r}
+design.ma <- model.matrix(~0 + factor(allB$BT))
+colnames(design.ma) <- c("B1", "B2", "B3")
+fit <- lmFit(allB, design.ma)
+fit <- eBayes(fit)
+#print( topTable(fit, number=5, adjust.method="fdr"), digits=4)
+print( topTable(fit, coef=3, number=5, adjust.method="fdr"), digits=4)
+```
+
+##### (c) Use two contrasts to perform analysis of variance to test the null hypothesis of equal group means. Do this with a false discovery rate of 0.01. How many differentially expressed genes are found? Use “topTable()” to report the top five genes that express differently among the three groups.
+```{r}
+cont.ma <- makeContrasts(B1-B2,B2-B3, levels=factor(allB$BT))
+fit1 <- contrasts.fit(fit, cont.ma)
+fit1 <- eBayes(fit1)
+dim(topTable(fit1, number=Inf, p.value=0.01, adjust.method="fdr"))
+print( topTable(fit1, number=5, adjust.method="fdr"), digits=4)
 ```

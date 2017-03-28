@@ -1,7 +1,9 @@
 ---
 title: "Math7340 HW10"
 author: "Chengbo Gu"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -39,6 +41,7 @@ means
 ```{r}
 dim(eset)
 ```
+There are 10928 genes and 30 samples in the preprocessed expression data set.
 
 
 ### Problem 2 (30 points) Searching Annotations
@@ -46,10 +49,13 @@ dim(eset)
 ##### Install the annotation package from Bioconductor.
 ```{r}
 anno <- annotation(yeast.raw)
+anno
 # db <- paste(anno, ".db", sep="")
 # source("https://bioconductor.org/biocLite.R")
 # biocLite(db)
 ```
+The annotation package for the yeast data set is "yeast2".
+
 ##### (b) Search the 1769308_at gene GO numbers related to Molecular Function (MF). How many GO numbers do you get?
 
 ```{r results='hide', message=FALSE, warning=FALSE}
@@ -62,17 +68,20 @@ gonr <- getOntology(go1769308, "MF")
 gonr
 length(gonr)
 ```
+There are 7 GO numbers.
+
 
 ##### (c) Find the GO parents of the GO IDs in part (b). How many GO parents are there?
 
 ```{r results='hide', message=FALSE, warning=FALSE}
-library("GO.db")
+library(GO.db)
 ```
 ```{r}
 gP <- getGOParents(gonr)
 pa <- sapply(gP, function(x) x$Parents)
 length(unique(pa))
 ```
+There are 5 GO parents.
 
 ##### (d) Find the GO children of the GO IDs in part (b). How many GO children are there?
 ```{r}
@@ -80,6 +89,7 @@ gC <- getGOChildren(gonr)
 ch <- sapply(gC, function(x) x$Children)
 length(unique(unlist(ch)))
 ```
+There are 434 GO children.
 
 ### Problem 3 (30 points) Gene filtering on B-cell ALL patients
 ##### We work with the patients in stages "B2","B3".
@@ -87,12 +97,11 @@ length(unique(unlist(ch)))
 ##### (a) We look for genes expressed differently in stages B2 and B3. Use genefilter to program the Wilcoxon test and the Welch t-test separately for each gene. For each test, we select the genes with p-value<0.001. To save computational time, we set exact=F in the Wilcoxon test function.
 
 ```{r results='hide', message=FALSE, warning=FALSE}
-library("genefilter")
-library("ALL")
+library(genefilter)
+library(ALL)
 ```
 ```{r}
 data(ALL)
-
 
 patientB2 <- factor(ALL$BT %in% c("B2"))
 patientB3 <- factor(ALL$BT %in% c("B3"))
@@ -126,15 +135,27 @@ nrow(exprs(ALLwilcoxon))
 ALLboth <- ALL[selwilcox & selwelch,]
 nrow(exprs(ALLboth))
 ```
+We can infer from both the venn diagram and the commands above.
+
+345 genes pass the Wilcoxon filter.
+
+297 genes pass both filters.
+
 
 ##### (d) What is the annotation package for the ALL data set? Find the GO numbers for "oncogene".
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(annotate)
+```
+
 ```{r}
 annotation(ALL)
 ```
+The annotation package for the ALL data set is "hgu95av2".
+
 ```{r results='hide', message=FALSE, warning=FALSE}
-library("GO.db") 
-library("annotate") 
-library("hgu95av2.db")
+library(GO.db) 
+library(hgu95av2.db)
 ```
 ```{r}
 GOTerm2Tag <- function(term) { 
@@ -143,6 +164,7 @@ GOTerm2Tag <- function(term) {
                 names(GTL[Gl>0])}
 GOTerm2Tag("oncogene")
 ```
+The GO number for "oncogene" is "GO:0090402".
 
 ##### (e) How many genes passing the filters in (a) are oncogenes?
 ```{r}
@@ -151,14 +173,15 @@ inboth <- tran %in% row.names(exprs(ALLboth))
 ALLtran <- ALLboth[tran[inboth],]
 dim(ALLtran)
 ```
+There is no such gene.
 
 
 ### Problem 4 (20 points)
 ##### Stages of B-cell ALL in the ALL data. Use the limma package to answer the questions below.
 ##### (a) Select the persons with B-cell leukemia which are in stage B1, B2, and B3.
 ```{r results='hide', message=FALSE, warning=FALSE}
-library("limma")
-library("ALL")
+library(limma)
+library(ALL)
 ```
 ```{r}
 data(ALL)
@@ -171,7 +194,6 @@ design.ma <- model.matrix(~0 + factor(allB$BT))
 colnames(design.ma) <- c("B1", "B2", "B3")
 fit <- lmFit(allB, design.ma)
 fit <- eBayes(fit)
-#print( topTable(fit, number=5, adjust.method="fdr"), digits=4)
 print( topTable(fit, coef=3, number=5, adjust.method="fdr"), digits=4)
 ```
 
@@ -181,5 +203,10 @@ cont.ma <- makeContrasts(B1-B2,B2-B3, levels=factor(allB$BT))
 fit1 <- contrasts.fit(fit, cont.ma)
 fit1 <- eBayes(fit1)
 dim(topTable(fit1, number=Inf, p.value=0.01, adjust.method="fdr"))
+```
+There are 314 genes that are expressed differentially.
+
+
+```{r}
 print( topTable(fit1, number=5, adjust.method="fdr"), digits=4)
 ```

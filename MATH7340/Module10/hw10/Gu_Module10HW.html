@@ -157,6 +157,7 @@ means</code></pre>
 <pre class="r"><code>dim(eset)</code></pre>
 <pre><code>## Features  Samples 
 ##    10928       30</code></pre>
+<p>There are 10928 genes and 30 samples in the preprocessed expression data set.</p>
 </div>
 </div>
 <div id="problem-2-30-points-searching-annotations" class="section level3">
@@ -167,9 +168,12 @@ means</code></pre>
 <div id="install-the-annotation-package-from-bioconductor." class="section level5">
 <h5>Install the annotation package from Bioconductor.</h5>
 <pre class="r"><code>anno &lt;- annotation(yeast.raw)
-# db &lt;- paste(anno, &quot;.db&quot;, sep=&quot;&quot;)
+anno</code></pre>
+<pre><code>## [1] &quot;yeast2&quot;</code></pre>
+<pre class="r"><code># db &lt;- paste(anno, &quot;.db&quot;, sep=&quot;&quot;)
 # source(&quot;https://bioconductor.org/biocLite.R&quot;)
 # biocLite(db)</code></pre>
+<p>The annotation package for the yeast data set is “yeast2”.</p>
 </div>
 <div id="b-search-the-1769308_at-gene-go-numbers-related-to-molecular-function-mf.-how-many-go-numbers-do-you-get" class="section level5">
 <h5>(b) Search the 1769308_at gene GO numbers related to Molecular Function (MF). How many GO numbers do you get?</h5>
@@ -182,14 +186,16 @@ gonr</code></pre>
 ## [6] &quot;GO:0004300&quot; &quot;GO:0003857&quot;</code></pre>
 <pre class="r"><code>length(gonr)</code></pre>
 <pre><code>## [1] 7</code></pre>
+<p>There are 7 GO numbers.</p>
 </div>
 <div id="c-find-the-go-parents-of-the-go-ids-in-part-b.-how-many-go-parents-are-there" class="section level5">
 <h5>(c) Find the GO parents of the GO IDs in part (b). How many GO parents are there?</h5>
-<pre class="r"><code>library(&quot;GO.db&quot;)</code></pre>
+<pre class="r"><code>library(GO.db)</code></pre>
 <pre class="r"><code>gP &lt;- getGOParents(gonr)
 pa &lt;- sapply(gP, function(x) x$Parents)
 length(unique(pa))</code></pre>
 <pre><code>## [1] 5</code></pre>
+<p>There are 5 GO parents.</p>
 </div>
 <div id="d-find-the-go-children-of-the-go-ids-in-part-b.-how-many-go-children-are-there" class="section level5">
 <h5>(d) Find the GO children of the GO IDs in part (b). How many GO children are there?</h5>
@@ -197,6 +203,7 @@ length(unique(pa))</code></pre>
 ch &lt;- sapply(gC, function(x) x$Children)
 length(unique(unlist(ch)))</code></pre>
 <pre><code>## [1] 434</code></pre>
+<p>There are 434 GO children.</p>
 </div>
 </div>
 <div id="problem-3-30-points-gene-filtering-on-b-cell-all-patients" class="section level3">
@@ -206,8 +213,8 @@ length(unique(unlist(ch)))</code></pre>
 </div>
 <div id="a-we-look-for-genes-expressed-differently-in-stages-b2-and-b3.-use-genefilter-to-program-the-wilcoxon-test-and-the-welch-t-test-separately-for-each-gene.-for-each-test-we-select-the-genes-with-p-value0.001.-to-save-computational-time-we-set-exactf-in-the-wilcoxon-test-function." class="section level5">
 <h5>(a) We look for genes expressed differently in stages B2 and B3. Use genefilter to program the Wilcoxon test and the Welch t-test separately for each gene. For each test, we select the genes with p-value&lt;0.001. To save computational time, we set exact=F in the Wilcoxon test function.</h5>
-<pre class="r"><code>library(&quot;genefilter&quot;)
-library(&quot;ALL&quot;)</code></pre>
+<pre class="r"><code>library(genefilter)
+library(ALL)</code></pre>
 <pre class="r"><code>data(ALL)
 
 
@@ -239,20 +246,23 @@ nrow(exprs(ALLwilcoxon))</code></pre>
 <pre class="r"><code>ALLboth &lt;- ALL[selwilcox &amp; selwelch,]
 nrow(exprs(ALLboth))</code></pre>
 <pre><code>## [1] 297</code></pre>
+<p>We can infer from both the venn diagram and the commands above. 345 genes pass the Wilcoxon filter. 297 genes pass both filters.</p>
 </div>
 <div id="d-what-is-the-annotation-package-for-the-all-data-set-find-the-go-numbers-for-oncogene." class="section level5">
 <h5>(d) What is the annotation package for the ALL data set? Find the GO numbers for “oncogene”.</h5>
+<pre class="r"><code>library(annotate)</code></pre>
 <pre class="r"><code>annotation(ALL)</code></pre>
 <pre><code>## [1] &quot;hgu95av2&quot;</code></pre>
-<pre class="r"><code>library(&quot;GO.db&quot;) 
-library(&quot;annotate&quot;) 
-library(&quot;hgu95av2.db&quot;)</code></pre>
+<p>The annotation package for the ALL data set is “hgu95av2”.</p>
+<pre class="r"><code>library(GO.db) 
+library(hgu95av2.db)</code></pre>
 <pre class="r"><code>GOTerm2Tag &lt;- function(term) { 
                 GTL &lt;- eapply(GOTERM, function(x) {grep(term, x@Term, value=TRUE)}) 
                 Gl &lt;- sapply(GTL, length)
                 names(GTL[Gl&gt;0])}
 GOTerm2Tag(&quot;oncogene&quot;)</code></pre>
 <pre><code>## [1] &quot;GO:0090402&quot;</code></pre>
+<p>The GO number for “oncogene” is “<a href="GO:0090402" class="uri">GO:0090402</a>”.</p>
 </div>
 <div id="e-how-many-genes-passing-the-filters-in-a-are-oncogenes" class="section level5">
 <h5>(e) How many genes passing the filters in (a) are oncogenes?</h5>
@@ -262,6 +272,7 @@ ALLtran &lt;- ALLboth[tran[inboth],]
 dim(ALLtran)</code></pre>
 <pre><code>## Features  Samples 
 ##        0      128</code></pre>
+<p>There is no such gene.</p>
 </div>
 </div>
 <div id="problem-4-20-points" class="section level3">
@@ -271,8 +282,8 @@ dim(ALLtran)</code></pre>
 </div>
 <div id="a-select-the-persons-with-b-cell-leukemia-which-are-in-stage-b1-b2-and-b3." class="section level5">
 <h5>(a) Select the persons with B-cell leukemia which are in stage B1, B2, and B3.</h5>
-<pre class="r"><code>library(&quot;limma&quot;)
-library(&quot;ALL&quot;)</code></pre>
+<pre class="r"><code>library(limma)
+library(ALL)</code></pre>
 <pre class="r"><code>data(ALL)
 allB &lt;- ALL[, which(ALL$BT %in% c(&quot;B1&quot;, &quot;B2&quot;, &quot;B3&quot;))]</code></pre>
 </div>
@@ -282,7 +293,6 @@ allB &lt;- ALL[, which(ALL$BT %in% c(&quot;B1&quot;, &quot;B2&quot;, &quot;B3&qu
 colnames(design.ma) &lt;- c(&quot;B1&quot;, &quot;B2&quot;, &quot;B3&quot;)
 fit &lt;- lmFit(allB, design.ma)
 fit &lt;- eBayes(fit)
-#print( topTable(fit, number=5, adjust.method=&quot;fdr&quot;), digits=4)
 print( topTable(fit, coef=3, number=5, adjust.method=&quot;fdr&quot;), digits=4)</code></pre>
 <pre><code>##                 logFC AveExpr     t    P.Value  adj.P.Val     B
 ## AFFX-hum_alu_at 13.61   13.53 355.6 5.059e-127 6.387e-123 270.8
@@ -298,6 +308,7 @@ fit1 &lt;- contrasts.fit(fit, cont.ma)
 fit1 &lt;- eBayes(fit1)
 dim(topTable(fit1, number=Inf, p.value=0.01, adjust.method=&quot;fdr&quot;))</code></pre>
 <pre><code>## [1] 314   6</code></pre>
+<p>There are 314 genes that are expressed differentially.</p>
 <pre class="r"><code>print( topTable(fit1, number=5, adjust.method=&quot;fdr&quot;), digits=4)</code></pre>
 <pre><code>##          B1...B2  B2...B3 AveExpr     F   P.Value adj.P.Val
 ## 1389_at  -1.7852 -0.74038   9.678 49.15 1.532e-14 1.934e-10

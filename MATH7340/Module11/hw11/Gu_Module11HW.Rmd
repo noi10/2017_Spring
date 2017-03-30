@@ -22,13 +22,15 @@ data(golub, package="multtest")
 clusdata <- data.frame(golub[1042,])
 colnames(clusdata)<-c("CCND3 Cyclin D3")
 gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+
 hc.single <- hclust(dist(clusdata, method="euclidian"), method="single")
-plot(hc.single, labels=gol.fac)
+plot(hc.single, hang=-1, labels=gol.fac)
 rect.hclust(hc.single, k=2)
 groups.single <- cutree(hc.single, k=2)
 table(gol.fac, groups.single)
+
 hc.ward <- hclust(dist(clusdata,method="euclidian"),method="ward.D2")  
-plot(hc.ward, labels=gol.fac)
+plot(hc.ward, hang=-1, labels=gol.fac)
 rect.hclust(hc.ward, k=2)
 groups.ward <- cutree(hc.ward, k=2)
 table(gol.fac, groups.ward)
@@ -42,6 +44,8 @@ table(gol.fac, cl.2mean$cluster)
 ```
 
 ##### (c) Which clustering approach (hierarchical versus k-means) produce the best matches to the two diagnose groups ALL/AML?
+
+Equally good.
 
 ##### (d) Find the two cluster means from the k-means cluster analysis. Perform a bootstrap on the cluster means. Do the confidence intervals for the cluster means overlap? Which of these two cluster means is estimated more accurately?
 ```{r}
@@ -78,13 +82,46 @@ plot(K, sse, type='o', xaxt='n'); axis(1, at = K, las=2)
 ##### (a) Select the oncogenes and antigens from the Golub data. (Hint: Use grep()).
 ```{r}
 data(golub, package="multtest")
-ongoIndex <- grep("oncogene", golub.gnames[,2])
-```
-case sensitive??
-##### (b) On the selected data, do clustering analysis for the genes (not for the patients). Using K-means and K-medoids with K=2 to cluster the genes. Use table() to compare the resulting two clusters with the two gene groups oncogenes and antigens for each of the two clustering analysis.
-##### (c) Use appropriate tests (from previous modules) to test the marginal independence in the two by two tables in (b). Which clustering method provides clusters related to the two gene groups?
-##### (d) Plot the cluster dendrograms for this part of golub data with single linkage and complete linkage, using Euclidean distance.
 
+oncoIndex <- grep("oncogene", golub.gnames[,2])
+antiIndex <- grep("antigen", golub.gnames[,2])
+tag <- c(rep(0, length(oncoIndex)), rep(1, length(antiIndex)))
+clusdata <- rbind(golub[oncoIndex,], golub[antiIndex,])
+gol.fac <- factor(tag,levels=0:1, labels= c("oncogene","antigen"))
+```
+
+
+##### (b) On the selected data, do clustering analysis for the genes (not for the patients). Using K-means and K-medoids with K=2 to cluster the genes. Use table() to compare the resulting two clusters with the two gene groups oncogenes and antigens for each of the two clustering analysis.
+```{r warning=FALSE}
+library(cluster)
+```
+```{r}
+cl.2mean <- kmeans(clusdata, centers=2, nstart=10)
+meanTable <- table(gol.fac, cl.2mean$cluster)
+meanTable
+
+cl.2medoid <- pam(dist(clusdata, method='eucl'), k=2)
+medoidTable <- table(gol.fac, cl.2medoid$cluster)
+medoidTable
+```
+
+##### (c) Use appropriate tests (from previous modules) to test the marginal independence in the two by two tables in (b). Which clustering method provides clusters related to the two gene groups?
+```{r}
+fisher.test(meanTable)
+fisher.test(medoidTable)
+```
+Both of them have p-values that are greater than 0.05. So none of them provides clusters related to the two gene groups.
+
+##### (d) Plot the cluster dendrograms for this part of golub data with single linkage and complete linkage, using Euclidean distance.
+```{r fig.width=8, fig.height=5}
+hc.single <- hclust(dist(clusdata, method="euclidian"), method="single")
+plot(hc.single, hang=-1, labels=gol.fac, cex=0.38)
+rect.hclust(hc.single, k=2)
+
+hc.complete <- hclust(dist(clusdata, method="euclidian"), method="complete")
+plot(hc.complete, hang=-1, labels=gol.fac, cex=0.38)
+rect.hclust(hc.complete, k=2)
+```
 
 ### Problem 3 (30 points):
 ### Clustering analysis on NCI60 cancer cell line microarray data (Ross et al. 2000)
@@ -92,7 +129,7 @@ case sensitive??
 
 ##### (a) Using k-means clustering, produce a plot of K versus SSE, for K=1,…, 30. How many clusters appears to be there?
 
-```{r results=FALSE}
+```{r results=FALSE, warning=FALSE}
 library(ISLR)
 ncidata <- NCI60$data
 ncilabs <- NCI60$labs
@@ -105,9 +142,18 @@ for (k in K) {
 } 
 plot(K, sse, type='o', xaxt='n'); axis(1, at = K, las=2)
 ```
+
+7~9 seems to be good.
+
+
 ##### (b) Do K-medoids clustering (K=7) with 1-correlation as the dissimilarity measure on the data. Compare the clusters with the cell lines. Which types of cancer are well identified in a cluster? Which types of cancer are not grouped into a cluster? According to the clustering results, which types of cancer are most similar to ovarian cancer?
-```{r warnings=FALSE}
+```{r warning=FALSE}
 library(cluster)
 cl.pam<-pam(as.dist(1-cor(t(ncidata))), k=7)
 table(ncilabs, cl.pam$cluster)
 ```
+Taking into account when n>1.
+
+Well identified: CNS, COLON, LEUKEMIA, MELANOMA, RENAL
+
+Not grouped: BREAST, NSCLC, OVARIAN, PROSTATE

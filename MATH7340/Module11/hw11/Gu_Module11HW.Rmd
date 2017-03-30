@@ -1,0 +1,113 @@
+---
+title: "Math7340 HW10"
+author: "Chengbo Gu"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Questions: 1(c) which is better? 2 equally good
+#            2(a) case-sensitive? 3(a)
+
+### Problem 1: (40 points)
+### Clustering analysis on the "CCND3 Cyclin D3" gene expression values of the Golub et al. (1999) data.
+##### (a) Conduct hierarchical clustering using single linkage and Ward linkage. Plot the cluster dendrogram for both fit. Get two clusters from each of the methods. Use function table() to compare the clusters with the two patient groups ALL/AML. Which linkage function seems to work better here?
+
+```{r}
+data(golub, package="multtest")
+clusdata <- data.frame(golub[1042,])
+colnames(clusdata)<-c("CCND3 Cyclin D3")
+gol.fac <- factor(golub.cl,levels=0:1, labels= c("ALL","AML"))
+hc.single <- hclust(dist(clusdata, method="euclidian"), method="single")
+plot(hc.single, labels=gol.fac)
+rect.hclust(hc.single, k=2)
+groups.single <- cutree(hc.single, k=2)
+table(gol.fac, groups.single)
+hc.ward <- hclust(dist(clusdata,method="euclidian"),method="ward.D2")  
+plot(hc.ward, labels=gol.fac)
+rect.hclust(hc.ward, k=2)
+groups.ward <- cutree(hc.ward, k=2)
+table(gol.fac, groups.ward)
+```
+
+
+##### (b) Use k-means cluster analysis to get two clusters. Use table() to compare the two clusters with the two patient groups ALL/AML.
+```{r}
+cl.2mean <- kmeans(clusdata, centers=2, nstart = 10)
+table(gol.fac, cl.2mean$cluster)
+```
+
+##### (c) Which clustering approach (hierarchical versus k-means) produce the best matches to the two diagnose groups ALL/AML?
+
+##### (d) Find the two cluster means from the k-means cluster analysis. Perform a bootstrap on the cluster means. Do the confidence intervals for the cluster means overlap? Which of these two cluster means is estimated more accurately?
+```{r}
+initial <-cl.2mean$centers
+n <- dim(clusdata)[1]
+nboot<-1000
+boot.cl <- matrix(NA,nrow=nboot,ncol = 2)
+for (i in 1:nboot){ 
+  dat.star <- clusdata[sample(1:n,replace=TRUE),]
+  cl <- kmeans(dat.star, initial, nstart = 10)
+  boot.cl[i,] <- c(cl$centers[,1])
+}
+apply(boot.cl,2,mean)
+quantile(boot.cl[,1],c(0.025,0.975))
+quantile(boot.cl[,2],c(0.025,0.975))
+```
+CIs don't overlap. 
+
+First class.
+
+##### (e) Produce a plot of K versus SSE, for K=1, …, 30. How many clusters does this plot suggest?
+```{r}
+K = (1:30)
+sse<-rep(NA,length(K)) 
+for (k in 1:30) { 
+  sse[k]<-kmeans(clusdata, centers=k,nstart = 10)$tot.withinss 
+} 
+plot(K, sse, type='o', xaxt='n'); axis(1, at = K, las=2)
+```
+
+
+### Problem 2 (30 points):
+### Cluster analysis on part of Golub data.
+##### (a) Select the oncogenes and antigens from the Golub data. (Hint: Use grep()).
+```{r}
+data(golub, package="multtest")
+ongoIndex <- grep("oncogene", golub.gnames[,2])
+```
+case sensitive??
+##### (b) On the selected data, do clustering analysis for the genes (not for the patients). Using K-means and K-medoids with K=2 to cluster the genes. Use table() to compare the resulting two clusters with the two gene groups oncogenes and antigens for each of the two clustering analysis.
+##### (c) Use appropriate tests (from previous modules) to test the marginal independence in the two by two tables in (b). Which clustering method provides clusters related to the two gene groups?
+##### (d) Plot the cluster dendrograms for this part of golub data with single linkage and complete linkage, using Euclidean distance.
+
+
+### Problem 3 (30 points):
+### Clustering analysis on NCI60 cancer cell line microarray data (Ross et al. 2000)
+##### The ncidata (64 by 6830 matrix) contains 6830 gene expression measurements on 64 cancer cell lines. The cancer cell lines labels are contained in ncilabs. We do clustering analysis on the 64 cell lines (the rows).
+
+##### (a) Using k-means clustering, produce a plot of K versus SSE, for K=1,…, 30. How many clusters appears to be there?
+
+```{r results=FALSE}
+library(ISLR)
+ncidata <- NCI60$data
+ncilabs <- NCI60$labs
+```
+```{r}
+K = (1:30)
+sse<-rep(NA,length(K)) 
+for (k in K) { 
+  sse[k]<-kmeans(ncidata, centers=k, nstart = 10)$tot.withinss 
+} 
+plot(K, sse, type='o', xaxt='n'); axis(1, at = K, las=2)
+```
+##### (b) Do K-medoids clustering (K=7) with 1-correlation as the dissimilarity measure on the data. Compare the clusters with the cell lines. Which types of cancer are well identified in a cluster? Which types of cancer are not grouped into a cluster? According to the clustering results, which types of cancer are most similar to ovarian cancer?
+```{r warnings=FALSE}
+library(cluster)
+cl.pam<-pam(as.dist(1-cor(t(ncidata))), k=7)
+table(ncilabs, cl.pam$cluster)
+```

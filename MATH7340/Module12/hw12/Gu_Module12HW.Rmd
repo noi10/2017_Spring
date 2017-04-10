@@ -2,9 +2,9 @@
 title: "Math7340 HW12"
 author: "Chengbo Gu"
 output:
-  word_document: default
-  pdf_document: default
   html_document: default
+  pdf_document: default
+  word_document: default
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -187,14 +187,13 @@ PC1+PC2: 95.81%
 
 ##### (f) Find a 90% confidence interval on the proportion of variance explained by the second principal component, in the scaled PCA.
 ```{r}
-#scaled.PCA$sdev^2/sum(scaled.PCA$sdev^2)
 p <- ncol(scaled.data)
 n <- nrow(scaled.data) 
 nboot<-1000 
-sdevs <- array(dim=c(nboot,p)) #matrix to save resampled sdev for p PCs 
+sdevs <- array(dim=c(nboot,p)) 
 for (i in 1:nboot) { 
-  dat.star <- scaled.data[sample(1:n,replace=TRUE),] #resample rows 
-  sdevs[i,] <- prcomp(dat.star)$sdev #sdev for PCA on resampled data 
+  dat.star <- scaled.data[sample(1:n,replace=TRUE),] 
+  sdevs[i,] <- (prcomp(dat.star)$sdev)^2  
 } 
-as.numeric(quantile(sdevs[,2], c(0.05,0.95)))/(sum(scaled.PCA$sdev^2))
+as.numeric(quantile(sdevs[,2]/apply(sdevs, 1, sum), c(0.05,0.95)))
 ```

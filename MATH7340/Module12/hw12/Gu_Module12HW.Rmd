@@ -1,0 +1,200 @@
+---
+title: "Math7340 HW12"
+author: "Chengbo Gu"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Problem 1 (60 points) Analysis of the ALL data set
+##### (a) Define an indicator variable ALL.fac such that ALL.fac=1 for T-cell patients and ALL.fac=2 for B-cell patients.
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(ALL)
+```
+```{r}
+data(ALL)
+ALL.fac <- as.numeric(ALL$BT)
+ALL.fac[ALL.fac <= 5] = 1
+ALL.fac[ALL.fac > 5] = 2
+```
+
+
+##### (b) Plot the histograms for the first three genes’ expression values in one row.
+```{r fig.width= 12}
+par(mfrow=c(1,3))
+for (i in 1:3) {
+  hist(exprs(ALL)[i,], main="gene expression", nclass=15, 
+       freq=FALSE, xlab=rownames(exprs(ALL))[i])
+}
+```
+
+##### (c) Plot the pairwise scatterplots for the first five genes.
+```{r}
+firstFive <- t(exprs(ALL)[1:5,])
+pairs(firstFive, col=ALL.fac)
+```
+
+##### (d) Do a 3D scatterplot for the genes “39317_at”, “32649_at” and “481_at”, and color according to ALL.fac (give different colors for B-cell versus T-cell patients). Can the two patient groups be distinguished using these three genes?
+
+```{r}
+rowname <- rownames(exprs(ALL))
+index39317 <- grep("^39317_at$", rowname)
+index32649 <- grep("^32649_at$", rowname)
+index481 <- grep("^481_at$", rowname)
+
+data <- t(exprs(ALL)[c(index39317, index32649, index481),])
+```
+```{r results='hide', message=FALSE, warning=FALSE}
+require(scatterplot3d)
+```
+```{r}
+scatterplot3d(data, color=ALL.fac)
+```
+
+From the 3D plot, we conclude that two patient groups could be distinguished using these three genes.
+
+
+##### (e) Do K-means clustering for K=2 and K=3 using the three genes in (d). Compare the resulting clusters with the two patient groups. Are the two groups discovered by the clustering analysis?
+
+```{r}
+cl.2mean <- kmeans(data, centers=2, nstart = 10)
+table(ALL.fac, cl.2mean$cluster)
+```
+```{r}
+cl.3mean <- kmeans(data, centers=3, nstart = 10)
+table(ALL.fac, cl.3mean$cluster)
+```
+
+Yes, the two groups are discovered by K-means clustering when K = 3.
+
+##### (f) Carry out the PCA on the ALL data set with scaled variables. What proportion of variance is explained by the first principal component? By the second principal component?
+
+```{r}
+PCA <- prcomp(exprs(ALL), scale=TRUE)
+summary(PCA)
+```
+
+93.59% of variance is explained by the first principal component.
+
+0.948% of variance is explained by the second principal component.
+
+
+##### (g) Do a biplot of the first two principal components. Observe the pattern for the loadings. What info is the first principal component summarizing?
+```{r}
+print(c(t(PCA$rotation[,1])), digits=3)
+biplot(PCA, xlim=c(-0.05,0.03), ylim=c(-0.05,0.05), cex=0.5)
+```
+
+
+We can see that the loadings for PC1 are all negative and have very similar size (all between -0.08 and -0.09). So PC1 is essentially the negative average of all variables.
+
+
+##### (h) For the second principal component PC2, print out the three genes with biggest PC2 values and the three genes with smallest PC2 values.
+```{r}
+o <- order(PCA$x[,2])
+
+numOfGenes <- dim(exprs(ALL))[1]
+rowname[ o[ (numOfGenes-2) : numOfGenes]]
+
+rowname[o[1:3]]
+```
+##### (i) Find the gene names and chromosomes for the gene with biggest PC2 value and the gene with smallest PC2 value. (Hint: review Module 10 on searching the annotation.)
+```{r results='hide', message=FALSE, warning=FALSE}
+library(hgu95av2.db)
+```
+```{r}
+biggest <- rowname[o[numOfGenes]]
+smallest <- rowname[o[1]]
+```
+
+gene name and chromosome for the gene with biggest PC2 value
+```{r}
+get(biggest, env = hgu95av2GENENAME)
+get(biggest, env = hgu95av2CHR)
+```
+
+gene name and chromosome for the gene with smallest PC2 value 
+```{r}
+get(smallest, env = hgu95av2GENENAME)
+get(smallest, env = hgu95av2CHR)
+
+```
+
+
+### Problem 2 (40 points) Variables scaling and PCA in the iris data set
+##### In this module and last module, we mentioned that the variables are often scaled before doing the PCA or the clustering analysis. By “scaling a variable”, we mean to apply a linear transformation to center the observations to have mean zero and standard deviation one. In last module, we also mentioned using the correlation-based dissimilarity measure versus using the Euclidean distance in clustering analysis. It turns out that the correlation-based dissimilarity measure is proportional to the squared Euclidean distance on the scaled variables. We check this on the iris data set. And we compare the PCA on scaled versus unscaled variables for the iris data set.
+
+##### (a) Create a data set consisting of the first four numerical variables in the iris data set (That is, to drop the last variable Species which is categorical). Then make a scaled data set that centers each of the four variables (columns) to have mean zero and variance one.
+```{r}
+data <- data.frame(iris[,1:4])
+scaled.data <- scale(data)
+
+colMeans(scaled.data)
+apply(scaled.data, 2, sd)
+```
+The data is scaled now with mean 0 and sd 1.
+
+##### (b) Calculate the correlations between the columns of the data sets using the cor() function. Show that these correlations are the same for scaled and the unscaled data sets.
+```{r}
+cor(data)
+cor(scaled.data)
+```
+These correlations are the same for scaled and the unscaled data sets
+
+##### (c) Calculate the Euclidean distances between the columns of the scaled data set using dist() function. Show that the squares of these Euclidean distances are proportional to the (1-correlation)s. What is the value of the proportional factor here?
+```{r}
+dist(t(scaled.data), method="eucl")
+d <- c(dist(t(scaled.data), method="eucl")^2)
+corr <- cor(scaled.data)[lower.tri(diag(4))]
+d/(1-corr)
+```
+The proportional factor here is 298.
+
+##### (d) Show the outputs for doing PCA on the scaled data set and on the unscaled data set. (Apply PCA on the two data sets with option “scale=FALSE”. Do NOT use option “scale=TRUE”, which will scale data no matter which data set you are using.) Are they the same?
+```{r}
+unscaled.PCA <- prcomp(data, scale=FALSE)
+scaled.PCA <- prcomp(scaled.data, scale=FALSE)
+
+summary(scaled.PCA)
+summary(unscaled.PCA)
+```
+
+They are not the same.
+
+
+##### (e) What proportions of variance are explained by the first two principle components in the scaled PCA and in the unscaled PCA?
+
+unscaled: 
+
+PC1: 92.46% 
+
+PC2: 5.307%
+
+PC1+PC2: 97.769%
+
+scaled: 
+
+PC1: 72.96% 
+
+PC2: 22.85%
+
+PC1+PC2: 95.81%
+
+##### (f) Find a 90% confidence interval on the proportion of variance explained by the second principal component, in the scaled PCA.
+```{r}
+#scaled.PCA$sdev^2/sum(scaled.PCA$sdev^2)
+p <- ncol(scaled.data)
+n <- nrow(scaled.data) 
+nboot<-1000 
+sdevs <- array(dim=c(nboot,p)) #matrix to save resampled sdev for p PCs 
+for (i in 1:nboot) { 
+  dat.star <- scaled.data[sample(1:n,replace=TRUE),] #resample rows 
+  sdevs[i,] <- prcomp(dat.star)$sdev #sdev for PCA on resampled data 
+} 
+as.numeric(quantile(sdevs[,2], c(0.05,0.95)))/(sum(scaled.PCA$sdev^2))
+```

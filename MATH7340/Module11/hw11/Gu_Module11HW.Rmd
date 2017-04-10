@@ -1,17 +1,11 @@
 ---
-title: "Math7340 HW10"
+title: "Math7340 HW11"
 author: "Chengbo Gu"
 output:
-  html_document: default
+  word_document: default
   pdf_document: default
+  html_document: default
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-# Questions: 1(c) which is better? 2 equally good
-#            2(a) case-sensitive? 3(a)
 
 ### Problem 1: (40 points)
 ### Clustering analysis on the "CCND3 Cyclin D3" gene expression values of the Golub et al. (1999) data.
@@ -36,6 +30,8 @@ groups.ward <- cutree(hc.ward, k=2)
 table(gol.fac, groups.ward)
 ```
 
+Ward linkage works better here.
+
 
 ##### (b) Use k-means cluster analysis to get two clusters. Use table() to compare the two clusters with the two patient groups ALL/AML.
 ```{r}
@@ -45,7 +41,7 @@ table(gol.fac, cl.2mean$cluster)
 
 ##### (c) Which clustering approach (hierarchical versus k-means) produce the best matches to the two diagnose groups ALL/AML?
 
-Equally good.
+They are equally good.
 
 ##### (d) Find the two cluster means from the k-means cluster analysis. Perform a bootstrap on the cluster means. Do the confidence intervals for the cluster means overlap? Which of these two cluster means is estimated more accurately?
 ```{r}
@@ -64,7 +60,7 @@ quantile(boot.cl[,2],c(0.025,0.975))
 ```
 CIs don't overlap. 
 
-First class.
+First cluster mean is estimated more accurately because of shorter CI.
 
 ##### (e) Produce a plot of K versus SSE, for K=1, …, 30. How many clusters does this plot suggest?
 ```{r}
@@ -75,6 +71,8 @@ for (k in 1:30) {
 } 
 plot(K, sse, type='o', xaxt='n'); axis(1, at = K, las=2)
 ```
+
+Seems that 2-4 clusters are appropriate.
 
 
 ### Problem 2 (30 points):
@@ -110,7 +108,8 @@ medoidTable
 fisher.test(meanTable)
 fisher.test(medoidTable)
 ```
-Both of them have p-values that are greater than 0.05. So none of them provides clusters related to the two gene groups.
+
+Both clustering methods have p-values that are greater than 0.05. So none of them provides clusters related to the two gene groups.
 
 ##### (d) Plot the cluster dendrograms for this part of golub data with single linkage and complete linkage, using Euclidean distance.
 ```{r fig.width=8, fig.height=5}
@@ -152,8 +151,9 @@ library(cluster)
 cl.pam<-pam(as.dist(1-cor(t(ncidata))), k=7)
 table(ncilabs, cl.pam$cluster)
 ```
-Taking into account when n>1.
 
 Well identified: CNS, COLON, LEUKEMIA, MELANOMA, RENAL
 
 Not grouped: BREAST, NSCLC, OVARIAN, PROSTATE
+
+NSCLC is the most similar to ovarian cancer.

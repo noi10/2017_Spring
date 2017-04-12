@@ -84,6 +84,18 @@ confint(fit.lgr, level=0.8)
 
 ##### (f) Use n-fold cross-validation to estimate misclassification rate (mcr) of the logistic regression classifier. What is your estimated mcr?
 ```{r}
+n<-dim(data)[1]
+lgr.mcr.cv.raw <- rep(NA, n)
+for (i in 1:n) {
+  data.tr <- data[-i,]
+  data.test <- data[i,]
+  fit.lgr <- glm(IsB~., family = binomial(link='logit'), data = data.tr)
+  pred.prob <- predict(fit.lgr, newdata = data.test, type ="response")
+  pred.B <- (pred.prob > 0.5)
+  lgr.mcr.cv.raw[i] <- pred.B!=data.test$IsB
+}
+
+lgr.mcr.cv <- mean(lgr.mcr.cv.raw)
 ```
 
 ##### (g) Conduct a PCA on the scaled variables of the whole ALL data set (NOT just the two genes used above). We do this to reduce the dimension in term of genes (so this PCA should be done on the transpose of the matrix of expression values). To simply our future analysis, we use only the first K principal components (PC) to represent the data. How many PCs should be used? Explain how you arrived at your conclusion. Provide graphs or other R outputs to support your choice.
@@ -124,5 +136,82 @@ svm.mcr.cv
 ```
 
 ##### (j) If you had to choose between classifiers in part (e) and in part (h), which one would you choose? Why?
+SVM, lower cross-validation misclassification rate.
+
+
+
+### 2. (30 points) Choosing Classifiers and Number of Principal Components for PCA reduced iris data set.
+##### In the last example of this module, we compared three classifiers on the iris data by working on the first three principal components. We choose the best classifiers based on cross-validated misclassification rate. We can also choose the number of principal components to use by cross-validation, instead of fixing it at K=3.
+##### Use the leave-one-out cross-validation to choose the number of principal components together with the classifier. Please report the empirical misclassification rates (on whole data set) and the leave-one-out cross-validation misclassification rates for each value of K=1, 2, 3, 4 principal components and for each of the three classifiers: logistic regression, support vector machine and classification tree. Based on those rates, what is your choice?
 ```{r}
+library(VGAM)
+data(iris)
+```
+```{r, warning=FALSE}
+
+lgr.classification <- function(iris2) {
+  iris2.lgr <- vglm(Species~. , family = multinomial, data = iris2)
+  pred.prob <- predict(iris2.lgr, as.data.frame(iris2[,-1]), type = "response")
+  pred.lgr <- apply(pred.prob, 1, which.max)
+  pred.lgr <- factor(pred.lgr, levels=c("1", "2", "3"), labels = levels(iris2$Species))
+  
+  mcr.lgr <- mean(pred.lgr!=iris2$Species)
+  cat("empirical mcr for logistic regression:", mcr.lgr, "\n")
+  
+  mcr.cv.raw<-rep(NA, n) 
+  for (i in 1:n) { 
+    fit.lgr <- vglm(Species~., family=multinomial, data=iris2[-i,])
+    pred.prob <- predict(fit.lgr, iris2[i,-1], type="response")
+    pred <- apply(pred.prob, 1, which.max) 
+    pred <- factor(pred, levels=c("1","2","3"), labels=levels(iris2$Species)) 
+    mcr.cv.raw[i]<- mean(pred!=Species[i]) 
+  }
+  mcr.cv<-mean(mcr.cv.raw)
+  cat("cross-validation mcr for logistic regression:", mcr.cv, "\n\n")
+}
+
+svm.classification <- function(data.pca, Species) {
+  iris2.svm <- svm(data.pca, Species, type = "C-classification", kernel = "linear") 
+  svmpred <- predict(iris2.svm , data.pca)  
+  mcr.svm<- mean(svmpred!=Species) 
+  cat("empirical mcr for SVM:", mcr.svm, "\n")
+  mcr.cv.raw<-rep(NA, n) 
+  for (i in 1:n) { 
+    svmest <- svm(data.pca[-i,], Species[-i], type = "C-classification", kernel = "linear")
+    svmpred <- predict(svmest, t(data.pca[i,])) 
+    mcr.cv.raw[i]<- mean(svmpred!=Species[i]) 
+  } 
+  mcr.cv<-mean(mcr.cv.raw)
+  cat("cross-validation mcr for SVM:", mcr.cv, "\n\n")
+}
+
+tree.classification <- function(iris2) {
+  fit <- rpart(Species ~ ., data = iris2, method = "class")
+  pred.tr<-predict(fit, iris2, type = "class")
+  mcr.tr <- mean(pred.tr!=Species)
+  cat("empirical mcr for classification tree :", mcr.tr, "\n")
+  
+  mcr.cv.raw<-rep(NA, n)
+  for (i in 1:n) { 
+    fit.tr <- rpart(Species ~ ., data = iris2[-i,], method = "class")
+    pred <- predict(fit.tr, iris2[i,], type = "class")
+    mcr.cv.raw[i]<- mean(pred!=Species[i])
+  }
+  mcr.cv<-mean(mcr.cv.raw)
+  cat("cross-validation mcr for classification tree:", mcr.cv, "\n\n\n")
+}
+
+
+pca.iris<-prcomp(iris[,1:4], scale=TRUE)
+Species <- iris$Species
+n <- length(Species)
+for (k in 1:4){
+  cat("K = ", k, "\n")
+  data.pca <- as.matrix(pca.iris$x[, 1:k])
+  iris2 <- data.frame(Species, data.pca)
+  
+  lgr.classification(iris2)
+  svm.classification(data.pca, Species)
+  tree.classification(iris2)
+}
 ```

@@ -27,3 +27,12 @@ testID <- sample(1:78, 31, replace = FALSE)
 data.tr<-data.lgr[-testID, ]
 data.test<-data.lgr[testID, ]
 fit.lgr <- glm(IsB1~., family=binomial(link='logit'), data=data.tr)
+
+library(VGAM)
+pca.iris<-prcomp(iris[,1:4], scale=TRUE)
+Species<-iris$Species
+data.pca<-pca.iris$x[,1:3]
+n<-length(Species)
+iris2.lgr <- vglm(Species~., family=multinomial, data=iris2)
+
+iris2.svm <- svm(data.pca, Species, type = "C-classification", kernel = "linear")

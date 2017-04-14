@@ -9,9 +9,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ### Problem 1 (70 points) Analysis of the ALL data set.
+```{r results='hide', message=FALSE, warning=FALSE}
+library(ALL)
+library(ROCR)
+library(e1071)
+require(rpart)
+require(caret)
+```
+
 ##### (a) Define an indicator variable IsB such that IsB=TRUE for B-cell patients and IsB=FALSE for T-cell patients.
 ```{r}
-library(ALL)
 data(ALL)
 IsB <- factor(ALL$BT %in% c("B", "B1", "B2", "B3", "B4"))
 ```
@@ -19,7 +26,6 @@ IsB <- factor(ALL$BT %in% c("B", "B1", "B2", "B3", "B4"))
 ##### (b) Use two genes "39317_at" and "38018_g_at" to fit a classification tree for IsB. Print out the confusion matrix. Plot ROC curve for the tree.
 ```{r}
 probedat <- as.matrix(exprs(ALL[c("39317_at", "38018_g_at"),]))
-require(rpart)
 c.tr <- rpart(IsB ~ ., data = data.frame(t(probedat)))
 #plot(c.tr, branch=0,margin=0.1)
 #text(c.tr, digits=3)
@@ -27,7 +33,6 @@ rpartpred <- predict(c.tr, type="class")
 table(rpartpred, IsB)
 ```
 ```{r}
-library(ROCR)
 pred.prob <- predict(c.tr, type="prob")[,2]
 pred <- prediction(pred.prob, IsB == "TRUE")
 perf <- performance(pred, "tpr", "fpr")
@@ -45,8 +50,10 @@ fnr <- sum(rpartpred == "FALSE" & IsB == "TRUE")/sum(IsB == "TRUE")
 fnr
 
 # specificity
-spec <- 1-fnr
+fpr <- sum(rpartpred == "TRUE" & IsB == "FALSE")/sum(IsB == "FALSE")
+spec <- 1-fpr
 spec
+
 
 performance(pred, "auc")@y.values[[1]]
 ```
@@ -55,7 +62,7 @@ performance(pred, "auc")@y.values[[1]]
 
 ##### (d) Use 10-fold cross-validation to estimate its real false negative rate (fnr). What is your estimated fnr?
 ```{r}
-require(caret)
+
 data <- data.frame(IsB, t(probedat))
 n <- dim(probedat)[2]
 index <- 1:n
@@ -96,6 +103,7 @@ for (i in 1:n) {
 }
 
 lgr.mcr.cv <- mean(lgr.mcr.cv.raw)
+lgr.mcr.cv
 ```
 
 ##### (g) Conduct a PCA on the scaled variables of the whole ALL data set (NOT just the two genes used above). We do this to reduce the dimension in term of genes (so this PCA should be done on the transpose of the matrix of expression values). To simply our future analysis, we use only the first K principal components (PC) to represent the data. How many PCs should be used? Explain how you arrived at your conclusion. Provide graphs or other R outputs to support your choice.
@@ -112,7 +120,7 @@ abline(v=12, col="red")
 
 ##### (h) Do a SVM classifier of IsB using only the first five PCs. (The number K=5 is fixed so that we all use the same classifier. You do not need to choose this number in the previous part (g).) What is the sensitivity of this classifier?
 ```{r}
-library(e1071)
+
 data.pca <- PCA$x[,1:5]
 svm <- svm(data.pca, IsB, type = "C-classification", kernel = "linear")
 svm.pred <- predict(svm , data.pca)
@@ -143,33 +151,13 @@ SVM, lower cross-validation misclassification rate.
 ### 2. (30 points) Choosing Classifiers and Number of Principal Components for PCA reduced iris data set.
 ##### In the last example of this module, we compared three classifiers on the iris data by working on the first three principal components. We choose the best classifiers based on cross-validated misclassification rate. We can also choose the number of principal components to use by cross-validation, instead of fixing it at K=3.
 ##### Use the leave-one-out cross-validation to choose the number of principal components together with the classifier. Please report the empirical misclassification rates (on whole data set) and the leave-one-out cross-validation misclassification rates for each value of K=1, 2, 3, 4 principal components and for each of the three classifiers: logistic regression, support vector machine and classification tree. Based on those rates, what is your choice?
-```{r}
+```{r results='hide', message=FALSE, warning=FALSE}
+rm(list=ls())
 library(VGAM)
 data(iris)
 ```
-```{r, warning=FALSE}
 
-lgr.classification <- function(iris2) {
-  iris2.lgr <- vglm(Species~. , family = multinomial, data = iris2)
-  pred.prob <- predict(iris2.lgr, as.data.frame(iris2[,-1]), type = "response")
-  pred.lgr <- apply(pred.prob, 1, which.max)
-  pred.lgr <- factor(pred.lgr, levels=c("1", "2", "3"), labels = levels(iris2$Species))
-  
-  mcr.lgr <- mean(pred.lgr!=iris2$Species)
-  cat("empirical mcr for logistic regression:", mcr.lgr, "\n")
-  
-  mcr.cv.raw<-rep(NA, n) 
-  for (i in 1:n) { 
-    fit.lgr <- vglm(Species~., family=multinomial, data=iris2[-i,])
-    pred.prob <- predict(fit.lgr, iris2[i,-1], type="response")
-    pred <- apply(pred.prob, 1, which.max) 
-    pred <- factor(pred, levels=c("1","2","3"), labels=levels(iris2$Species)) 
-    mcr.cv.raw[i]<- mean(pred!=Species[i]) 
-  }
-  mcr.cv<-mean(mcr.cv.raw)
-  cat("cross-validation mcr for logistic regression:", mcr.cv, "\n\n")
-}
-
+```{r include=FALSE}
 svm.classification <- function(data.pca, Species) {
   iris2.svm <- svm(data.pca, Species, type = "C-classification", kernel = "linear") 
   svmpred <- predict(iris2.svm , data.pca)  
@@ -184,7 +172,47 @@ svm.classification <- function(data.pca, Species) {
   mcr.cv<-mean(mcr.cv.raw)
   cat("cross-validation mcr for SVM:", mcr.cv, "\n\n")
 }
+```
+```{r, warning=FALSE}
 
+lgr.classification <- function(iris2) {
+  iris2.lgr <- vglm(Species~. , family = multinomial, data = iris2)
+  pred.prob <- predict(iris2.lgr, as.data.frame(iris2[,-1]), type = "response")
+  pred.lgr <- apply(pred.prob, 1, which.max)
+  pred.lgr <- factor(pred.lgr, levels=c("1", "2", "3"), labels = levels(iris2$Species))
+  
+  mcr.lgr <- mean(pred.lgr!=iris2$Species)
+  cat("empirical mcr for logistic regression:", mcr.lgr, "\n")
+  
+  mcr.cv.raw<-rep(NA, n) 
+  for (i in 1:n) {
+    lgr.fit <- vglm(Species~., family=multinomial, data=iris2[-i,])
+    pred.prob <- predict(lgr.fit, iris2[i,], type="response")
+    pred <- apply(pred.prob, 1, which.max) 
+    pred <- factor(pred, levels=c("1","2","3"), labels=levels(iris2$Species)) 
+    mcr.cv.raw[i]<- mean(pred!=Species[i]) 
+  }
+  mcr.cv<-mean(mcr.cv.raw)
+  cat("cross-validation mcr for logistic regression:", mcr.cv, "\n\n")
+}
+```
+```{r}
+svm.classification <- function(iris2) {
+  iris2.svm <- svm(Species~., type = "C-classification", kernel = "linear", data = iris2) 
+  svmpred <- predict(iris2.svm , data.pca)  
+  mcr.svm<- mean(svmpred!=Species) 
+  cat("empirical mcr for SVM:", mcr.svm, "\n")
+  mcr.cv.raw<-rep(NA, n) 
+  for (i in 1:n) { 
+    svmest <- svm(Species~., type = "C-classification", kernel = "linear", data = iris2[-i,])
+    svmpred <- predict(svmest, iris2[i,]) 
+    mcr.cv.raw[i]<- mean(svmpred!=iris2$Species[i]) 
+  }
+  mcr.cv<-mean(mcr.cv.raw)
+  cat("cross-validation mcr for SVM:", mcr.cv, "\n\n")
+}
+```
+```{r}
 tree.classification <- function(iris2) {
   fit <- rpart(Species ~ ., data = iris2, method = "class")
   pred.tr<-predict(fit, iris2, type = "class")
@@ -200,8 +228,10 @@ tree.classification <- function(iris2) {
   mcr.cv<-mean(mcr.cv.raw)
   cat("cross-validation mcr for classification tree:", mcr.cv, "\n\n\n")
 }
+```
 
 
+```{r warning=FALSE}
 pca.iris<-prcomp(iris[,1:4], scale=TRUE)
 Species <- iris$Species
 n <- length(Species)
@@ -209,9 +239,8 @@ for (k in 1:4){
   cat("K = ", k, "\n")
   data.pca <- as.matrix(pca.iris$x[, 1:k])
   iris2 <- data.frame(Species, data.pca)
-  
   lgr.classification(iris2)
-  svm.classification(data.pca, Species)
+  svm.classification(iris2)
   tree.classification(iris2)
 }
 ```

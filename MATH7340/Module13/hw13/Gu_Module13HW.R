@@ -1,46 +1,28 @@
----
-title: "MATH7340 HW13"
-author: "Chengbo Gu"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-### Problem 1 (70 points) Analysis of the ALL data set.
-```{r results='hide', message=FALSE, warning=FALSE}
+# problem 1
 library(ALL)
 library(ROCR)
 library(e1071)
 require(rpart)
 require(caret)
-```
 
-##### (a) Define an indicator variable IsB such that IsB=TRUE for B-cell patients and IsB=FALSE for T-cell patients.
-```{r}
+# (a)
 data(ALL)
 IsB <- factor(ALL$BT %in% c("B", "B1", "B2", "B3", "B4"))
-```
 
-##### (b) Use two genes "39317_at" and "38018_g_at" to fit a classification tree for IsB. Print out the confusion matrix. Plot ROC curve for the tree.
-```{r}
+# (b)
 probedat <- as.matrix(exprs(ALL[c("39317_at", "38018_g_at"),]))
 c.tr <- rpart(IsB ~ ., data = data.frame(t(probedat)))
 #plot(c.tr, branch=0,margin=0.1)
 #text(c.tr, digits=3)
 rpartpred <- predict(c.tr, type="class")
 table(rpartpred, IsB)
-```
-```{r}
+
 pred.prob <- predict(c.tr, type="prob")[,2]
 pred <- prediction(pred.prob, IsB == "TRUE")
 perf <- performance(pred, "tpr", "fpr")
 plot(perf)
-```
 
-##### (c) Find its empirical misclassification rate (mcr), false negative rate (fnr) and specificity. Find the area under curve (AUC) for the ROC curve.
-```{r}
+# (c)
 # mcr
 mcr <- sum(rpartpred != IsB)/length(IsB)
 mcr
@@ -55,12 +37,8 @@ spec <- 1-fpr
 spec
 
 performance(pred, "auc")@y.values[[1]]
-```
 
-
-
-##### (d) Use 10-fold cross-validation to estimate its real false negative rate (fnr). What is your estimated fnr?
-```{r}
+# (d)
 data <- data.frame(IsB, t(probedat))
 n <- dim(probedat)[2]
 index <- 1:n
@@ -77,18 +55,14 @@ for (i in 1:K){
 }
 fnr.cv <- mean(fnr.cv.raw)
 fnr.cv
-```
 
-##### (e) Do a logistic regression, using genes "39317_at" and "38018_g_at" to predict IsB. Find an 80% confidence interval for the coefficient of gene "39317_at".
-```{r}
+# (e)
 fit.lgr <- glm(IsB~. , family=binomial(link='logit'), data = data)
 summary(fit.lgr)
 
 confint(fit.lgr, level=0.8)
-```
 
-##### (f) Use n-fold cross-validation to estimate misclassification rate (mcr) of the logistic regression classifier. What is your estimated mcr?
-```{r}
+# (f)
 n<-dim(data)[1]
 lgr.mcr.cv.raw <- rep(NA, n)
 for (i in 1:n) {
@@ -102,10 +76,8 @@ for (i in 1:n) {
 
 lgr.mcr.cv <- mean(lgr.mcr.cv.raw)
 lgr.mcr.cv
-```
 
-##### (g) Conduct a PCA on the scaled variables of the whole ALL data set (NOT just the two genes used above). We do this to reduce the dimension in term of genes (so this PCA should be done on the transpose of the matrix of expression values). To simply our future analysis, we use only the first K principal components (PC) to represent the data. How many PCs should be used? Explain how you arrived at your conclusion. Provide graphs or other R outputs to support your choice.
-```{r, fig.width=12}
+# (g)
 PCA<-prcomp(t(exprs(ALL)), scale=TRUE)
 #summary(PCA)
 importance <- summary(PCA)$importance[2,]
@@ -114,20 +86,16 @@ plot(K, importance, type='o', xaxt='n')
 axis(1, at = K, las=2, cex.axis=0.65)
 abline(v=8, col="red")
 abline(v=12, col="red")
-```
 
-##### (h) Do a SVM classifier of IsB using only the first five PCs. (The number K=5 is fixed so that we all use the same classifier. You do not need to choose this number in the previous part (g).) What is the sensitivity of this classifier?
-```{r}
+# (h)
 data.pca <- PCA$x[,1:5]
 svm <- svm(data.pca, IsB, type = "C-classification", kernel = "linear")
 svm.pred <- predict(svm , data.pca)
 
 # tpr
 sum(svm.pred == "TRUE" & IsB == "TRUE")/sum(IsB == "TRUE")
-```
 
-##### (i) Use leave-one-out cross-validation to estimate misclassification rate (mcr) of the SVM classifier. Report your estimate.
-```{r}
+# (i)
 n <- dim(data.pca)[1]
 svm.mcr.cv.raw <- rep(NA, n)
 
@@ -138,24 +106,15 @@ for (i in 1:n){
 }
 svm.mcr.cv <- mean(svm.mcr.cv.raw)
 svm.mcr.cv
-```
 
-##### (j) If you had to choose between classifiers in part (e) and in part (h), which one would you choose? Why?
-SVM, lower cross-validation misclassification rate.
-
+# (j)
+# SVM, lower cross-validation misclassification rate.
 
 
-### 2. (30 points) Choosing Classifiers and Number of Principal Components for PCA reduced iris data set.
-##### In the last example of this module, we compared three classifiers on the iris data by working on the first three principal components. We choose the best classifiers based on cross-validated misclassification rate. We can also choose the number of principal components to use by cross-validation, instead of fixing it at K=3.
-##### Use the leave-one-out cross-validation to choose the number of principal components together with the classifier. Please report the empirical misclassification rates (on whole data set) and the leave-one-out cross-validation misclassification rates for each value of K=1, 2, 3, 4 principal components and for each of the three classifiers: logistic regression, support vector machine and classification tree. Based on those rates, what is your choice?
-```{r results='hide', message=FALSE, warning=FALSE}
+# problem 2
 rm(list=ls())
 library(VGAM)
 data(iris)
-```
-
-
-```{r, warning=FALSE}
 
 lgr.classification <- function(iris2) {
   iris2.lgr <- vglm(Species~. , family = multinomial, data = iris2)
@@ -177,8 +136,7 @@ lgr.classification <- function(iris2) {
   mcr.cv<-mean(mcr.cv.raw)
   cat("cross-validation mcr for logistic regression:", mcr.cv, "\n\n")
 }
-```
-```{r}
+
 svm.classification <- function(iris2) {
   iris2.svm <- svm(Species~., type = "C-classification", kernel = "linear", data = iris2) 
   svmpred <- predict(iris2.svm , data.pca)  
@@ -193,8 +151,7 @@ svm.classification <- function(iris2) {
   mcr.cv<-mean(mcr.cv.raw)
   cat("cross-validation mcr for SVM:", mcr.cv, "\n\n")
 }
-```
-```{r}
+
 tree.classification <- function(iris2) {
   fit <- rpart(Species ~ ., data = iris2, method = "class")
   pred.tr<-predict(fit, iris2, type = "class")
@@ -210,10 +167,7 @@ tree.classification <- function(iris2) {
   mcr.cv<-mean(mcr.cv.raw)
   cat("cross-validation mcr for classification tree:", mcr.cv, "\n\n\n")
 }
-```
 
-
-```{r warning=FALSE}
 pca.iris<-prcomp(iris[,1:4], scale=TRUE)
 Species <- iris$Species
 n <- length(Species)
@@ -225,4 +179,3 @@ for (k in 1:4){
   svm.classification(iris2)
   tree.classification(iris2)
 }
-```

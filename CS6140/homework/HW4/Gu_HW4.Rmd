@@ -1,0 +1,598 @@
+---
+title: "CS6140 Assignment 4"
+author: "Chengbo Gu"
+output:
+  html_document: default
+  geometry: margin=1in
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(glmulti)
+library(glmpath)
+library(pastecs)
+library(knitr)
+library(ROCR)
+library(MASS)
+library(pamr)
+library (tree)
+library(randomForest)
+library(gbm)
+require(caret)
+setwd("C:/Users/lenovo/Desktop/2017_Spring/CS6140/homework/HW4")
+```
+```{r}
+set.seed(123)
+Rawdata <- read.table("SouthAfricanHeartDisease.txt", sep=",", 
+                     stringsAsFactors = FALSE, header = TRUE)
+#Rawdata[,11] <- as.factor(Rawdata[,11])
+Mydata <- Rawdata[,-6]
+Mydata <- Mydata[,-1]
+
+
+predictors <- Mydata[,1:8]
+means <- apply(predictors, 2, mean)
+sds <- apply(predictors, 2, sd)
+
+predictors <- t(apply(predictors, 1, function(x) (x-means)/sds))
+response <- Mydata[,9]
+
+train <- sample(x=1:nrow(Mydata), size=nrow(Mydata)/2)
+trainResponse <- response[train]
+testResponse <- response[-train]
+
+trainPredictors <- predictors[train,]
+testPredictors <- predictors[-train,]
+
+trainSet <- Mydata[train,]
+testSet <- Mydata[-train,]
+```
+
+### problem 3. Naive Bayes classifier 
+
+```{r}
+# leave-one-out cross validation
+# only support response contains 0 and 1
+naive.bayes.cv <- function(lambda.seq, predictors, response){
+  miscl <- rep(NA, length(lambda.seq))
+  missd <- rep(NA, length(lambda.seq))
+  for (k in 1:length(lambda.seq)) {
+    lambda <- lambda.seq[k]
+    n <- length(response)
+    naiveBayes.raw <- rep(NA, n)
+    for (i in 1:n) {
+      data.tr.predictors <- predictors[-i,]
+      data.tr.response <- response[-i]
+      data.test.predictors <- predictors[i,]
+      data.test.response <- response[i]
+      density <- dnorm(abs(data.test.predictors - data.tr.predictors)/lambda, mean = 0, sd=1)
+      #print(density)
+      ones <- which(data.tr.response %in% c(1))
+      response.ones <- which(response %in% c(1))
+      
+      len.ones <- length(response.ones)
+      len.zeros <- n - len.ones
+      prior.ones <- len.ones/n
+      prior.zeros <- len.zeros/n
+      
+      density.ones <- density[ones,]
+      density.zeros <- density[-ones,]
+    
+      density.one <- prod(apply(density.ones, 2, sum)/len.ones)
+      density.zero <- prod(apply(density.zeros, 2, sum)/len.zeros)
+    
+      prob.one <- prior.ones * density.one / (prior.ones * density.one + prior.zeros * density.zero)
+      naiveBayes.raw[i] <- prob.one 
+    }
+    cl <- sapply(naiveBayes.raw, function(x) x>0.5)
+    miscl[k] <- 1-mean(cl == response)
+    missd[k] <- sd(cl == response)
+  }
+  plot(lambda.seq, miscl, ylim=c(0.25, 0.5), ylab="misclassification rate", xlab="lambda")
+  lines(lambda.seq, miscl)
+  abline(v=lambda.seq[which.min(miscl)], col="red", lty=3)
+  cat("Best lambda is :", lambda.seq[which.min(miscl)],"\n")
+}
+
+lambda.seq <- seq(0.01, 2, 0.01)
+naive.bayes.cv(lambda.seq, trainPredictors, trainResponse)
+```
+
+```{r include=FALSE}
+# not use train dataset
+
+response <- testResponse
+predictors <- testPredictors
+lambda <- 1.2
+n <- length(response)
+naiveBayes.raw <- rep(NA, n)
+for (i in 1:n) {
+  data.tr.predictors <- predictors[-i,]
+  data.tr.response <- response[-i]
+  data.test.predictors <- predictors[i,]
+  data.test.response <- response[i]
+  density <- dnorm(abs(data.test.predictors - data.tr.predictors)/lambda, mean = 0, sd=1)
+  #print(density)
+  ones <- which(data.tr.response %in% c(1))
+  response.ones <- which(response %in% c(1))
+  
+  len.ones <- length(response.ones)
+  len.zeros <- n - len.ones
+  prior.ones <- len.ones/n
+  prior.zeros <- len.zeros/n
+      
+  density.ones <- density[ones,]
+  density.zeros <- density[-ones,]
+
+  density.one <- prod(apply(density.ones, 2, sum)/len.ones)
+  density.zero <- prod(apply(density.zeros, 2, sum)/len.zeros)
+  
+  prob.one <- prior.ones * density.one / (prior.ones * density.one + prior.zeros * density.zero)
+  naiveBayes.raw[i] <- prob.one 
+}
+cl <- sapply(naiveBayes.raw, function(x) x>0.5)
+miscl <- 1-mean(cl == response)
+print(miscl)
+```
+
+```{r}
+# using train dataset
+naive.bayes.cl <- function(lambda, predictors, response, trainPredictors) {
+  n <- length(response)
+  naiveBayes.raw <- rep(NA, n)
+  for (i in 1:n) {
+
+    data.test.predictors <- predictors[i,]
+    density <- dnorm(abs(data.test.predictors - trainPredictors)/lambda, mean = 0, sd=1)
+
+    ones <- which(trainResponse %in% c(1))
+    response.ones <- which(trainResponse %in% c(1))
+  
+    len.ones <- length(response.ones)
+    len.zeros <- length(trainResponse) - len.ones
+    prior.ones <- len.ones/length(trainResponse)
+    prior.zeros <- len.zeros/length(trainResponse)
+      
+    density.ones <- density[ones,]
+    density.zeros <- density[-ones,]
+
+    density.one <- prod(apply(density.ones, 2, sum)/len.ones)
+    density.zero <- prod(apply(density.zeros, 2, sum)/len.zeros)
+  
+    prob.one <- prior.ones * density.one / (prior.ones * density.one + prior.zeros * density.zero)
+    naiveBayes.raw[i] <- prob.one 
+  }
+  return(naiveBayes.raw)
+}
+naiveBayes.scores <- naive.bayes.cl(1.2, testPredictors, testResponse, trainPredictors)
+
+```
+
+```{r}
+lda.fit <- lda(x=as.matrix(trainSet[,-9]), grouping= as.factor(trainSet[,9]), cv=TRUE)
+
+# lda
+# prediction on the validation set
+pred.lda.test <- predict(lda.fit, newx=testSet[,-9])
+
+# ROC on the validation set
+scores <- predict(lda.fit, newdata= testSet[,-9])$posterior[,2]
+pred <- prediction( scores, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 1, main="ROCs on validation set")
+# print out the area under the curve
+lda.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# naive bayes
+pred <- prediction(naiveBayes.scores, labels=testResponse)
+perf <- performance(pred, "tpr", "fpr")
+
+# plot the ROC curve
+plot(perf, col= 2, add=T)
+# print out the area under the curve
+naive.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+```
+
+### problem 4. Tree-based Methods
+##### (a) JWHT Chapter 8, Problem 9, but using the "South African Heart Disease" dataset
+###### (a-b)
+```{r}
+tree.cl <- tree(as.factor(chd) ~ ., data=trainSet)
+summary(tree.cl)
+```
+Training error rate is 14.72%. There are 23 terminal nodes.
+
+###### (c)
+```{r}
+tree.cl
+```
+15) ldl > 8.205 6   0.000 1 ( 0.00000 1.00000 )
+To go to the 15th terminal node, ldl should be greater than 8.205, there are 6 observations in this branch, the
+deviance is 0, the prediction is chd = 1 with probability 1.
+
+###### (d)
+```{r}
+plot(tree.cl)
+text(tree.cl ,pretty =0, cex=0.5)
+```
+
+Initial tree built for training set without pruning.
+
+###### (e)
+```{r}
+tree.pred <- predict (tree.cl , testSet, type ="class")
+table(tree.pred, testSet[,9])
+```
+The misclassification rate for testing set is 38.53%.
+
+###### (f-i)
+```{r}
+set.seed(531)
+cv.tree.cl =cv.tree(tree.cl , FUN=prune.misclass)
+plot(cv.tree.cl$size ,cv.tree.cl$dev ,type="b", ylab="Cross-validation Error Rate (Deviance)", xlab="Tree Size")
+prune.tree =prune.misclass (tree.cl ,best =6)
+plot(prune.tree)
+text(prune.tree ,pretty =0, cex=0.6)
+```
+
+###### (j)
+```{r}
+tree.prune.train.pred <- predict(prune.tree, trainSet, type="class")
+mean(tree.prune.train.pred != trainSet[,9])
+prune.train.acc <- 1-mean(tree.prune.train.pred != trainSet[,9])
+```
+
+The misclassification error on training set of pruned tree is 24.68% which is higher than the one (14.72%) of unpruned tree.
+
+###### (k)
+```{r}
+tree.prune.test.pred <- predict (prune.tree , testSet, type="class")
+mean(tree.prune.test.pred != testSet[,9])
+prune.test.acc <- 1-mean(tree.prune.test.pred != testSet[,9])
+```
+
+The misclassification error on testing set of pruned tree is 34.20% which is lower than the one (38.53%) of unpruned tree.
+
+```{r}
+# single pruned tree
+# ROC on the validation set
+scores <- predict(prune.tree, newdata= testSet[,-9], type="vector")[,2]
+pred <- prediction(scores, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 1, main="Single Pruned Tree ROC on validation set")
+# print out the area under the curve
+single.tree.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+```
+
+
+##### (b) Perform bagging on the training set, with a range of tree numbers B.
+```{r}
+B.seq <- seq(1, 300, 2)
+acc.train.seq.bag <- rep(NA, length(B.seq))
+acc.test.seq.bag <- rep(NA, length(B.seq))
+set.seed (123)
+for (i in 1:length(B.seq)) {
+  bagging <- randomForest(as.factor(chd)~.,data=trainSet , mtry=8, importance =TRUE, ntree = B.seq[i])
+  #acc.train.seq.OOB[i] <- (bagging$confusion[1,1] + bagging$confusion[2,2])/dim(trainSet)[1]
+  pred.bagging <- predict(bagging, trainSet)
+  acc.train.seq.bag[i] <- mean(pred.bagging == trainSet[,9])
+  
+  pred.bagging <- predict(bagging ,newdata =testSet)
+  acc.test.seq.bag[i] <- mean(pred.bagging == testSet[,9])
+}
+```
+```{r}
+plot(B.seq, acc.train.seq.bag, ylim=c(0.2,1), type="l", xlab="Number of Trees", ylab="Bagging Accuracy on Training Set", lwd=2)
+#lines(B.seq, acc.train.seq, ylim=c(0.2,1))
+abline(h=prune.train.acc, col="darkgreen", lty=3, lwd=1)
+legend(200,0.4, c("bagging", "single pruned tree"),
+       lty=c(1,3), lwd=c(2,1),col=c("black", "darkgreen"))
+
+
+plot(B.seq, acc.test.seq.bag, ylim=c(0.3,1), type="l", xlab="Number of Trees", ylab="Bagging Accuracy on Test Set", lwd=2)
+#lines(B.seq, acc.test.seq, ylim=c(0.6,0.8))
+abline(h=prune.test.acc, col="darkgreen", lty=3, lwd=1)
+legend(200,0.5, c("bagging", "single pruned tree"),
+       lty=c(1,3), lwd=c(2,1),col=c("black", "darkgreen")) 
+#bagging
+#(bagging$confusion[1,1] + bagging$confusion[2,2])/dim(trainSet)[1]
+```
+```{r}
+# cross-validation to choose number of Trees on Bagging
+set.seed(321)
+data <- trainSet
+n <- dim(trainSet)[1]
+index <- 1:n
+K <- 10
+flds <- createFolds(index, k=K)
+miscl.cv <- rep(NA, length(B.seq))
+
+for (j in 1:length(B.seq)){
+  miscl.cv.raw <- rep(NA, K)
+  for (i in 1:K){
+    testID <- flds[[i]]
+    data.tr <- data[-testID,]
+    data.test <- data[testID,]
+    tree.cv <- randomForest(as.factor(chd)~.,data=data.tr , mtry=8, importance =TRUE, ntree = B.seq[j])
+    tree.cv.pred <- predict(tree.cv, newdata = data.test, type = "c")
+    #fnr.cv.raw[i] <- sum(tree.cv.pred == "FALSE" & data.test$IsB == "TRUE")/sum(data.test$IsB == "TRUE")
+    miscl.cv.raw[i] <- mean(tree.cv.pred != data.test[,9])
+  }
+  miscl.cv[j] <- mean(miscl.cv.raw)
+}
+```
+
+```{r}
+plot(B.seq, miscl.cv, type="l", lwd=2.5, ylim=c(0.3,0.5), 
+     xlab= "Number of Trees", ylab="misclassification error", main="Cross Validation of Bagging")
+abline(v=B.seq[which.min(miscl.cv)], lty=3, col="red")
+cat("Best B for Bagging is :", B.seq[which.min(miscl.cv)], "\n")
+```
+```{r}
+bagging.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=8, importance =TRUE, ntree = 67)
+pred.bagging <- predict(bagging.tree ,newdata =testSet, type="prob")[,2]
+pred <- prediction(pred.bagging, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 1, main="Bagging ROC on validation set")
+# print out the area under the curve
+bagging.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+```
+
+##### (c) Perform random forest on the training set, with a range of tree numbers B, and with two different numbers of selected predictors m of your choice.
+```{r}
+acc.train.seq.sqrt <- rep(NA, length(B.seq))
+acc.test.seq.sqrt <- rep(NA, length(B.seq))
+acc.train.seq.by2 <- rep(NA, length(B.seq))
+acc.test.seq.by2 <- rep(NA, length(B.seq))
+set.seed (123)
+for (i in 1:length(B.seq)) {
+  
+  rf.tree.sqrt <- randomForest(as.factor(chd)~., data=trainSet , mtry=sqrt(8), importance =TRUE, ntree = B.seq[i])
+  rf.tree.by2 <- randomForest(as.factor(chd)~., data=trainSet , mtry=sqrt(4), importance =TRUE, ntree = B.seq[i])
+  
+  #acc.train.seq.OOB.sqrt[i] <- (rf.tree.sqrt$confusion[1,1] + rf.tree.sqrt$confusion[2,2])/dim(trainSet)[1]
+  pred.rf.sqrt <- predict (rf.tree.sqrt, newdata = trainSet)
+  acc.train.seq.sqrt[i] <- mean(pred.rf.sqrt ==trainSet[,9])
+  
+  pred.rf.sqrt <- predict (rf.tree.sqrt ,newdata = testSet)
+  acc.test.seq.sqrt[i] <- mean(pred.rf.sqrt == testSet[,9])
+
+  #acc.train.seq.by2[i] <- (rf.tree.by2$confusion[1,1] + rf.tree.by2$confusion[2,2])/dim(trainSet)[1]
+  pred.rf.by2 <- predict(rf.tree.by2, trainSet)
+  acc.train.seq.by2[i] <- mean(pred.rf.by2 == trainSet[,9])  
+
+  
+  pred.rf.by2 <- predict (rf.tree.by2 ,newdata =testSet)
+  acc.test.seq.by2[i] <- mean(pred.rf.by2 == testSet[,9])  
+}
+```
+predict(rf.tree.sqrt, testSet, type='prob') for ROC CURVE
+
+```{r}
+# black: rf with sqrt(p) features
+# red: rf with p/2 features
+# blue: bagging
+# purple: single pruned tree
+plot(B.seq, acc.train.seq.sqrt, ylim=c(0.2,1), type="l", xlab="Number of Trees", ylab="Randomforest Accuracy on Training Set", lwd=2)
+lines(B.seq, acc.train.seq.by2, col="red", lwd=2)
+lines(B.seq, acc.train.seq.bag, col="blue", lwd=2)
+abline(h=prune.train.acc, col="darkgreen", lty=3, lwd=1)
+legend(200,0.5, c("rf m=sqrt(p)", "rf m=p/2", "bagging", "single pruned tree"),
+       lty=c(1,1,1,3), lwd=c(2,2,2,1),col=c("black","red", "blue", "darkgreen")) 
+
+```
+```{r}
+plot(B.seq, acc.test.seq.sqrt, ylim=c(0.2,1), type="l", xlab="Number of Trees", ylab="Randomforest Accuracy on Test Set", lwd=2)
+lines(B.seq, acc.test.seq.by2, col="red", lwd=2)
+lines(B.seq, acc.test.seq.bag, col="blue", lwd=2)
+abline(h=prune.test.acc, col="darkgreen", lty=3, lwd=1)
+legend(200,0.5, c("rf m=sqrt(p)", "rf m=p/2", "bagging", "single pruned tree"),
+       lty=c(1,1,1,3), lwd=c(2,2,2,1),col=c("black","red", "blue", "darkgreen"))
+```
+```{r}
+# cross-validation to choose number of Trees on RandomForest
+set.seed(321)
+data <- trainSet
+n <- dim(trainSet)[1]
+index <- 1:n
+K <- 10
+flds <- createFolds(index, k=K)
+miscl.sqrt.cv <- rep(NA, length(B.seq))
+miscl.by2.cv <- rep(NA, length(B.seq))
+
+for (j in 1:length(B.seq)){
+  miscl.sqrt.cv.raw <- rep(NA, K)
+  miscl.by2.cv.raw <- rep(NA, K)
+  for (i in 1:K){
+    testID <- flds[[i]]
+    data.tr <- data[-testID,]
+    data.test <- data[testID,]
+    tree.cv <- randomForest(as.factor(chd)~.,data=data.tr , mtry=sqrt(8), importance =FALSE, ntree = B.seq[j])
+    tree.cv.pred <- predict(tree.cv, newdata = data.test, type = "c")
+    miscl.sqrt.cv.raw[i] <- mean(tree.cv.pred != data.test[,9])
+    
+    tree.cv <- randomForest(as.factor(chd)~.,data=data.tr , mtry=4, importance =FALSE, ntree = B.seq[j])
+    tree.cv.pred <- predict(tree.cv, newdata = data.test, type = "c")
+    miscl.by2.cv.raw[i] <- mean(tree.cv.pred != data.test[,9])
+  }
+  miscl.sqrt.cv[j] <- mean(miscl.sqrt.cv.raw)
+  miscl.by2.cv[j] <- mean(miscl.by2.cv.raw)
+}
+```
+
+```{r}
+plot(B.seq, miscl.sqrt.cv, type="l", lwd=2.5, ylim=c(0.3,0.5), 
+     xlab= "Number of Trees", ylab="misclassification error", main="Cross Validation of RandomForest")
+lines(B.seq, miscl.by2.cv, lwd=2.5, col="red")
+abline(v=B.seq[which.min(miscl.sqrt.cv)], lty=3, col="black", lwd=2)
+cat("Best B for RandomForest with m=sqrt(p) is :", B.seq[which.min(miscl.sqrt.cv)], "\n")
+abline(v=B.seq[which.min(miscl.by2.cv)], lty=3, col="red", lwd=2)
+cat("Best B for RandomForest with m=p/2 is :", B.seq[which.min(miscl.by2.cv)], "\n")
+legend(230,0.5, c("m=sqrt(p)", "m=p/2"),
+       lty=c(1,1), lwd=c(2,2),col=c("black", "red"))
+```
+
+```{r}
+rf.sqrt.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=8, importance =TRUE, ntree = 119)
+pred.rf.sqrt <- predict(rf.sqrt.tree ,newdata =testSet, type="prob")[,2]
+pred <- prediction(pred.rf.sqrt, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 1, main="RandomForest ROC on validation set")
+# print out the area under the curve
+rf.sqrt.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+rf.by2.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=8, importance =TRUE, ntree = 113)
+pred.rf.by2 <- predict(rf.by2.tree ,newdata =testSet, type="prob")[,2]
+pred <- prediction(pred.rf.by2, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 2, add=T)
+# print out the area under the curve
+rf.by2.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+```
+
+
+
+#####(d) Perform boosting on the training set with 1,000 trees for a range of values of the shrinkage parameter $\lambda$.
+```{r}
+set.seed(123)
+grid <- seq(0.01, 5, 0.05)
+acc.train.seq.boost <- rep(NA, length(grid))
+acc.test.seq.boost <- rep(NA, length(grid))
+for (i in 1:length(grid)) {
+  boost.tree <- gbm(chd~., data=trainSet, distribution="bernoulli", n.trees =1000, interaction.depth=4, shrinkage=grid[i])
+  boost.tree.train.pred <- predict(boost.tree, data=trainSet, n.trees=1000, type="response") > 0.5
+  acc.train.seq.boost[i] <- mean(boost.tree.train.pred == trainSet$chd)
+
+  boost.tree.test.pred <- predict(boost.tree, data=testSet, n.trees=1000, type="response") > 0.5
+  acc.test.seq.boost[i] <- mean(boost.tree.test.pred == testSet$chd)
+}
+
+```
+
+
+```{r}
+# black: train
+# red: test
+plot(grid, acc.train.seq.boost, type="l", xlim=c(0,5), ylim=c(0,1), xlab="lambda", ylab="Accuracy", lwd=2, main="Boosting Accuracy Vs lambda")
+lines(grid, acc.test.seq.boost, type="l", col="red", lwd=2)
+
+legend(0,0.2, c("Training Set", "Test Set"),
+       lty=c(1,1), lwd=c(2,2),col=c("black", "red"))
+# summary(boost.tree) 
+# how to select lambda?
+```
+```{r}
+# cross-validation to choose lambda on Boosting
+set.seed(321)
+data <- trainSet
+n <- dim(trainSet)[1]
+index <- 1:n
+K <- 10
+flds <- createFolds(index, k=K)
+miscl.cv <- rep(NA, length(grid))
+
+for (j in 1:length(grid)){
+  miscl.cv.raw <- rep(NA, K)
+  for (i in 1:K){
+    testID <- flds[[i]]
+    data.tr <- data[-testID,]
+    data.test <- data[testID,]
+    tree.cv <- gbm(chd~., data=data.tr, distribution="bernoulli", n.trees =1000, interaction.depth=4, shrinkage=grid[i])
+    tree.cv.pred <- predict(tree.cv, newdata = data.test, type = "response", n.trees=1000) > 0.5
+    #fnr.cv.raw[i] <- sum(tree.cv.pred == "FALSE" & data.test$IsB == "TRUE")/sum(data.test$IsB == "TRUE")
+    miscl.cv.raw[i] <- mean(tree.cv.pred != data.test[,9])
+  }
+  miscl.cv[j] <- mean(miscl.cv.raw)
+}
+```
+
+```{r}
+plot(grid, miscl.cv, type="l", lwd=2, ylim=c(0.3,0.5), xlab="lambda", ylab="misclassification error",
+     main="Cross Validation of Boosting")
+abline(v=grid[which.min(miscl.cv)], col="red", lty=3)
+cat("Best lambda for Boosting with B=1000 is :", grid[which.min(miscl.cv)], "\n")
+```
+```{r}
+boosting.tree <- gbm(chd~., data=trainSet, distribution="bernoulli", n.trees=1000, interaction.depth=4, shrinkage=2.56)
+boosting.pred <- predict(boost.tree, testSet, type='response', n.trees=1000)
+pred <- prediction(boosting.pred, labels= testSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 1, main="Boosting ROC on validation set")
+# print out the area under the curve
+boosting.test <- unlist(attributes(performance(pred, "auc"))$y.values)
+```
+
+### 5. JWHT Chapter 9, Problem 3.
+##### (a)
+```{r}
+x1 <- c(3,2,4,1,2,4,4)
+x2 <- c(4,2,4,4,1,3,1)
+y <- c("red", "red","red","red","blue","blue","blue")
+plot(x1,x2, col=y)
+```
+
+##### (b)
+```{r}
+plot(x1,x2, col=y)
+abline(a=-0.5, b=1)
+abline(a=0, b=1, lty=3)
+abline(a=-1, b=1, lty=3)
+```
+
+The hyperplane here is :
+\[
+0.5-x_1+x_2=0
+\]
+
+##### (c)
+The classification rule is:
+
+Red if $0.5-x_1+x_2>0$
+
+Blue if $0.5-x_1+x_2<0$
+
+##### (d)
+The margin here is the perpendicular distance from one dotted line to the solid line.
+
+And the value of the margin is $\frac{\sqrt{2}}{4}$.
+
+##### (e)
+The support vectors are:
+
+(2,1),(2,2),(4,3),(4,4)
+
+##### (f)
+For SVM, the points that would affect the hyperplane are the support vectors.
+
+Clearly the seventh point (4,1) is not a support vector and far from the hyperplane.
+
+Thus, a slight movement of the seventh observation would not affect the maximal margin hyperplane.
+
+##### (g)
+```{r}
+plot(x1,x2, col=y)
+abline(a=-0.3, b=1)
+abline(a=0, b=1, lty=3)
+abline(a=-0.6, b=1, lty=3)
+```
+
+There are infinite number of hyperplanes that are not the optimal ones.
+Here is one with $0.3-x_1+x_2=0$.
+
+##### (h)
+```{r}
+x1 <- c(3,2,4,1,2,4,4,4)
+x2 <- c(4,2,4,4,1,3,1,1.5)
+y <- c("red", "red","red","red","blue","blue","blue", "red")
+plot(x1,x2, col=y)
+```
+
+The two classes won't be linearly separable with an additional red point (4, 1.5).
+
+
+### 6. In this problem, we will investigate the use of support vector machines and neural networks.
+##### (a) Train support vector machine the "South African Heart Disease" dataset, and evaluate its performance on the validation set.
+##### (b) Train neural networks on the training set of the "South African Heart Disease" dataset, and evaluate its performance on the validation set.

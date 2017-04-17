@@ -353,7 +353,8 @@ perf <- performance(pred, "tpr", "fpr")
 plot(perf, col= 1, main="ROCs on training set")
 # print out the area under the curve
 allsubset.train <- unlist(attributes(performance(pred, "auc"))$y.values)
-
+```
+```{r}
 # lda
 # prediction on the training set
 pred.lda.train <- predict(lda.fit, newx=trainSet[,-10])

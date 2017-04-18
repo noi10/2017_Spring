@@ -12,8 +12,6 @@ IsB <- factor(ALL$BT %in% c("B", "B1", "B2", "B3", "B4"))
 # (b)
 probedat <- as.matrix(exprs(ALL[c("39317_at", "38018_g_at"),]))
 c.tr <- rpart(IsB ~ ., data = data.frame(t(probedat)))
-#plot(c.tr, branch=0,margin=0.1)
-#text(c.tr, digits=3)
 rpartpred <- predict(c.tr, type="class")
 table(rpartpred, IsB)
 
@@ -79,7 +77,6 @@ lgr.mcr.cv
 
 # (g)
 PCA<-prcomp(t(exprs(ALL)), scale=TRUE)
-#summary(PCA)
 importance <- summary(PCA)$importance[2,]
 K = (1:128)
 plot(K, importance, type='o', xaxt='n')

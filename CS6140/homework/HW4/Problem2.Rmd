@@ -1,0 +1,14 @@
+---
+title: "T2"
+author: "Chengbo Gu"
+date: "2017骞<b4>4鏈<88>17鏃<a5>"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+curve(-2*x*x+5*x-1,1,2, xlim=c(-3,3), ylim=c(-3,3), ylab="y")
+curve(x+1,-2,1, xlim=c(-3,3), ylim=c(-3,3), add=T)
+abline(v=1,col="red")
+```

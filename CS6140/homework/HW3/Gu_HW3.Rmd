@@ -479,7 +479,7 @@ plot(perf, col=5, add=TRUE)
 # print out the area under the curve
 nearest.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
-legend(0.7, 0.8, c("Logistic","LDA", "Lasso", "Lasso refit", "NSC"), lty=c(1,1), col=c(1:5))
+legend(0.8, 0.4, c("Logistic","LDA", "Lasso", "Lasso refit", "NSC"), lty=c(1,1), col=c(1:5), cex=0.65)
 ```
 
 #### Summary

@@ -148,43 +148,84 @@ cl <- sapply(naiveBayes.raw, function(x) x>0.5)
 miscl <- 1-mean(cl == response)
 print(miscl)
 ```
-
 ```{r}
-# using train dataset
-naive.bayes.cl <- function(lambda, predictors, response, trainPredictors) {
-  n <- length(response)
+# naive bayes classifier
+# this function receives a certain value of lambda,
+naive.bayes.cl <- function(lambda, predictors, trainPredictors) {
+  n <- dim(predictors)[1]
   naiveBayes.raw <- rep(NA, n)
   for (i in 1:n) {
-
+    # data processing
     data.test.predictors <- predictors[i,]
-    density <- dnorm(abs(data.test.predictors - trainPredictors)/lambda, mean = 0, sd=1)
-
     ones <- which(trainResponse %in% c(1))
     response.ones <- which(trainResponse %in% c(1))
-  
     len.ones <- length(response.ones)
     len.zeros <- length(trainResponse) - len.ones
-    prior.ones <- len.ones/length(trainResponse)
-    prior.zeros <- len.zeros/length(trainResponse)
-      
+    
+    # KDE
+    density <- dnorm(abs(data.test.predictors - trainPredictors)/lambda, mean = 0, sd=1)
     density.ones <- density[ones,]
     density.zeros <- density[-ones,]
-
     density.one <- prod(apply(density.ones, 2, sum)/len.ones)
     density.zero <- prod(apply(density.zeros, 2, sum)/len.zeros)
   
+    # prior estimated probability
+    prior.ones <- len.ones/length(trainResponse)
+    prior.zeros <- len.zeros/length(trainResponse)
+      
+    # posterior probability
     prob.one <- prior.ones * density.one / (prior.ones * density.one + prior.zeros * density.zero)
     naiveBayes.raw[i] <- prob.one 
   }
   return(naiveBayes.raw)
 }
-naiveBayes.scores <- naive.bayes.cl(1.2, testPredictors, testResponse, trainPredictors)
+```
+```{r include=FALSE}
+# using train dataset
+naive.bayes.cl <- function(lambda, predictors, trainSet) {
+  n <- dim(trainSet)[1]
+  naiveBayes.raw <- rep(NA, n)
+  for (i in 1:n) {
+    # data process
+    trainPredictors <- trainSet[,-10]
+    trainResponse <- trainSet[,10]
+    data.test.predictors <- predictors[i,]
+    ones <- which(trainResponse %in% c(1))
+    response.ones <- which(trainResponse %in% c(1))
+    len.ones <- length(response.ones)
+    len.zeros <- length(trainResponse) - len.ones
+    
+    # KDE
+    density <- dnorm(abs(data.test.predictors - trainPredictors)/lambda, mean = 0, sd=1)
+    density.ones <- density[ones,]
+    density.zeros <- density[-ones,]
+    density.one <- prod(apply(density.ones, 2, sum)/len.ones)
+    density.zero <- prod(apply(density.zeros, 2, sum)/len.zeros)
+    
+    # prior estimated probability
+    prior.ones <- len.ones/length(trainResponse)
+    prior.zeros <- len.zeros/length(trainResponse)
+    
+    # posterior probability  
+    prob.one <- prior.ones * density.one / (prior.ones * density.one + prior.zeros * density.zero)
+    naiveBayes.raw[i] <- prob.one 
+  }
+  return(naiveBayes.raw)
+}
+```
 
+```{r}
+naiveBayes.train.scores <- naive.bayes.cl(1.2, trainPredictors, trainPredictors)
+```
+```{r}
+naiveBayes.test.scores <- naive.bayes.cl(1.2, testPredictors, trainPredictors)
 ```
 
 ```{r}
 lda.fit <- lda(x=as.matrix(trainPredictors), grouping= as.factor(trainResponse), cv=TRUE)
 ```
+
+
 
 ```{r}
 # lda
@@ -197,7 +238,7 @@ plot(perf, col= 1, main="ROCs on validation set")
 lda.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 # naive bayes
-pred <- prediction(naiveBayes.scores, labels=testResponse)
+pred <- prediction(naiveBayes.test.scores, labels=testResponse)
 perf <- performance(pred, "tpr", "fpr")
 
 # plot the ROC curve
@@ -333,6 +374,9 @@ abline(v=B.seq[which.min(miscl.cv)], lty=3, col="red")
 cat("Best B for Bagging is :", B.seq[which.min(miscl.cv)], "\n")
 ```
 
+```{r}
+bagging.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=9, importance =TRUE, ntree = 31)
+```
 
 ##### (c) RandomForest
 ```{r}
@@ -362,7 +406,7 @@ for (i in 1:length(B.seq)) {
   acc.test.seq.by2[i] <- mean(pred.rf.by2 == testSet[,10])  
 }
 ```
-predict(rf.tree.sqrt, testSet, type='prob') for ROC CURVE
+
 
 ```{r}
 # black: rf with sqrt(p) features
@@ -428,8 +472,10 @@ cat("Best B for RandomForest with m=sqrt(p) is :", B.seq[which.min(miscl.sqrt.cv
 cat("Best B for RandomForest with m=p/2 is :", B.seq[which.min(miscl.by2.cv)], "\n")
 ```
 
-
-
+```{r}
+rf.sqrt.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=sqrt(9), importance =TRUE, ntree = 79)
+rf.by2.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=9/2, importance =TRUE, ntree = 13)
+```
 
 
 #####(d) Boosting
@@ -461,7 +507,7 @@ legend(0,0.2, c("Training Set", "Test Set"),
 ```
 ```{r}
 # cross-validation to choose lambda on Boosting
-set.seed(321)
+set.seed(567)
 data <- trainSet
 n <- dim(trainSet)[1]
 index <- 1:n
@@ -477,7 +523,6 @@ for (j in 1:length(grid)){
     data.test <- data[testID,]
     tree.cv <- gbm(chd~., data=data.tr, distribution="bernoulli", n.trees =1000, interaction.depth=4, shrinkage=grid[i])
     tree.cv.pred <- predict(tree.cv, newdata = data.test, type = "response", n.trees=1000) > 0.5
-    #fnr.cv.raw[i] <- sum(tree.cv.pred == "FALSE" & data.test$IsB == "TRUE")/sum(data.test$IsB == "TRUE")
     miscl.cv.raw[i] <- mean(tree.cv.pred != data.test[,10])
   }
   miscl.cv[j] <- mean(miscl.cv.raw)
@@ -583,6 +628,8 @@ tune.out <- tune(svm , as.factor(chd)~., data=svm.trainSet, kernel ="radial",
                  ranges =list(cost=c(0.01, 0.1, 1, 10 ,100 ,1000), gamma=c(0.005, 0.01, 0.05, 0.1, 0.5, 1,2,3,4)))
 svm.best <- tune.out$best.model
 summary(tune.out)
+mean(predict(svm.best, svm.trainSet) == svm.trainSet$chd)
+mean(predict(svm.best, svm.testSet) == svm.testSet$chd)
 ```
 
 ##### (b) Train neural networks on the training set of the "South African Heart Disease" dataset, and evaluate its performance on the validation set.
@@ -631,16 +678,102 @@ mean(predict(ANN, testSet[, -10], type="class") == testSet$chd)
 
 ### 7. Summarize the classification results obtained for the "South African Heart Disease" in homework 3 and 4. Which method performed better, which performed worse? Discuss the possible reasons.
 
+
 ```{r}
+# ROCs on the training set
 # lda
-scores <- predict(lda.fit, newdata= testPredictors)$posterior[,2]
+scores <- predict(lda.fit, newdata= trainPredictors)$posterior[,2]
+pred <- prediction( scores, labels= trainResponse )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 1, main="ROCs on training set")
+# print out the area under the curve
+lda.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# naive bayes
+pred <- prediction(naiveBayes.train.scores, labels=trainResponse)
+perf <- performance(pred, "tpr", "fpr")
+
+# plot the ROC curve
+plot(perf, col= 2, add=T)
+# print out the area under the curve
+naive.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# single pruned tree
+scores <- predict(prune.tree, newdata= trainSet[,-10], type="vector")[,2]
+pred <- prediction(scores, labels= trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 3, add=T)
+# AUC
+single.tree.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# bagging
+pred.bagging <- predict(bagging.tree ,newdata =trainSet, type="prob")[,2]
+pred <- prediction(pred.bagging, labels= trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 4, add=T)
+
+# AUC
+bagging.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+
+# random forest
+#rf.sqrt.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=sqrt(9), importance =TRUE, ntree = 79)
+pred.rf.sqrt <- predict(rf.sqrt.tree ,newdata =trainSet, type="prob")[,2]
+pred <- prediction(pred.rf.sqrt, labels= trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 5, add=T)
+# AUC for rf.sqrt
+rf.sqrt.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+#rf.by2.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=9/2, importance =TRUE, ntree = 13)
+pred.rf.by2 <- predict(rf.by2.tree ,newdata =trainSet, type="prob")[,2]
+pred <- prediction(pred.rf.by2, labels= trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 6, add=T)
+# AUC for rf.by2
+rf.by2.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# boosting
+boosting.pred <- predict(boosting.tree, trainSet, type='response', n.trees=1000)
+pred <- prediction(boosting.pred, labels= trainSet$chd )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col= 7, add=T)
+
+# AUC for boosting
+boosting.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# SVM
+scores <- attributes(predict(svm.best, svm.trainSet, decision.values =TRUE))$decision.values
+pred <- prediction(scores, svm.trainSet$chd)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col = 8, add=T)
+# AUC for svm
+svm.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+
+# ANN
+scores <- predict(ANN, trainSet[,-10], type="raw")[,2]
+pred <- prediction(scores, svm.trainSet$chd)
+perf <- performance(pred, "tpr", "fpr")
+plot(perf, col = "darkgreen", add=T)
+# AUC for ANN
+
+ANN.train <- unlist(attributes(performance(pred, "auc"))$y.values)
+legend(0.8,0.5, c("lda", "naive bayes", "single tree", "bagging", "RF m=sqrt(p)",
+                  "RF m=p/2", "boosting", "SVM", "ANN") ,col=c(1:8, "darkgreen"), lty=1, cex=0.6)
+```
+
+```{r}
+# ROCs on the validation set
+# lda
+#scores <- predict(lda.fit, newdata= trainPredictors)$posterior[,2]
+scores <- predict(lda.fit, newdata = testPredictors)$posterior[,2]
 pred <- prediction( scores, labels= testResponse )
 perf <- performance(pred, "tpr", "fpr")
 plot(perf, col= 1, main="ROCs on validation set")
 
 
 # naive bayes
-pred <- prediction(naiveBayes.scores, labels=testResponse)
+pred <- prediction(naiveBayes.test.scores, labels=testResponse)
 perf <- performance(pred, "tpr", "fpr")
 
 # plot the ROC curve
@@ -657,7 +790,7 @@ plot(perf, col= 3, add=T)
 single.tree.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 # bagging
-bagging.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=9, importance =TRUE, ntree = 31)
+#bagging.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=9, importance =TRUE, ntree = 31)
 pred.bagging <- predict(bagging.tree ,newdata =testSet, type="prob")[,2]
 pred <- prediction(pred.bagging, labels= testSet$chd )
 perf <- performance(pred, "tpr", "fpr")
@@ -668,7 +801,7 @@ bagging.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
 
 # random forest
-rf.sqrt.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=sqrt(9), importance =TRUE, ntree = 79)
+#rf.sqrt.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=sqrt(9), importance =TRUE, ntree = 79)
 pred.rf.sqrt <- predict(rf.sqrt.tree ,newdata =testSet, type="prob")[,2]
 pred <- prediction(pred.rf.sqrt, labels= testSet$chd )
 perf <- performance(pred, "tpr", "fpr")
@@ -676,7 +809,7 @@ plot(perf, col= 5, add=T)
 # AUC for rf.sqrt
 rf.sqrt.test <- unlist(attributes(performance(pred, "auc"))$y.values)
 
-rf.by2.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=9/2, importance =TRUE, ntree = 13)
+#rf.by2.tree <- randomForest(as.factor(chd)~.,data=trainSet , mtry=9/2, importance =TRUE, ntree = 13)
 pred.rf.by2 <- predict(rf.by2.tree ,newdata =testSet, type="prob")[,2]
 pred <- prediction(pred.rf.by2, labels= testSet$chd )
 perf <- performance(pred, "tpr", "fpr")

@@ -1,0 +1,134 @@
+---
+title: "MATH7340 FINAL REVIEW NOTES"
+author: "Chengbo Gu"
+output: html_document
+---
+
+```{r}
+setwd("C:/Users/lenovo/Desktop/2017_Spring/MATH7340/Module14")
+```
+
+
+```{r}
+library(ALL); data(ALL)
+library(gplots)
+library(genefilter)
+```
+```{r}
+datmy <- exprs(ALL)
+datmy <- datmy[,96:128]
+clmy <- as.character(ALL$BT[96:128])
+```
+```{r}
+tmp0<-read.table("genes313.txt", sep=" ") 
+genedat <- tmp0[, 1:3]
+label313<-genedat[, 1]
+#dat1=genedat[label313, ]
+dat1 <- datmy[label313, ]
+```
+```{r}
+hc.my <- hclust(dist(t(dat1)), method="complete")
+plot(hc.my, hang=-1)
+```
+
+
+```{r}
+color.map <- function(T) {#color code for each type as in paper
+
+  if (T=="T1") "yellow"
+
+  else if(T=="T2") "lightblue"
+
+  else if(T=="T3") "darkolivegreen4"
+
+  else if(T=="T4") "darkorange" 
+
+  else "purple"  #unknown type "T" denote by color purple
+
+}
+```
+
+```{r}
+patientcolors <- unlist(lapply(clmy, color.map)) #apply color code
+
+heatmap.2(dat1, #heatmap on dat1
+
+  col=greenred(75), #use greenred color scheme for expression value
+
+  scale="row", #scale values by row, to show relative pattern
+
+  dendrogram="column", #dendrogram for columns only
+
+  ColSideColors=patientcolors, #apply color codes for patients
+
+  margin=c(3, 12), cexRow=0.5, #margin: 3 on bottom, 12 on right.
+
+  #for a clean graph, we turn off many default displays below
+
+  key=FALSE, trace="none", labRow=NA, labCol=NA
+
+)
+```
+
+```{r}
+hc.my <- hclust(dist(t(dat1)), method="ward.D2")
+groups.my <- cutree(hc.my, k = 2)
+table(groups.my, clmy)
+fisher.test(table(groups.my[clmy!="T"], clmy[clmy!="T"]))$p.value
+```
+
+```{r}
+crmy<-as.character(ALL$remission[96:128])
+ind.TNA<-(!is.na(crmy))
+crmy<-crmy[ind.TNA]
+datCR1<-dat1[, ind.TNA]
+
+n.gene<-dim(datCR1)[1] # number of predictors (313 genes)
+n.sample<-dim(datCR1)[2] # number of patients (30)
+##Create a matrix to store selected variable in delete-one cases
+selected.M<-matrix(NA, nrow=n.gene, ncol=n.sample)
+for(icv in 1:n.sample){ #iterate for delete-one-validation
+  dat.tmp=datCR1[,-icv] # leave one out
+  f2<-function(x) (t.test(x ~ crmy[-icv])$p.value < 0.05)
+  selected<- genefilter(dat.tmp, filterfun(f2)) #pass t-tests
+  selected.M[,icv]=selected #save selected gene in the iteration
+}
+```
+
+```{r}
+sel.freq<-apply(selected.M,1,function(x) sum(x))
+selected1<-(sel.freq>n.sample*0.75) #genes selected >75% times
+sum(selected1) #[1] 15
+```
+
+```{r}
+sel.probe <- genedat[selected1,1] #15 selected genes probe names
+sel.gene <- genedat[selected1,3] #15 selected genes symbols
+datFig2 <- datCR1[selected1,] #15 selected genes expression
+row.names(datFig2)<- sel.gene #gene names as row names
+colnames(datFig2) <-crmy #class (REF/CR) labels as column names
+
+col.ord<-order(crmy, decreasing=TRUE) #Order REF/CR cases
+datFig2<-datFig2[, col.ord] #Reorder columns, 6 REF cases first
+crmy1 <- crmy[col.ord] #Reorder class labels
+
+row.ord<-order(datFig2[,1], decreasing=TRUE)
+datFig2<-datFig2[row.ord,] #reorder rows by 1st patient's values
+
+color.map <- function(x) {#color map to match Figure 2.
+if (x=="REF") "yellow"
+else "blue"
+}
+patientcolor1<- unlist(lapply(crmy1, color.map)) #apply color scheme
+
+heatmap.2(datFig2, col=greenred(75), margin=c(3, 12), scale="row", Rowv=FALSE, Colv=FALSE, key=FALSE, ColSideColors=patientcolor1, trace="none", dendrogram="none")
+
+heatmap.2(datFig2, #heatmap on datFig2
+col=greenred(75), #use greenred color scheme for expression value
+scale="row", #scale values by row, to show relative pattern
+dendrogram="none", #no dendrogram
+ColSideColors=patientcolor1, #apply color codes for patients
+margin=c(3, 12), #margin: 3 on bottom, 12 on right.
+key=FALSE, trace="none", #turn off extra displays
+Rowv=FALSE, Colv=FALSE) #no reordering, we already ordered them
+```

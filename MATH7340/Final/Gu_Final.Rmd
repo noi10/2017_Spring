@@ -7,7 +7,6 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-library(multtest)
 setwd("C:/Users/lenovo/Desktop/2017_Spring/MATH7340/Final")
 ```
 
@@ -21,12 +20,16 @@ y<-as.numeric(t(read.table(file="DataPois.txt", header=TRUE)))
 length(y)
 mean(y)
 ```
+Sample size is 120, sample mean is 1.816667.
 
 ##### (b) Find the value of MLE $\hat{\theta}$ on this data set using numerical method.
 ```{r}
 nloglik <- function(theta) -sum(log(dpois(y, lambda=exp(theta)))) #likelihood function
 optim(par=1, nloglik)
 ```
+
+The value of MLE $\hat{\theta}$ on this data set is 0.5970703.
+
 ##### (c) Test the null hypothesis that $\theta=1$ at level 0.05, using a bootstrap confidence interval. What is your conclusion? Can you find the p-value?
 ```{r warning=FALSE}
 n <- length(y)
@@ -41,6 +44,7 @@ for (i in 1:nboot) {
 ```{r}
 quantile(boot.theta, c(0.025, 0.975))
 ```
+
 ```{r}
 t.test(y, mu=exp(1))
 ```
@@ -57,9 +61,11 @@ The p-value here is 2.695059e-09 which is extremely small. So we could reject th
 ### Problem 2. (20 points) ANOVA
 ##### We analyze the data set NCI60 data from the ISLR library.
 ##### (a) Delete the cancer types with only one or two cases (“K562A-repro”, etc.). Keep only the cancer types with more than 3 cases.
-```{r}
+```{r warning=FALSE, results=FALSE, message=FALSE}
 library(ISLR)
 library(lmtest)
+```
+```{r}
 ncidata <- NCI60$data
 ncilabs <- as.factor(NCI60$labs)
 
@@ -72,6 +78,7 @@ mylabs <- ncilabs[filter]
 ```{r}
 anova( lm( mydata[,1] ~ mylabs ) )
 ```
+
 Since the p-value for the types of cancers is 0.03928 which is less than 0.05, we reject the null hypothesis and conclude that the types of cancers do affect the gene express of first gene.
 
 ```{r}
@@ -83,14 +90,25 @@ pairwise.t.test(mydata[,1],  mylabs, p.adjust.method='fdr')
 shapiro.test( residuals( lm( mydata[,1] ~ mylabs )))
 bptest( lm( mydata[,1] ~ mylabs ), studentize = FALSE)
 ```
+Both of the p-values are greater than 0.05. So the model assumptions are not violated here.
 
 ##### (d) Apply ANOVA analysis to each of the 6830 genes. At FDR level of 0.05, how many genes express differently among different types of cancer patients?
 ```{r}
-#p.values <- apply(mydata,2, function(x) anova( lm( x ~ mylabs ))[["Pr(>F)"]][1])
+# using anova()
+p.values <- apply(mydata,2, function(x) anova( lm( x ~ mylabs ))[["Pr(>F)"]][1])
+p.fdr <-p.adjust(p=p.values, method="fdr")
+sum(p.fdr < 0.05)
+```
+```{r}
+# using kruskal()
 p.values <- apply(mydata, 2, function(x) kruskal.test(x ~ mylabs)$p.value)
 p.fdr <-p.adjust(p=p.values, method="fdr")
 sum(p.fdr < 0.05)
 ```
+
+We can directly apply the function anova here and get the conclusion that 2808 genes express differently among different types of cancer patients.
+
+But we feel that the nonparametric version kruskal.test() is more suitable here because the model assumptions may be violated by some of the genes. By applying kruskal test, the number of genes that express differently becomes 2186.
 
 ### Problem 3. (10 points) Regression
 ##### We consider the regression analysis on the state.x77 data set. In the module 9, we regressed the life expectancy on three variables: the murder rates, percentage of high-school graduates and mean number of frost days.
@@ -100,6 +118,8 @@ sum(p.fdr < 0.05)
 pairs(state.x77)
 ```
 
+Based on the pairwise plot, Illiteracy, Murder and HS Grad appear to be linearly correlated with the life expectancy.
+
 ##### (b) Conduct a regression analysis different from the example analysis in module 9. We regress the life expectancy on three variables: the per capita income (Income), the illiteracy rate (Illiteracy) and mean number of frost days (Frost). What is your regression equation? In this regression analysis, which of the three variables affect the life expectancy significantly?
 ```{r}
 data <- as.data.frame(state.x77[,c('Life Exp', 'Income', 'Illiteracy', 'Frost')])
@@ -107,8 +127,9 @@ names(data)<-c('Life.Exp', 'Income', 'Illiteracy', 'Frost')
 lin.reg <- lm(Life.Exp~., data = data)
 summary(lin.reg)
 ```
+
 Life.Exp = 72.5260080 + 0.0001819Income - 1.5605544Illiteracy - 0.0060148Frost.
-Illiteracy affects the life expectancy significantly.
+According to the p-value, Illiteracy affects the life expectancy significantly.
 
 ##### (c) Find delete-one-cross-validated mean square errors $\frac{1}{n}\sum_{i=1}^{n}(y_{i}-\hat{y}_{(-i)})^2$ for this regression model.
 ```{r}
@@ -123,10 +144,13 @@ for (i in 1:n) {
 err <- err/n
 err
 ```
+
+The delete-one-cross-validated mean square error is 1.345143.
+
 ### Problem 4. (60 points) Predicting B-cell differentiation with gene expression.
 ##### We analyze data for the B-cell patients in the ALL data set in the textbook.
 ##### (a) Select gene expression data for only the B-cell patients. The analysis in following parts will only use these gene expression data on the B-cell patients.
-```{r}
+```{r warning=FALSE, results=FALSE, message=FALSE}
 library(ALL)
 data(ALL)
 Bcells <- ALL$BT %in% c('B', 'B1', 'B2', 'B3', 'B4')
@@ -140,8 +164,10 @@ func <- cv(0.2)
 select <- genefilter(ALLB, filterfun(func))
 data.filtered <- ALLB[select,]
 label.filtered <- as.character(ALL$BT[Bcells])
+genes2 <- rownames(data.filtered)
 dim(data.filtered)[1]
 ```
+
 184 genes are selected.
 
 ##### (c) We wish to conduct clustering analysis to study natural groupings of the patients predicted by the gene expression profiles. For this analysis, we first need to reduce the number of genes studied. The filter in (b) is one such choice. Please comment on what filtering methods you would use to choose genes, other than the filter in (b). What would you consider as the best gene filter in this case.
@@ -163,9 +189,12 @@ table(label.filtered, groups)
 MBT <- as.character(ALL$mol.biol[Bcells])
 table(MBT, groups)
 ```
+Here, I used "ward.D2" method to do clustering.
+
+From the confusion matrices, the clusters could not reflect the information of B-stages because patients in each stage are separated in to several groups. But the clusters did reflect some information of molecule biology types because the confusion matrix here is kind of clean.
 
 ##### (e) Draw two heatmaps for the expression data in (d), one for each comparison. Using colorbars to show the comparison types (B-stages or molecule biology types). The clusters reflect which types better: B-stages or molecule biology types?
-```{r}
+```{r warning=FALSE}
 library(gplots)
 colnames(data.filtered) <- label.filtered
 col.ord<-order(label.filtered) #Order REF/CR cases
@@ -181,7 +210,7 @@ color.map <- function(B) {#color code for each type as in paper
   else "purple"
 }
 patientcolors<- unlist(lapply(colnames(dat1), color.map)) #apply color code
-heatmap.2(dat1, col=greenred(75), margin=c(3, 12), scale="row", Rowv=FALSE, Colv=FALSE, key=FALSE, ColSideColors=patientcolors, trace="none", dendrogram="none", labRow=NA)
+heatmap.2(dat1, col=greenred(75), scale="row", Rowv=FALSE, Colv=FALSE, key=FALSE, ColSideColors=patientcolors, trace="none", dendrogram="none", labRow=NA)
 ```
 
 ```{r}
@@ -198,19 +227,30 @@ color.map <- function(MB) {#color code for each type as in paper
   else "purple"
 }
 patientcolors<- unlist(lapply(colnames(dat2), color.map)) #apply color code
-heatmap.2(dat2, col=greenred(75), margin=c(3, 12), scale="row", Rowv=FALSE, Colv=FALSE, key=FALSE, ColSideColors=patientcolors, trace="none", dendrogram="none", labRow=NA)
+heatmap.2(dat2, col=greenred(75), scale="row", 
+          Rowv=FALSE, 
+          Colv=FALSE, 
+          key=FALSE, 
+          ColSideColors=patientcolors, 
+          trace="none", 
+          dendrogram="none",    
+          labRow=NA)
 ```
 
+From the two heatmaps, we see clearly that the second heatmap shows some pattern among different groups. Thus, the clusters reflect molecule biology types better.
+
 ##### (f) We focus on predicting the B-cell differentiation in the following analysis. We merge the last two categories "B3" and "B4", so that we are studying 3 classes: "B1", "B2" and "B34". Use linear model (limma library) to select genes that expresses differently among these three classes at FDR of 0.05. How many genes are selected?
-```{r warning=FALSE}
+```{r warning=FALSE, results=FALSE, message=FALSE}
 library(limma)
 ```
 ```{r}
 Bcells.1 <- label.filtered %in% c('B1', 'B2', 'B3', 'B4')
 label.filtered <- label.filtered[Bcells.1]
 ALLB.1 <- ALLB[,Bcells.1]
+
 mylabel <- as.factor(sapply(label.filtered, function(x) 
   {if((x == 'B3') || (x == 'B4')) 'B34' else x}))
+
 design.ma <- model.matrix(~0 + mylabel)
 colnames(design.ma) <- c("B1", "B2", "B34")
 fit <- lmFit(ALLB.1, design.ma)
@@ -218,30 +258,112 @@ fit <- eBayes(fit)
 cont.ma <- makeContrasts(B1-B2,B2-B34, levels=mylabel)
 fit1 <- contrasts.fit(fit, cont.ma)
 fit1 <- eBayes(fit1)
-dim(topTable(fit1, number=Inf, p.value=0.05, adjust.method="fdr"))[1]
+genes1 <- rownames(topTable(fit1, number=Inf, p.value=0.05, adjust.method="fdr"))
+length(genes1)
 ```
+
+1169 genes are selected.
 
 ##### (g) Fit SVM and the classification tree on these selected genes in part (f), evaluate their performance with delete-one-cross-validated misclassification rate.
-```{r}
+```{r warning=FALSE, results=FALSE, message=FALSE}
+library(e1071)
+require(rpart)
 ```
+
+```{r}
+tree.classification <- function(data.fit) {
+  tree.fit <- rpart(label ~. , data= data.fit, method="class")
+  pred.tr <- predict(tree.fit, data.fit, type="class")
+  mcr.tr <- mean(pred.tr!=data.fit$label)
+  cat("empirical mcr for classification tree :", mcr.tr, "\n")
+
+  n <- dim(data.fit)[1]
+  mcr.cv.raw <- rep(NA, n)
+  for (i in 1:n) {
+    fit.tr <- rpart(label ~. , data=data.fit[-i,], method="class")
+    pred.tr <- predict(fit.tr, data.fit[i,], type="class")
+    mcr.cv.raw[i] <- (pred.tr!=data.fit$label[i])
+  }
+  mcr.cv <- mean(mcr.cv.raw)
+  cat("cross-validation mcr for classification tree:", mcr.cv, "\n\n")  
+}
+
+```
+```{r}
+svm.classification <- function(data.fit){
+  svm.fit <- svm(label~., type="C-classification", kernel="linear", data=data.fit)
+  pred.svm <- predict(svm.fit, data.fit)
+  mcr.svm <- mean(pred.svm!=data.fit$label)
+  cat("empirical mcr for SVM:", mcr.svm, "\n")
+
+  n <- dim(data.fit)[1]
+  mcr.cv.raw <- rep(NA, n)
+  for (i in 1:n) {
+    
+    fit.svm <- svm(label~. , type="C-classification", kernel="linear", data=data.fit[-i,])
+    pred.svm <- predict(fit.svm, data.fit[i,])
+    mcr.cv.raw[i] <- (pred.svm!=data.fit$label[i])
+  }
+  #print(mcr.cv.raw)
+  mcr.cv <- mean(mcr.cv.raw)
+  cat("cross-validation mcr for SVM:", mcr.cv, "\n\n")
+}
+
+```
+```{r}
+data <- ALLB.1[genes1,]
+label <- mylabel
+data.fit <- data.frame(label, t(data))
+svm.classification(data.fit)
+tree.classification(data.fit)
+```
+
+The empirical mcr for SVM is 0% while the cross-validation mcr for SVM is 20%.
+The empirical mcr for classification tree is 11.11% while the cross-validation mcr for SVM is 33.33%.
 
 ##### (h) We select the genes passing both filters in (b) and (f). How many genes are selected? Redo part (g) on these genes passing both filters.
-```{r}
-data.filtered <- data.filtered[,Bcells.1]
-label.filtered <- as.factor(sapply(label.filtered, function(x) 
-  {if((x == 'B3') || (x == 'B4')) 'B34' else x}))
-design.ma <- model.matrix(~0 + label.filtered)
-colnames(design.ma) <- c("B1", "B2", "B34")
-fit <- lmFit(data.filtered, design.ma)
-fit <- eBayes(fit)
-cont.ma <- makeContrasts(B1-B2,B2-B34, levels=label.filtered)
-fit1 <- contrasts.fit(fit, cont.ma)
-fit1 <- eBayes(fit1)
-genes <- rownames(topTable(fit1, number=Inf, p.value=0.05, adjust.method="fdr"))
-```
 
 ```{r}
-data.final <- ALLB.1[genes,]
+data.final <- ALLB.1[intersect(genes1,genes2),]
+dim(data.final)[1]
+label <- mylabel
+data.fit <- data.frame(label, t(data.final))
+svm.classification(data.fit)
+tree.classification(data.fit)
+```
+55 genes are selected.
+The empirical mcr for SVM is 0% while the cross-validation mcr for SVM is 24.44%.
+The empirical mcr for classification tree is 12.22% while the cross-validation mcr for SVM is 17.78%.
+
+##### (i) Which classifier you will consider best among the classifiers studied in part (g) and part (h)? Why?
+
+I would like to choose classification tree in part (h) because it has the lowest cross-validation misclassification rate 17.78%.
+
+### Problem 5. Bonus question (Extra 10 points) Poisson regression.
+##### A random sample of $(X_1,Y_1)$,...,$(X_n,Y_n)$ is provided in the file "DataPoisReg.txt". The $Y_i$ comes from the Poisson distribution $poisson(\lambda=e^{\beta_0+\beta_1X_i})$.
+
+##### (a) Find the value of MLE $(\hat{\beta}_0,\hat{\beta}_1)$ on this data set using numerical method.
+```{r}
+my.dat <- read.table(file="DataPoisReg.txt", header=TRUE)
+x <- my.dat[,1]
+y <- my.dat[,2]
+```
+```{r}
+nloglik <- function(params) {
+  beta0 <- params[1]
+  beta1 <- params[2]
+  -sum(log(dpois(y, lambda=exp(beta0+beta1*x))))
+}
+optim(par=c(2,2), nloglik)
 ```
 
-##### Which classifier you will consider best among the classifiers studied in part (g) and part (h)? Why?
+The values of MLE $(\hat{\beta}_0,\hat{\beta}_1)$ on this data set are 1.037357, 4.300752.
+
+##### (b) Is the slop parameter $\beta_1=2$? Use appropriate statistical test to answer this question.
+```{r}
+poisson.fit <- glm(y~x, data = my.dat, family = poisson)
+summary(poisson.fit)
+confint(poisson.fit)
+```
+
+Here I applied poisson regression and get the 95% confidence interval for $\beta_1$ is (3.7514085 ,4.882484). The value 2 is not in this CI, thus we reject the null hypothesis that $\beta_1=2$.

@@ -1,0 +1,17 @@
+---
+title: "test"
+author: "Chengbo Gu"
+date: "2017年4月23日"
+output: html_document
+---
+
+```{r}
+mcr.cv.raw <- rep(NA, 90)
+data.fit <- data.frame(label, t(data.final))
+for (i in 1:90) {
+  svmest <- svm(label~., type="C-classification", kernel="linear", data=data.fit[-i,])
+  svmpred <- predict(svmest, data.fit[i,])
+  mcr.cv.raw[i] <- svmpred!=data.fit$label[i]
+}
+mean(mcr.cv.raw)
+```

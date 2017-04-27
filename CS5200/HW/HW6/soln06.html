@@ -1,0 +1,202 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln06.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Solution to Assignment #6 Index design</h1></center>
+
+<!--
+
+<p>
+This assignment uses the following data model:
+
+<center><img src="safari.jpg" alt="Safari Data Model"/></center>
+
+The following is the SQL schema:
+
+<p>
+<pre>
+create table Safari (
+  id int primary key auto_increment,
+  name varchar(500) unique
+);
+create table Material (
+  id int primary key auto_increment,
+  description varchar(500) not null,
+  weight double not null
+);
+create table Provision (
+  needs int not null,
+  foreign key(needs) references Material(id)
+    on update cascade on delete cascade,
+  neededBy int not null,
+  foreign key(neededBy) references Safari(id)
+    on update cascade on delete cascade,
+  quantity int not null default 1,
+  recommendation enum ('required', 'optional') not null,
+  primary key(needs, neededBy)
+);
+create table Country (
+  id int primary key auto_increment,
+  name varchar(500) not null unique
+);
+create table City (
+  id int primary key auto_increment,
+  name varchar(500) not null,
+  partOf int not null,
+  foreign key(partOf) references Country(id)
+    on update cascade on delete no action
+);
+create table Visit (
+  id int primary key auto_increment,
+  visits int not null,
+  foreign key(visits) references City(id)
+    on update cascade on delete no action,
+  visitedBy int not null,
+  foreign key(visitedBy) references Safari(id)
+    on update cascade on delete cascade,
+  -- The first day of the safari is numbered 1.
+  -- If there are no other visits, then the sole visit is numbered 1.
+  dayOfVisit int not null default 1
+);
+</pre>
+
+<p>
+
+The following are the most commonly used queries and commands for the database:
+
+-->
+
+<p>
+
+1. List the safaris by id and name that visit a city (specified by the city and
+country names) at least once.  Assume that a city is uniquely determined by its
+name and the name of its country.  Allow for one to specify the beginning of a
+country name.
+
+</p><p>
+
+<font color="blue">
+
+This query joins the Country, City, Visit and Safari tables.  The Country table
+is the smallest, and only one row will be retrieved for the Country table, so
+the pipeline begins with Country.  The retrieval of country by name must allow
+for retrieval using the beginning of its name, so a btree is needed for the
+index on Country(name).  The join with City uses the partOf column.  One then
+selects on the City name which cannot use an index.  The join with Visit uses
+the visits column.  The Join with Safari uses the id column.
+
+</font></p><p><font color="blue">
+
+Note that this query uses a semijoin which uses indexes in the same way as an
+ordinary join.
+
+</font></p><p><font color="blue">
+
+An alternative query plan would select on the city name and then use a hash
+join for the join with Country.  If this query plan is used, then the name
+column of City is indexed and the partOf column will not have an index.
+
+</font>
+
+</p><p>
+
+2. For a specified safari, list all required materials, showing their
+description, weight and quantity.
+
+</p><p>
+
+<font color="blue">
+
+The query plan starts with the Safari table because only one row will be
+selected.  The safari record uses the id column.  The join with Provision uses
+the neededBy column.  The join with Material uses the id column.
+
+</font>
+
+</p><p>
+
+3. List the Materials that have a weight greater than a specified weight.  For
+each one, show the material description and the safaris by name that need the
+material.  If a safari is unnamed, then show it as "unnamed".
+
+</p><p>
+
+<font color="blue">
+
+The query plan begins with the Material table.  This uses a range query on the
+weight column.  The join with Provision uses the needs column.  Then the join
+with Safari uses the id column.
+
+</font>
+
+</p><p>
+
+4. Modify the recommendation and quantity of a material for a safari, where the
+safari is specified by its name and the material by its id.  This applies only
+to named safaris.
+
+</p><p>
+
+<font color="blue">
+
+Finding the recommendation to be modified requires the needs and neededBy
+columns.  The needs column is the material id which is specified.  The neededBy
+column is the safari id which is retrieved by using the name column.  One must
+also check that the name is not null, but this does not have any effect on the
+design.
+
+</font>
+
+</p><p>
+
+5. Add a new visit to a safari.  Assume the city is already in the database and
+is found using its name and the name of its country.
+
+</p><p>
+
+<font color="blue">
+
+This requires the visits and visitedBy columns of Visit.  The vistedBy column
+is the safari id which is specified.  For the city id one uses the same plan as
+in Query 1.  Inserting the new Visit record uses the visits and visitedBy
+columns and the day of visit.  No indexes on visits or visitedBy are required.
+
+</font>
+
+</p><p>
+
+6. Delete all visits of a safari to a city.  Both the safari and the city are
+specified by their ids.
+
+</p><p>
+
+<font color="blue">
+
+This requires the visits and visitedBy columns of Visit.  The vistedBy column
+is the safari id which is specified.  The visits column is the city id which is
+also specified.  So there should be an index on the pair (visits, visitedBy).
+
+</font>
+
+</p><p>
+
+The following are the indexes:
+
+<table cellpadding="5" border="1">
+<tbody><tr><th>Table</th><th>column(s)</th><th>Type</th><th>Reason</th><th>Comment
+</th></tr><tr><td rowspan="2">Country</td><td>id</td><td>hash</td><td>Primary key
+</td></tr><tr><td>name</td><td>btree</td><td>Unique column (Query 1 and Query 5)
+</td></tr><tr><td rowspan="2">City</td><td>id</td><td>hash</td><td>Primary key
+</td></tr><tr><td>partOf</td><td>hash</td><td>Join with Country (Query 1 and Query 5)
+</td></tr><tr><td rowspan="2">Visit</td><td>id</td><td>hash</td><td>Primary key
+</td></tr><tr><td>visits, visitedBy</td><td>btree</td><td>Retrieval by both visits and visitedBy (Query 6) and retrieval of visits alone (Query 1)
+</td></tr><tr><td rowspan="2">Safari</td><td>id</td><td>hash</td><td>Primary Key
+</td></tr><tr><td>name</td><td>hash</td><td>Unique column (Query 4)
+</td></tr><tr><td rowspan="2">Provision</td><td>neededBy, needs</td><td>btree</td><td>Primary key and retrieval of neededBy (Query 2)
+</td></tr><tr><td>needs</td><td>hash</td><td>retrieval of needs (Query 3)
+</td></tr><tr><td rowspan="2">Material</td><td>id</td><td>hash</td><td>Primary key
+</td></tr><tr><td>weight</td><td>btree</td><td>Retrieval of range (Query 3)
+</td></tr></tbody></table>
+</p></body></html>

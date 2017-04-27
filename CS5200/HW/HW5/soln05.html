@@ -1,0 +1,354 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln05.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Solution to Assignment #5 Integrity, security, triggers and stored procedures</h1></center>
+<p>
+
+<!-- 
+
+This assignment uses the following data model:
+
+<center><img src="safari.jpg" alt="Safari Data Model"/></center>
+
+The following is the SQL schema:
+
+<p>
+<pre>
+create table Safari (
+  id int primary key auto_increment,
+  name varchar(500) unique
+);
+create table Material (
+  id int primary key auto_increment,
+  description varchar(500) not null,
+  weight double not null
+);
+create table Provision (
+  needs int not null,
+  foreign key(needs) references Material(id)
+    on update cascade on delete cascade,
+  neededBy int not null,
+  foreign key(neededBy) references Safari(id)
+    on update cascade on delete cascade,
+  quantity int not null default 1,
+  recommendation enum ('required', 'optional') not null,
+  primary key(needs, neededBy)
+);
+create table Country (
+  id int primary key auto_increment,
+  name varchar(500) not null unique
+);
+create table City (
+  id int primary key auto_increment,
+  name varchar(500) not null,
+  partOf int not null,
+  foreign key(partOf) references Country(id)
+    on update cascade on delete no action
+);
+create table Visit (
+  id int primary key auto_increment,
+  visits int not null,
+  foreign key(visits) references City(id)
+    on update cascade on delete no action,
+  visitedBy int not null,
+  foreign key(visitedBy) references Safari(id)
+    on update cascade on delete cascade,
+  -- The first day of the safari is numbered 1.
+  -- If there are no other visits, then the sole visit is numbered 1.
+  dayOfVisit int not null default 1
+);
+</pre>
+
+-->
+
+</p><p>
+
+1. We actually want every safari to visit at least two different cities.
+Requiring each safari to visit at least one city can be done with a foreign key
+constraint.  However, this does not work for a requirement to visit two or more
+cities.  Develop an assertion, written in SQL, that enforces this requirement.
+
+</p><p>
+
+<font color="blue">
+
+First rewrite: For every safari s there are visits v and w such that v and w are visited by s and visit different cities.
+
+</font></p><p><font color="blue">
+
+Second rewrite: There does not exist a safari s such that there do not exist visits v and w such that v and w are visited by s and visit different cities.
+
+</font></p><p><font color="blue">
+
+ </font></p><pre><font color="blue">create assertion VisitTwoCities
+check (
+  not exists(
+    select *
+      from Safari s
+     where not exists (
+             select *
+               from Visit v, Visit w
+              where v.visitedBy = s.id
+                and w.visitedBy = s.id
+                and v.visits != w.visits
+           )
+  )
+)
+</font></pre><font color="blue">
+
+<!--
+
+<pre>
+select * from Material
+ where
+  not exists(
+    select *
+      from Safari s
+     where not exists (
+             select *
+               from Visit v, Visit w
+              where v.visitedBy = s.id
+                and w.visitedBy = s.id
+                and v.visits != w.visits
+           )
+  )
+</pre>
+
+-->
+
+</font>
+
+<p>
+
+2. Show how to enforce the requirement that the name of a city is unique
+within its country.
+
+</p><p>
+
+<font color="blue">
+
+This does not require an assertion.  All that is needed is a uniqueness constraint in City:
+
+</font></p><pre><font color="blue">alter table City
+  add unique(name, partOf);
+</font></pre><font color="blue">
+
+</font>
+
+<p>
+
+3. Show how to enforce the requirement that the descriptions of the materials
+needed by a safari are unique.  In other words, no two materials needed by 
+the same safari can have the same description.
+
+</p><p>
+
+<font color="blue">
+
+First rewrite: For every safari s, if m and n are different materials needed by
+s, then m.description != n.description
+
+Second rewrite: For every safari s, NOT (m and n are different materials needed by
+s) OR (m.description != n.description)
+
+Third rewrite: There does not exist a safari s, such that m and n are different materials needed by
+s and m.description = n.description
+
+ </font></p><pre><font color="blue">create assertion UniqueDescription
+check (
+  not exists (
+    select *
+      from Safari s
+     where exists (
+             select *
+               from Provision p, Provision q, Material m, Material n
+              where p.neededBy = s.id
+                and q.neededBy = s.id
+                and p.needs = m.id
+                and q.needs = n.id
+                and m.id != n.id
+                and m.description = n.description
+           )
+  )
+)
+</font>
+
+<!--
+
+<pre>
+select * from Country
+ where
+  not exists (
+    select *
+      from Safari s
+     where exists (
+             select *
+               from Provision p, Provision q, Material m, Material n
+              where p.neededBy = s.id
+                and q.neededBy = s.id
+                and p.needs = m.id
+                and q.needs = n.id
+                and m.id != n.id
+                and m.description = n.description
+           )
+  )
+</pre>
+
+-->
+
+<p>
+
+Here is a simpler version of this assertion:
+
+ </p><pre>create assertion UniqueDescription
+check (
+  not exists (
+    select *
+      from Safari s, Provision p, Provision q, Material m, Material n
+     where p.neededBy = s.id
+       and q.neededBy = s.id
+       and p.needs = m.id
+       and q.needs = n.id
+       and m.id != n.id
+       and m.description = n.description
+  )
+)
+
+
+<!--
+
+<pre>
+select * from Country
+ where
+  not exists (
+    select *
+      from Safari s, Provision p, Provision q, Material m, Material n
+     where p.neededBy = s.id
+       and q.neededBy = s.id
+       and p.needs = m.id
+       and q.needs = n.id
+       and m.id != n.id
+       and m.description = n.description
+  )
+</pre>
+
+-->
+
+<p>
+
+4. Develop an assertion, written in SQL, that enforces the requirement that a
+safari that visits more than one country needs a passport and a visa.  The
+passport and visa are materials.  The passport is required and the visa is
+optional.
+
+</p><p>
+
+<font color="blue">
+
+First rewrite: For every safari s, if s visits different countries, then there
+exists provisions p and q such that p requires a passport and q optionally
+needs a visa.
+
+Second rewrite: For every safari s, NOT (s visits different countries) OR there
+exists provisions p and q such that p requires a passport and q optionally
+needs a visa.
+
+Third rewrite: There does not exist a safari s such that s visits different
+countries and there does not exist provisions p and q such that p requires a
+passport and q optionally needs a visa.
+
+ </font></p><pre><font color="blue">create assertion PassportVisa
+check (
+  not exists (
+    select *
+      from Safari s, Visit v, Visit w, City c, City d
+     where v.visitedBy = s.id
+       and w.visitedBy = s.id
+       and v.visits = c.id
+       and w.visits = d.id
+       and c.partOf != d.partOf
+       and not exists (
+             select *
+               from Provision p, Provision q, Material m, Material n
+              where p.neededBy = s.id
+                and q.neededBy = s.id
+                and p.needs = m.id
+                and q.needs = n.id
+                and m.description = 'Passport'
+                and n.description = 'Visa'
+                and m.recommendation = 'required'
+                and n.recommendation = 'optional'
+           )
+  )
+);
+
+<!--
+
+<pre>
+select * from Safari t
+ where
+  not exists (
+    select *
+      from Safari s, Visit v, Visit w, City c, City d
+     where v.visitedBy = s.id
+       and w.visitedBy = s.id
+       and v.visits = c.id
+       and w.visits = d.id
+       and c.partOf != d.partOf
+       and not exists (
+             select *
+               from Provision p, Provision q, Material m, Material n
+              where p.neededBy = s.id
+                and q.neededBy = s.id
+                and p.needs = m.id
+                and q.needs = n.id
+                and m.description = 'Passport'
+                and n.description = 'Visa'
+                and p.recommendation = 'required'
+                and q.recommendation = 'optional'
+           )
+  )
+</pre>
+
+-->
+
+</font>
+
+<p>
+
+5. Give the user 'IndiaProvisioner' the ability to read safari provisioning
+information for every safari that visits a city in India.  The information
+includes the safari id, the materials (all columns) needed by the safari and
+whether the material is required or optional.
+
+</p><p>
+
+<font color="blue">
+
+</font></p><pre><font color="blue">create view IndiaProvisioning(sid, mid, description, weight, recommendation) as
+  select s.id, m.id, m.description, m.weight, p.recommendation
+    from Safari s, Provision p, Material m
+   where p.neededBy = s.id
+     and p.needs = m.id
+     and exists (
+           select *
+             from Visit v, City c, Country d
+            where v.visitedBy = s.id
+              and v.visits = c.id
+              and c.partOf = d.id
+              and d.name = 'India'
+         );
+
+grant select on IndiaProvisioning to 'IndiaProvisioner';
+</font></pre><font color="blue">
+
+</font>
+
+<p>
+
+
+
+</p></pre></pre></pre></body></html>

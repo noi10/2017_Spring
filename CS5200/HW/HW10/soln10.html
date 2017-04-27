@@ -1,0 +1,193 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln10.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Solution to Assignment #10 Object-relational mapping</h1></center>
+<p>
+
+The following solution uses FIELD access.  If PROPERTY access is used for a
+class, then the annotation @Access(AccessType.PROPERTY) must be on the class
+and the annotations must be on the getter/setter pairs.
+
+</p><p>
+
+One must add an id field to the Country, Provision, and Visit classes.  This is
+necessary so that the id fields of the generated tables will be auto-increment
+fields.  The added id fields must be annotated with the @GeneratedValue
+annotation.
+
+</p><p>
+
+The value of the cascade property is specified to be CascadeType.ALL in the
+solution.  However, it is only necessary to have CascadeType.REMOVE.
+
+</p><p>
+
+The secondary table annotation for Provision is not required.  If it is
+omitted, then all the table properties must also be omitted from the
+annotations of attributes in the Provision class.  If you have a secondary
+table annotation for Provision, then it must be specified as in the solution.
+
+</p><p>
+<b>City.java</b>
+</p><p>
+</p><pre>@Entity
+@Access(AccessType.FIELD)
+public class City {
+    /** The identifier of the city. */
+    @Id
+    @GeneratedValue
+    private int id = 0;
+
+    /** The name of the city. */
+    @Column(length=500, nullable=false)
+    private String name = null;
+
+    /** The country that the city is a part of. */
+    @ManyToOne(cascade=CascadeType.ALL, optional=false)
+    @JoinColumn(name="partOf")
+    private Country partOf = null;
+</pre>
+<p>
+<b>Country.java</b>
+</p><p>
+</p><pre>@Entity
+@Access(AccessType.FIELD)
+public class Country {
+    /** The identifier of the country. */
+    @Id
+    @GeneratedValue
+    private int id = 0;
+
+    /** The name of the country. */
+    @Column(length=500, unique=true, nullable=false)
+    private String name;
+</pre>
+<p>
+<b>Provision.java</b>
+</p><p>
+</p><pre>@Entity
+@Access(AccessType.FIELD)
+@SecondaryTable(name="Material", uniqueConstraints=@UniqueConstraint(columnNames="id"))
+public class Provision {
+    /** The identifier of the provision. */
+    @Id
+    @GeneratedValue
+    private int id = 0;
+
+    /** The material identifier. */
+    @Column(table="Material", name="id", nullable=false)
+    private int materialId = 0;
+
+    /** The material description. */
+    @Column(table="Material", length=500, nullable=false)
+    private String description = null;
+
+    /** The material weight. */
+    @Column(table="Material", nullable=false)
+    private double weight = 0;
+
+    /** The quantity of the material being used. */
+    @Column(columnDefinition="int not null default 1")
+    private int quantity = 1;
+
+    /** The recommendation. */
+    @Column(nullable=false)
+    @Enumerated(EnumType.STRING)
+    private Recommendation recommendation = Recommendation.optional;
+</pre>
+<p>
+<b>Safari.java</b>
+</p><p>
+</p><pre>@Entity
+public class Safari {
+    /** The identifier in the Safari table. */    
+    @Id
+    @GeneratedValue
+    private int id = 0;  
+
+    /** The name of the safari. */
+    @Column(length=500, unique=true)
+    private String name;
+
+    /** The database connection. */
+    @Transient
+    private Connection connection;
+
+    /** The set of visits by the safari. */
+    @OneToMany
+    private Set&lt;Visit&gt; visits = new HashSet&lt;Visit&gt;();
+
+    /** The set of provisions (materials) used by the safari. */
+    @OneToMany
+    private Set&lt;Provision&gt; provisions = new HashSet&lt;Provision&gt;();
+
+    /** Map from the city identifiers to the cities. */
+    @Transient
+    private Map&lt;Integer, City&gt; cities = new HashMap&lt;Integer, City&gt;();
+
+    /** Map from the country identifiers to the countries. */
+    @Transient
+    private Map&lt;Integer, Country&gt; countries = new HashMap&lt;Integer, Country&gt;();
+</pre>
+<p>
+<b>Visit.java</b>
+</p><p>
+</p><pre>@Entity
+@Access(AccessType.FIELD)
+public class Visit {
+    /** The identifier of the visit. */
+    @Id
+    @GeneratedValue
+    private int id = 0;
+
+    /** The day of the visit within the safari. */
+    @Column(columnDefinition="int not null default 1")
+    private int dayOfVisit = 1;
+
+    /** The city being visited. */
+    @ManyToOne(optional=false, cascade=CascadeType.ALL)
+    @JoinColumn(name="visits")
+    private City city = null;
+</pre>
+
+<p>
+
+2.  List all materials that are required by a safari that visits India.  You must use the join syntax as discussed in class.
+
+</p><p>
+
+</p><pre>select p
+  from Provision p
+ where exists(
+   select *
+     from Safari s join provisions p
+          join s.visits v
+    where p.recommendation = Recommendation.required
+      and v.city.partOf.name = 'India'
+ )
+);
+</pre>
+
+<p>
+3.  Show the safaris that visit every city in Kiribati.  You must use the join syntax as discussed in class whenever it is possible to do so.
+
+</p><p>
+</p><pre>select s
+  from Safari s
+ where not exists(
+   select *
+     from City c
+    where c.partOf.name = 'Kiribati'
+      and not exists(
+        select *
+          from s join visits v
+         where v.city = c
+      )
+);
+</pre>
+
+
+</body></html>

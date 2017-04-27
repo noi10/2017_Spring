@@ -171,7 +171,7 @@ for (i in 1:nboot) {
 }</code></pre>
 <pre class="r"><code>quantile(boot.theta, c(0.025, 0.975))</code></pre>
 <pre><code>##      2.5%     97.5% 
-## 0.4490234 0.7298828</code></pre>
+## 0.4592480 0.7219775</code></pre>
 <pre class="r"><code>t.test(y, mu=exp(1))</code></pre>
 <pre><code>## 
 ##  One Sample t-test
@@ -187,7 +187,7 @@ for (i in 1:nboot) {
 <pre class="r"><code>tstat &lt;- (mean(y) - exp(1))/(sd(y)/sqrt(n))
 2*pt(-abs(tstat), df=n-1)</code></pre>
 <pre><code>## [1] 9.569858e-11</code></pre>
-<p>The 95% boostrap confidence interval is (0.4490234, 0.7298828) which doesn’t include 1.</p>
+<p>The 95% boostrap confidence interval is (0.459248, 0.7219775) which doesn’t include 1.</p>
 <p>Thus, we reject the null hypothesis and conclude that <span class="math inline">\(\theta\neq1\)</span>.</p>
 <p>The p-value here is 2.695059e-09 which is extremely small. So we could reject the null hypothesis using p-value too.</p>
 </div>
@@ -350,7 +350,8 @@ dim(data.filtered)[1]</code></pre>
 </div>
 <div id="c-we-wish-to-conduct-clustering-analysis-to-study-natural-groupings-of-the-patients-predicted-by-the-gene-expression-profiles.-for-this-analysis-we-first-need-to-reduce-the-number-of-genes-studied.-the-filter-in-b-is-one-such-choice.-please-comment-on-what-filtering-methods-you-would-use-to-choose-genes-other-than-the-filter-in-b.-what-would-you-consider-as-the-best-gene-filter-in-this-case." class="section level5">
 <h5>(c) We wish to conduct clustering analysis to study natural groupings of the patients predicted by the gene expression profiles. For this analysis, we first need to reduce the number of genes studied. The filter in (b) is one such choice. Please comment on what filtering methods you would use to choose genes, other than the filter in (b). What would you consider as the best gene filter in this case.</h5>
-<p>Another criteria could be that the absolute expression levels of the genes were big enough.</p>
+<p>Another criteria could be that the absolute expression levels of the genes are big enough. Other methods include filtering out genes with expression levels which do not change significantly across samples, filtering out genes that violate the normality and homoscedasticity assumptios and so on.</p>
+<p>For this task, the filter in (b) and the filter that the absolute expression levels of the genes are big enough would suffice.</p>
 </div>
 <div id="d-conduct-a-hierarchical-clustering-analysis-with-filtered-genes-in-b.-how-do-the-clusters-compare-to-the-b-stages-how-does-do-the-clusters-compare-to-the-molecule-biology-types-in-variable-allmol.biol-provide-the-confusion-matrices-of-the-comparisons-with-4-clusters." class="section level5">
 <h5>(d) Conduct a hierarchical clustering analysis with filtered genes in (b). How do the clusters compare to the B-stages? How does do the clusters compare to the molecule biology types (in variable ALL$mol.biol)? Provide the confusion matrices of the comparisons, with 4 clusters.</h5>

@@ -1,0 +1,137 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln02.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Solution to Assignment #2 Translation from UML to SQL</h1></center>
+<p>
+</p><pre>create table BeehiveStyle(
+  -- Separate table with int primary key enumeration strategy
+  id int primary key auto_increment,
+  style varchar(200) not null unique
+);
+insert into BeehiveStyle(style) values('Langstroph');
+insert into BeehiveStyle(style) values('WBC');
+insert into BeehiveStyle(style) values('CDB');
+insert into BeehiveStyle(style) values('DLD');
+insert into BeehiveStyle(style) values('Beehaus');
+insert into BeehiveStyle(style) values('Top-bar');
+
+create table Beehive(
+  -- It is not required to specify auto_increment
+  id int primary key auto_increment,
+  style int not null,
+  foreign key(style) references BeehiveStyle(id)
+    on update cascade on delete no action
+);
+  
+create table Honeycomb(
+  id int primary key auto_increment,
+  -- Constrained field enumeration strategy
+  status enum('unused', 'in progress', 'ready to harvest', 'damaged') not null,
+  partOf int not null,
+  foreign key(partOf) references Beehive(id)
+    on update cascade on delete no action
+);
+create table LegalEntity(
+  id int primary key auto_increment,
+  name varchar(200) not null
+);
+create table LegalEntityEmail(
+  legalEntity int,
+  foreign key(legalEntity) references LegalEntity(id)
+    on update cascade on delete cascade,
+  email varchar(250),
+  primary key(legalEntity, email)
+);
+create table Person(
+  -- JOINED strategy for inheritance
+  id int primary key auto_increment,
+  foreign key(id) references LegalEntity(id)
+    on update cascade on delete cascade
+);
+create table Organization(
+  -- JOINED strategy for inheritance
+  id int primary key auto_increment,
+  foreign key(id) references LegalEntity(id)
+    on update cascade on delete cascade,
+  logo blob not null
+);
+create table OrganizationAlias(
+  organization int not null,
+  foreign key(organization) references Organization(id)
+    on update cascade on delete cascade,
+  alias varchar(250) not null,
+  primary key(organization, alias)
+);
+create table Location(
+  id int primary key auto_increment,
+  description varchar(5000),
+  -- The coordinates can also be specified using latitude and longitude
+  coordinates varchar(200) not null
+);
+create table PollinationService(
+  id int primary key auto_increment,
+  start date not null,
+  end date not null,
+  serves int not null,
+  foreign key(serves) references Location(id)
+    on update cascade on delete no action
+);
+create table Payment(
+  paidFor int not null,
+  foreign key(paidFor) references PollinationService(id)
+    on update cascade on delete cascade,
+  paidBy int not null,
+  foreign key(paidBy) references LegalEntity(id)
+    on update cascade on delete cascade,
+  primary key(paidFor), -- This is a many-to-one association class
+  amount double not null,
+  paidOn date not null
+);
+create table Ownership(
+  owns int not null,
+  foreign key(owns) references Beehive(id)
+    on update cascade on delete cascade,
+  ownedBy int not null,
+  foreign key(ownedBy) references LegalEntity(id)
+    on update cascade on delete cascade,
+  primary key(owns, ownedBy),
+  fraction double not null
+);
+create table Pollination(
+  uses int not null,
+  foreign key(uses) references Beehive(id)
+    on update cascade on delete cascade,
+  pollinates int not null,
+  foreign key(pollinates) references PollinationService(id)
+    on update cascade on delete cascade,
+  primary key(uses, pollinates)
+);
+create table Contact(
+  id int primary key auto_increment,
+  -- Constrained field enumeration strategy
+  role enum('contact', 'finance', 'officer') not null,
+  responsible int not null,
+  foreign key(responsible) references Person(id)
+    on update cascade on delete no action,
+  serves int not null,
+  foreign key(serves) references Organization(id)
+    on update cascade on delete no action
+);
+create table Corporation(
+  -- JOINED strategy for inheritance
+  id int primary key auto_increment,
+  foreign key(id) references Organization(id)
+    on update cascade on delete cascade
+);
+create table Nonprofit(
+  -- JOINED strategy for inheritance
+  id int primary key auto_increment,
+  foreign key(id) references Organization(id)
+    on update cascade on delete cascade
+);
+</pre>
+
+</body></html>

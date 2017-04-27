@@ -1,0 +1,259 @@
+setwd("C:/Users/lenovo/Desktop/2017_Spring/MATH7340/Final")
+
+# problem 1
+# (a)
+y<-as.numeric(t(read.table(file="DataPois.txt", header=TRUE)))
+length(y)
+mean(y)
+
+# (b) 
+nloglik <- function(theta) -sum(log(dpois(y, lambda=exp(theta)))) 
+optim(par=1, nloglik)
+
+# (c)
+n <- length(y)
+nboot <- 1000
+boot.theta <- rep(NA, nboot)
+for (i in 1:nboot) {
+  y.star <- y[sample(1:n, replace=TRUE)]
+  nloglik.boot <- function(theta) -sum(log(dpois(y.star, lambda=exp(theta)))) #likelihood function
+  boot.theta[i] <- optim(par=1, nloglik.boot)$par
+}
+quantile(boot.theta, c(0.025, 0.975))
+
+t.test(y, mu=exp(1))
+
+tstat <- (mean(y) - exp(1))/(sd(y)/sqrt(n))
+2*pt(-abs(tstat), df=n-1)
+
+
+
+# problem 2
+rm(list=ls())
+# (a)
+library(ISLR)
+library(lmtest)
+ncidata <- NCI60$data
+ncilabs <- as.factor(NCI60$labs)
+
+filter <- as.vector(sapply(ncilabs, function(x) table(ncilabs)[x] > 2))
+mydata <- ncidata[filter,]
+mylabs <- ncilabs[filter]
+
+# (b)
+anova( lm( mydata[,1] ~ mylabs ) )
+pairwise.t.test(mydata[,1],  mylabs, p.adjust.method='fdr')
+
+# (c)
+shapiro.test( residuals( lm( mydata[,1] ~ mylabs )))
+bptest( lm( mydata[,1] ~ mylabs ), studentize = FALSE)
+
+# (d)
+# using anova()
+p.values <- apply(mydata,2, function(x) anova( lm( x ~ mylabs ))[["Pr(>F)"]][1])
+p.fdr <-p.adjust(p=p.values, method="fdr")
+sum(p.fdr < 0.05)
+
+# using kruskal()
+p.values <- apply(mydata, 2, function(x) kruskal.test(x ~ mylabs)$p.value)
+p.fdr <-p.adjust(p=p.values, method="fdr")
+sum(p.fdr < 0.05)
+
+
+# problem 3
+rm(list=ls())
+# (a)
+pairs(state.x77)
+
+# (b)
+data <- as.data.frame(state.x77[,c('Life Exp', 'Income', 'Illiteracy', 'Frost')])
+names(data)<-c('Life.Exp', 'Income', 'Illiteracy', 'Frost')
+lin.reg <- lm(Life.Exp~., data = data)
+summary(lin.reg)
+
+# (c)
+n <- dim(state.x77)[1]
+err <- 0
+for (i in 1:n) {
+  data.tr <- data[-i,]
+  lin.reg.tr <- lm(Life.Exp~., data = data.tr)
+  err <- err + as.numeric(predict(lin.reg.tr, newdata=data[i,]) - data[i,1])^2
+  #err
+}
+err <- err/n
+err
+
+
+# problem 4
+rm(list=ls())
+# (a)
+library(ALL)
+data(ALL)
+Bcells <- ALL$BT %in% c('B', 'B1', 'B2', 'B3', 'B4')
+ALLB <- exprs(ALL)[,Bcells]
+
+# (b)
+library(genefilter)
+func <- cv(0.2)
+select <- genefilter(ALLB, filterfun(func))
+data.filtered <- ALLB[select,]
+label.filtered <- as.character(ALL$BT[Bcells])
+genes2 <- rownames(data.filtered)
+dim(data.filtered)[1]
+
+# (c)
+#Another criteria could be that the absolute expression levels of the genes are big enough. Other methods include 
+#filtering out genes with expression levels which do not change significantly across samples, filtering out genes 
+#that violate the normality and homoscedasticity assumptios and so on.
+
+#For this task, the filter in (b) and the filter that the absolute expression levels of the genes are big enough 
+#would suffice.
+
+# (d)
+hc.complete <- hclust(dist(t(data.filtered), method="euclidian"), method="ward.D2")
+plot(hc.complete, hang=-1, cex=0.38)
+rect.hclust(hc.complete, k=4)
+groups <- cutree(hc.complete, k=4)
+table(label.filtered, groups)
+MBT <- as.character(ALL$mol.biol[Bcells])
+table(MBT, groups)
+
+# (e)
+library(gplots)
+colnames(data.filtered) <- label.filtered
+col.ord<-order(label.filtered)
+dat1<-data.filtered[, col.ord] 
+color.map <- function(B) {
+  if (B=="B1") "yellow"
+  else if(B=="B2") "lightblue"
+  else if(B=="B3") "darkolivegreen4"
+  else if(B=="B4") "darkorange"
+  else "purple"
+}
+patientcolors<- unlist(lapply(colnames(dat1), color.map)) 
+heatmap.2(dat1, col=greenred(75), scale="row", 
+          Rowv=FALSE, 
+          Colv=FALSE, 
+          key=FALSE, 
+          ColSideColors=patientcolors, 
+          trace="none", 
+          dendrogram="none", 
+          labRow=NA)
+
+
+col.ord<-order(MBT) 
+colnames(data.filtered) <- MBT 
+dat2<-data.filtered[, col.ord]
+color.map <- function(MB) {#color code for each type as in paper
+  if (MB=="ALL1/AF4") "yellow"
+  else if(MB=="BCR/ABL") "lightblue"
+  else if(MB=="E2A/PBX1") "darkolivegreen4"
+  else if(MB=="NEG") "darkorange"
+  else "purple"
+}
+patientcolors<- unlist(lapply(colnames(dat2), color.map)) #apply color code
+heatmap.2(dat2, col=greenred(75), scale="row", 
+          Rowv=FALSE, 
+          Colv=FALSE, 
+          key=FALSE, 
+          ColSideColors=patientcolors, 
+          trace="none", 
+          dendrogram="none",    
+          labRow=NA)
+
+# (f)
+library(limma)
+Bcells.1 <- label.filtered %in% c('B1', 'B2', 'B3', 'B4')
+label.filtered <- label.filtered[Bcells.1]
+ALLB.1 <- ALLB[,Bcells.1]
+
+mylabel <- as.factor(sapply(label.filtered, function(x) 
+{if((x == 'B3') || (x == 'B4')) 'B34' else x}))
+
+design.ma <- model.matrix(~0 + mylabel)
+colnames(design.ma) <- c("B1", "B2", "B34")
+fit <- lmFit(ALLB.1, design.ma)
+fit <- eBayes(fit)
+cont.ma <- makeContrasts(B1-B2,B2-B34, levels=mylabel)
+fit1 <- contrasts.fit(fit, cont.ma)
+fit1 <- eBayes(fit1)
+genes1 <- rownames(topTable(fit1, number=Inf, p.value=0.05, adjust.method="fdr"))
+length(genes1)
+
+# (g)
+library(e1071)
+require(rpart)
+tree.classification <- function(data.fit) {
+  tree.fit <- rpart(label ~. , data= data.fit, method="class")
+  pred.tr <- predict(tree.fit, data.fit, type="class")
+  mcr.tr <- mean(pred.tr!=data.fit$label)
+  cat("empirical mcr for classification tree :", mcr.tr, "\n")
+  
+  n <- dim(data.fit)[1]
+  mcr.cv.raw <- rep(NA, n)
+  for (i in 1:n) {
+    fit.tr <- rpart(label ~. , data=data.fit[-i,], method="class")
+    pred.tr <- predict(fit.tr, data.fit[i,], type="class")
+    mcr.cv.raw[i] <- (pred.tr!=data.fit$label[i])
+  }
+  mcr.cv <- mean(mcr.cv.raw)
+  cat("cross-validation mcr for classification tree:", mcr.cv, "\n\n")  
+}
+
+svm.classification <- function(data.fit){
+  svm.fit <- svm(label~., type="C-classification", kernel="linear", data=data.fit)
+  pred.svm <- predict(svm.fit, data.fit)
+  mcr.svm <- mean(pred.svm!=data.fit$label)
+  cat("empirical mcr for SVM:", mcr.svm, "\n")
+  
+  n <- dim(data.fit)[1]
+  mcr.cv.raw <- rep(NA, n)
+  for (i in 1:n) {
+    
+    fit.svm <- svm(label~. , type="C-classification", kernel="linear", data=data.fit[-i,])
+    pred.svm <- predict(fit.svm, data.fit[i,])
+    mcr.cv.raw[i] <- (pred.svm!=data.fit$label[i])
+  }
+  #print(mcr.cv.raw)
+  mcr.cv <- mean(mcr.cv.raw)
+  cat("cross-validation mcr for SVM:", mcr.cv, "\n\n")
+}
+
+data <- ALLB.1[genes1,]
+label <- mylabel
+data.fit <- data.frame(label, t(data))
+svm.classification(data.fit)
+tree.classification(data.fit)
+
+# (h)
+data.final <- ALLB.1[intersect(genes1,genes2),]
+dim(data.final)[1]
+label <- mylabel
+data.fit <- data.frame(label, t(data.final))
+svm.classification(data.fit)
+tree.classification(data.fit)
+
+# (i)
+# I would like to choose classification tree in part (h) because it has the lowest 
+# cross-validation misclassification rate 17.78%.
+
+
+# problem 5
+rm(list=ls())
+# (a)
+my.dat <- read.table(file="DataPoisReg.txt", header=TRUE)
+x <- my.dat[,1]
+y <- my.dat[,2]
+
+nloglik <- function(params) {
+  beta0 <- params[1]
+  beta1 <- params[2]
+  -sum(log(dpois(y, lambda=exp(beta0+beta1*x))))
+}
+optim(par=c(2,2), nloglik)
+
+# (b)
+poisson.fit <- glm(y~x, data = my.dat, family = poisson)
+summary(poisson.fit)
+confint(poisson.fit)
+

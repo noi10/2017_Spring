@@ -1,0 +1,218 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln04.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Solution to Assignment #4 Advanced Queries, Updates and Views</h1></center>
+<p>
+</p><pre>create table Safari (
+  id int primary key auto_increment,
+  name varchar(500) unique
+);
+create table Material (
+  id int primary key auto_increment,
+  description varchar(500) not null,
+  weight double not null
+);
+create table Provision (
+  needs int not null,
+  foreign key(needs) references Material(id)
+    on update cascade on delete cascade,
+  neededBy int not null,
+  foreign key(neededBy) references Safari(id)
+    on update cascade on delete cascade,
+  quantity int not null default 1,
+  recommendation enum ('required', 'optional') not null,
+  primary key(needs, neededBy)
+);
+create table Country (
+  id int primary key auto_increment,
+  name varchar(500) not null unique
+);
+create table City (
+  id int primary key auto_increment,
+  name varchar(500) not null,
+  partOf int not null,
+  foreign key(partOf) references Country(id)
+    on update cascade on delete cascade
+);
+create table Visit (
+  id int primary key auto_increment,
+  visits int not null,
+  foreign key(visits) references City(id)
+    on update cascade on delete no action,
+  visitedBy int not null,
+  foreign key(visitedBy) references Safari(id)
+    on update cascade on delete cascade,
+  -- The first day of the safari is numbered 1.
+  -- If there are no other visits, then the sole visit is numbered 1.
+  dayOfVisit int not null default 1
+);
+</pre>
+
+<p>
+
+1. List the descriptions of all materials that are required by a safari that visits India.
+
+</p><pre>select m.description
+  from Material m
+ where exists(
+         select *
+           from Provision p, Safari s, Visit v, City c, Country d
+          where m.id = p.needs
+            and p.neededBy = s.id
+            and p.recommendation = 'required'
+            and s.id = v.visitedBy
+            and v.visits = c.id
+            and c.partOf = d.id
+            and d.name = 'India'
+       );
+</pre>
+
+Here is a simplified version of the query:
+
+<pre>select m.description
+  from Material m
+ where exists(
+         select *
+           from Provision p, Visit v, City c, Country d
+          where m.id = p.needs
+            and p.neededBy = v.visitedBy
+            and p.recommendation = 'required'
+            and v.visits = c.id
+            and c.partOf = d.id
+            and d.name = 'India'
+       );
+</pre>
+
+2. Show the safaris that visit every city in Kiribati.
+
+<pre>select s.id
+  from Safari s
+ where not exists(
+             select *
+               from City c, Country d
+              where c.partOf = d.id
+                and d.name = 'Kiribati'
+                and not exists(
+                          select *
+                            from Visit v
+                           where s.id = v.visitedBy
+                             and v.visits = c.id
+                         )
+           );
+</pre>
+
+3. Show the materials that are needed by every unnamed safari.
+
+<pre>select m.id
+  from Material m
+ where not exists(
+             select *
+               from Safari s
+              where s.name is null
+                and not exists(
+                          select *
+                            from Provision p
+                           where m.id = p.needs
+                             and p.neededBy = s.id
+                        )
+           );
+</pre>
+
+4. Remove all materials that are not required by any safari.
+
+<pre>delete from Material
+ where not exists(
+             select *
+               from Safari s
+              where exists(
+                      select *
+                        from Provision p
+                       where id = p.needs
+                         and p.neededBy = s.id
+                         and p.recommendation = 'required'
+                    )
+           );
+</pre>
+
+<p>
+
+This command can be simplified to:
+
+</p><p>
+
+</p><pre>delete from Material
+ where not exists(
+             select *
+               from Safari s, Provision p
+              where id = p.needs
+                and p.neededBy = s.id
+                and p.recommendation = 'required'
+           );
+</pre>
+
+<p>
+
+In addition the Safari table can be eliminated:
+
+</p><p>
+
+</p><pre>delete from Material
+ where not exists(
+             select *
+               from Provision p
+              where id = p.needs
+                and p.recommendation = 'required'
+           );
+</pre>
+
+<p>
+
+
+5. Add a visit to a safari, given its name, to a city, given its id. The new
+visit has a day of visit that is one larger than the current maximum day of
+visit by the existing visits.
+
+</p><pre>insert into Visit(visitedBy, visits, dayOfVisit)
+  select s.id, ?, 1 + if(max(v.dayOfVisit) is null, 0, max(v.dayOfVisit))
+    from Safari s left join Visit v on (s.id = v.visitedBy)
+   where s.name = ?
+   group by s.id;
+</pre>
+
+In SQL Server and Oracle, this is the query:
+
+ <pre>insert into Visit(visitedBy, visits, dayOfVisit)
+  select s.id, ?, coalesce(1 + max(v.dayOfVisit), 1)
+    from Safari s left join Visit v on (s.id = v.visitedBy)
+   where s.name = ?
+   group by s.id;
+</pre>
+
+6. For a safari, given a name, update each provision of a material, given its description, from optional to required, for the materials with weight less than 1.5.
+
+<pre>update Provision set recommendation = 'required'
+ where exists(
+         select *
+           from Safari s, Material m
+          where s.id = neededBy
+            and needs = m.id
+            and s.name = ?
+            and m.description = ?
+            and m.weight &lt; 1.5
+       );
+</pre>
+
+7. Create a view that shows the safaris and their material provisions, also showing the material description and the total weight of that material used by the safari.
+
+<pre>create view SafariMaterials(sid, mid, description, totalWeight) as
+  select s.id, m.id, m.description, m.weight * p.quantity
+    from Safari s, Provision p, Material m
+   where s.id = p.neededBy
+     and p.needs = m.id;
+</pre>
+
+
+</body></html>

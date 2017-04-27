@@ -1,0 +1,262 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln08.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Solution to Assignment #8 XML, JSON and hierarchical queries</h1></center>
+<p>
+
+This assignment uses a modification of the Safari database.  It is not the same data model.
+This problem uses the following XML schema:
+
+</p><p>
+
+</p><pre>&lt;schema
+  xmlns='http://www.w3.org/2001/XMLSchema'
+
+ &lt;element name='Company'&gt;
+  &lt;complexType&gt;
+   &lt;sequence&gt;
+    &lt;element ref='Safari' maxOccurs='unbounded'/&gt;
+   &lt;/sequence&gt;
+  &lt;/complexType&gt;
+ &lt;/element&gt;
+
+ &lt;element name='Safari'&gt;
+  &lt;complexType&gt;
+   &lt;sequence&gt;
+    &lt;element ref='Visit' minOccurs='0' maxOccurs='unbounded'/&gt;
+    &lt;element ref='Material' minOccurs='0' maxOccurs='unbounded'/&gt;
+   &lt;/sequence&gt;
+   &lt;attribute name='name' type='string' use='optional'/&gt;
+  &lt;/complexType&gt;
+ &lt;/element&gt;
+
+ &lt;element name='Visit'&gt;
+  &lt;complexType&gt;
+   &lt;attribute name='day' type='string' use='default' value='1'/&gt;
+   &lt;attribute name='city' type='string' use='required'/&gt;
+   &lt;attribute name='country' type='string' use='required'/&gt;
+  &lt;/complexType&gt;
+ &lt;/element&gt;
+
+ &lt;element name='Material'&gt;
+  &lt;complexType mixed='true'&gt;
+   &lt;attribute name='weight' type='string' use='required'/&gt;
+   &lt;attribute name='quantity' type='string' use='default' value='1'/&gt;
+   &lt;attribute name='recommendation' use='required'&gt;
+    &lt;simpleType&gt;
+     &lt;restriction base='string'&gt;
+      &lt;enumeration value='required'/&gt;
+      &lt;enumeration value='optional'/&gt;
+     &lt;/restriction&gt;
+    &lt;/simpleType&gt;
+   &lt;/attribute&gt;
+  &lt;/complexType&gt;
+ &lt;/element&gt;
+&lt;/schema&gt;
+</pre>
+
+<p>
+
+Here is a simple example of an XML document for the schema above:
+
+</p><p>
+
+</p><pre>&lt;Company&gt;
+  &lt;Safari name="ThreeDay"&gt;
+    &lt;Visit city="Nairobi" country="Kenya"/&gt;
+    &lt;Visit day="2" city="Embu" country="Kenya"/&gt;
+    &lt;Visit day="3" city="Mombasa" country="Kenya"/&gt;
+    &lt;Material weight="1.2" recommendation="required"&gt;Hiking Boots&lt;/Material&gt;
+    &lt;Material weight="0.2" recommendation="optional"&gt;Sunscreen&lt;/Material&gt;
+  &lt;/Safari&gt;
+  &lt;Safari&gt;
+    &lt;Visit city="Nairobi" country="Kenya"/&gt;
+    &lt;Visit day="2" city="Mombasa" country="Kenya"/&gt;
+    &lt;Visit day="3" city="Zanzibar" country="Tanzania"/&gt;
+    &lt;Visit day="4" city="Dodoma" country="Tanzania"/&gt;
+    &lt;Material weight="1.2" recommendation="optional"&gt;Hiking Boots&lt;/Material&gt;
+    &lt;Material weight="0.2" recommendation="required"&gt;Sunscreen&lt;/Material&gt;
+  &lt;/Safari&gt;
+&lt;/Company&gt;
+</pre>
+
+<p>
+
+Here is the same information using JSON:
+
+</p><pre>{
+  "Company" :
+    {
+      "Safari" :
+        [
+          {
+            "name" : "ThreeDay",
+            "Visit" : 
+              [
+                {
+                  "city" : "Nairobi",
+                  "country" : "Kenya"
+                },
+                {
+                  "day" : 2,
+                  "city" : "Embu",
+                  "country" : "Kenya"
+                },
+                {
+                  "day" : 3,
+                  "city" : "Mombasa",
+                  "country" : "Kenya"
+                }
+              ],
+            "Material" :
+              [
+                {
+                  "weight" : 1.2,
+                  "recommendation" : "required",
+                  "description" : "Hiking Boots"
+                },
+                {
+                  "weight" : 0.2,
+                  "recommendation" : "optional",
+                  "description" : "Sunscreen"
+                }
+              ]
+            },
+          {
+            "Visit" : 
+              [
+                {
+                  "city" : "Nairobi",
+                  "country" : "Kenya"
+                },
+                {
+                  "day" : 2,
+                  "city" : "Mombasa",
+                  "country" : "Kenya"
+                },
+                {
+                  "day" : 3,
+                  "city" : "Zanzibar",
+                  "country" : "Tanzania"
+                },
+                {
+                  "day" : 4,
+                  "city" : "Dodoma",
+                  "country" : "Tanzania"
+                }
+              ],
+            "Material" :
+              [
+                {
+                  "weight" : 1.2,
+                  "recommendation" : "optional",
+                  "description" : "Hiking Boots"
+                },
+                {
+                  "weight" : 0.2,
+                  "recommendation" : "required",
+                  "description" : "Sunscreen"
+                }
+              ]
+          }
+        ]
+    }
+}
+</pre>
+
+<p>
+
+Specify hierarchical queries to solve the following problems for XML and JSON.  In
+general, the queries for XML will differ from the queries for JSON, so you will
+need two queries for each problem, for a total of 12 queries in all.  For each query,
+specify whether you are using XPath 1.0 or JavaScript semantics.
+
+</p><p>
+
+1. Find all safaris that visit Embu in Kenya.
+
+</p><p>
+
+</p><pre>XML: //Safari[Visit[@city='Embu'][@country='Kenya']]
+JSON: //Safari/*[Visit/*[city='Embu'][country='Kenya']]
+</pre>
+
+<p>
+
+2. Show the total weight of all materials of all safaris that have a name.  The result of this query is exactly one value.
+
+</p><p>
+
+</p><pre>XML: sum(//Safari[@name]/Material/@weight)
+JSON: sum(//Safari/*[name]/Material/*/weight)
+</pre>
+
+<p>
+
+3. Show all safaris by name that require at least 1 unit (by weight) of some material.
+You should omit unnamed safaris.
+
+</p><p>
+
+</p><pre>XML: //Safari[Material[@recommendation='required']/@weight&gt;=1]/@name
+JSON: //Safari/*[name][Material/*[recommendation='required']/weight&gt;=1]/name
+</pre>
+
+<p>
+
+4. List the safaris that have more than 3 visits.
+
+</p><p>
+
+</p><pre>XML: //Safari[count(Visit)&gt;3]
+JSON: //Safari/*[count(Visit/*)&gt;3]
+</pre>
+
+<p>
+
+5. List the names of all countries whose name ends in "stan".
+Repetitions are allowed.
+
+</p><p>
+
+</p><pre>Javascript semantics
+XML: //Visit[substring(@country,string-length(@country)-4)=='stan']/@country
+JSON: //Visit/*[substring(country,string-length(country)-4)=='stan']/country
+</pre>
+
+<p>
+
+6. List the descriptions of all materials optionally used by a safari that visits Dodoma in Tanzania after the third day.
+Repetitions are allowed.
+</p><p>
+
+</p><pre>XML: //Safari[Visit[@day&gt;3][@city='Dodoma'][@country='Tanzania']]/Material[@recommendation='optional']/text()
+JSON: //Safari/*[Visit/*[day&gt;3][city='Dodoma'][country='Tanzania']]/Material/*[recommendation='optional']/description
+</pre>
+
+<p>
+
+You may express your queries using either XPath 1.0 or HAPL.  Of course, XPath
+can only be applied to XML data and only supports XPath 1.0 semantics.  To test
+your HAPL queries, there is
+an <a href="http://www.ccs.neu.edu/home/kenb/hapl.html">Online HAPL Query
+Processor</a>.
+See <a href="http://www.ccs.neu.edu/home/kenb/hapldoc/index.html">HAPL API
+Documentation</a> for more information.  
+
+</p><p>
+
+Your queries must correctly retrieve the specified data for any consistent
+state of the XML document or JSON expression (i.e., XML document that satisfies
+all of the constraints specified in the XSD schema or JSON expression derived
+from such an XML document).
+
+</p><p>
+
+
+
+
+</p></body></html>

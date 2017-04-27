@@ -1,0 +1,426 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln09.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Assignment #9 Concurrency control</h1></center>
+<p>
+</p><p>For each schedule:</p><ol type="a">
+<li>Determine whether the schedule is view-serializable, conflict-serializable, recoverable, cascadeless and/or strict. Note: you must state separately whether each one of these holds.</li><li>For each of the 5 answers in the first part above, explain why or why not. In the case of the two notions of serializability, you must either give an equivalent serial schedule or a reason why the schedule is not serializable. For the other three concepts, you must give an example of a violation if the schedule does not have the property.
+</li></ol><p>The following are the schedules:
+</p><ol>
+<!-- Schedule Number 1 -->
+<li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>WW 3&#8594;4 <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="black">W<sub>4</sub>(C)</font>, R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WW 3&#8594;4 <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 3&#8594;1 <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 3&#8594;1 <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>RW 1&#8594;3 W<sub>3</sub>(C), <font color="black">R<sub>1</sub>(B)</font>, <font color="black">W<sub>3</sub>(B)</font>, W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>RW 1&#8594;2 W<sub>3</sub>(C), <font color="black">R<sub>1</sub>(B)</font>, W<sub>3</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WW 3&#8594;2 W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="black">W<sub>3</sub>(B)</font>, <font color="black">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 3&#8594;2 W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="black">W<sub>3</sub>(B)</font>, W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), <font color="black">R<sub>2</sub>(B)</font>, R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 3&#8594;4 W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="black">W<sub>3</sub>(B)</font>, W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), <font color="black">R<sub>4</sub>(B)</font>, C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 3&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="black">W<sub>3</sub>(B)</font>, W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), <font color="black">R<sub>1</sub>(B)</font>, R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 2&#8594;4 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), <font color="black">R<sub>4</sub>(B)</font>, C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 2&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), <font color="black">R<sub>1</sub>(B)</font>, R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;3 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="black">W<sub>4</sub>(C)</font>, <font color="black">R<sub>3</sub>(C)</font>, W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="black">W<sub>4</sub>(C)</font>, R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="black">W<sub>4</sub>(C)</font>, R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>RW 3&#8594;4 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), <font color="black">R<sub>3</sub>(C)</font>, <font color="black">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li></ol>
+</li><li>Not conflict serializable due to the cycle { T<sub>1</sub>, T<sub>2</sub>, T<sub>3</sub>, T<sub>4</sub> }
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>WW 3&#8594;4 <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>RW 1&#8594;3 W<sub>3</sub>(C), <font color="black">R<sub>1</sub>(B)</font>, <font color="black">W<sub>3</sub>(B)</font>, W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WW 3&#8594;2 W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="black">W<sub>3</sub>(B)</font>, <font color="black">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 2&#8594;4 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), <font color="black">R<sub>4</sub>(B)</font>, C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 2&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), <font color="black">R<sub>1</sub>(B)</font>, R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;3 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="black">W<sub>4</sub>(C)</font>, <font color="black">R<sub>3</sub>(C)</font>, W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>WR 4&#8594;1 W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, <font color="black">R<sub>1</sub>(C)</font>, R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+Not view serializable for the following reasons in each serialization:
+  <ol>
+  <li>1, 2, 3, 4: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>1, 2, 4, 3: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>1, 3, 2, 4: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B)
+  </li><li>1, 3, 4, 2: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B)
+  </li><li>1, 4, 2, 3: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>1, 4, 3, 2: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) final value
+  </li><li>2, 1, 3, 4: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>2, 1, 4, 3: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>4</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>2, 3, 1, 4: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>2, 3, 4, 1: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>2, 4, 1, 3: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>2, 4, 3, 1: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>3, 1, 2, 4: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B)
+  </li><li>3, 1, 4, 2: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B)
+  </li><li>3, 2, 1, 4: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C)
+  </li><li>3, 2, 4, 1: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C)
+  </li><li>3, 4, 1, 2: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B)
+  </li><li>3, 4, 2, 1: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>4</sub>(B)
+  </li><li>4, 1, 2, 3: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>4, 1, 3, 2: W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>2</sub>(B)/Initial(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) final value
+  </li><li>4, 2, 1, 3: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>4, 2, 3, 1: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>2</sub>(B)/W<sub>3</sub>(B) final value
+  </li><li>4, 3, 1, 2: Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) final value
+  </li><li>4, 3, 2, 1: Initial(B)/W<sub>2</sub>(B) R<sub>1</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>3</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>2</sub>(B)/Initial(B) R<sub>4</sub>(B), W<sub>4</sub>(C)/W<sub>3</sub>(C) R<sub>1</sub>(C), W<sub>4</sub>(C)/W<sub>3</sub>(C) final value
+  </li></ol>
+</li><li>Not recoverable due to:
+<ol type="i">
+<li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), <font color="red">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), <font color="red">R<sub>4</sub>(B)</font>, <font color="red">C<sub>4</sub></font>, <font color="red">C<sub>2</sub></font>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="red">W<sub>4</sub>(C)</font>, <font color="red">R<sub>3</sub>(C)</font>, W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), <font color="red">C<sub>3</sub></font>, R<sub>1</sub>(C), R<sub>4</sub>(B), <font color="red">C<sub>4</sub></font>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li></ol>
+</li><li>Allows cascading rollbacks due to:
+<ol type="i">
+<li>W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="red">W<sub>3</sub>(B)</font>, W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), <font color="red">R<sub>2</sub>(B)</font>, R<sub>3</sub>(A), <font color="red">C<sub>3</sub></font>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), <font color="red">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), <font color="red">R<sub>4</sub>(B)</font>, C<sub>4</sub>, <font color="red">C<sub>2</sub></font>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="red">W<sub>4</sub>(C)</font>, <font color="red">R<sub>3</sub>(C)</font>, W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), <font color="red">C<sub>4</sub></font>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="red">W<sub>4</sub>(C)</font>, R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="red">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), <font color="red">C<sub>4</sub></font>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="red">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="red">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), <font color="red">C<sub>4</sub></font>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li></ol>
+</li><li>Not strict due to:
+<ol type="i">
+<li><font color="red">W<sub>3</sub>(C)</font>, R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="red">W<sub>4</sub>(C)</font>, R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), <font color="red">C<sub>3</sub></font>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li><font color="red">W<sub>3</sub>(C)</font>, R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="red">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), <font color="red">C<sub>3</sub></font>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="red">W<sub>3</sub>(B)</font>, <font color="red">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), <font color="red">C<sub>3</sub></font>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), <font color="red">W<sub>3</sub>(B)</font>, W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), <font color="red">R<sub>2</sub>(B)</font>, R<sub>3</sub>(A), <font color="red">C<sub>3</sub></font>, R<sub>1</sub>(C), R<sub>4</sub>(B), C<sub>4</sub>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), <font color="red">W<sub>2</sub>(B)</font>, W<sub>4</sub>(C), R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), <font color="red">R<sub>4</sub>(B)</font>, C<sub>4</sub>, <font color="red">C<sub>2</sub></font>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="red">W<sub>4</sub>(C)</font>, <font color="red">R<sub>3</sub>(C)</font>, W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, R<sub>1</sub>(C), R<sub>4</sub>(B), <font color="red">C<sub>4</sub></font>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), <font color="red">W<sub>4</sub>(C)</font>, R<sub>3</sub>(C), W<sub>4</sub>(C), R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="red">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), <font color="red">C<sub>4</sub></font>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li><li>W<sub>3</sub>(C), R<sub>1</sub>(B), W<sub>3</sub>(B), W<sub>2</sub>(B), W<sub>4</sub>(C), R<sub>3</sub>(C), <font color="red">W<sub>4</sub>(C)</font>, R<sub>2</sub>(B), R<sub>3</sub>(A), C<sub>3</sub>, <font color="red">R<sub>1</sub>(C)</font>, R<sub>4</sub>(B), <font color="red">C<sub>4</sub></font>, C<sub>2</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), R<sub>1</sub>(A), C<sub>1</sub>
+</li></ol>
+</li></font></ol><p>
+<!-- Schedule Number 2 -->
+</p></li><li>R<sub>1</sub>(A), W<sub>4</sub>(B), R<sub>4</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, W<sub>2</sub>(B), W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>WR 4&#8594;3 R<sub>1</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, R<sub>4</sub>(B), R<sub>3</sub>(A), <font color="black">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, W<sub>2</sub>(B), W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li><li>WW 4&#8594;2 R<sub>1</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, R<sub>4</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, <font color="black">W<sub>2</sub>(B)</font>, W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li><li>RW 4&#8594;2 R<sub>1</sub>(A), W<sub>4</sub>(B), <font color="black">R<sub>4</sub>(B)</font>, R<sub>3</sub>(A), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, <font color="black">W<sub>2</sub>(B)</font>, W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li><li>RW 3&#8594;2 R<sub>1</sub>(A), W<sub>4</sub>(B), R<sub>4</sub>(B), R<sub>3</sub>(A), <font color="black">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, <font color="black">W<sub>2</sub>(B)</font>, W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li><li>RW 1&#8594;2 R<sub>1</sub>(A), W<sub>4</sub>(B), R<sub>4</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(B), <font color="black">R<sub>1</sub>(C)</font>, C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, W<sub>2</sub>(B), <font color="black">W<sub>2</sub>(C)</font>, R<sub>2</sub>(A), C<sub>2</sub>
+</li></ol>
+</li><li>Conflict serializable with serial order(s):
+<ol type="i">
+<li>1, 4, 3, 2
+</li><li>4, 1, 3, 2
+</li><li>4, 3, 1, 2
+</li></ol>
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>WR 4&#8594;3 R<sub>1</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, R<sub>4</sub>(B), R<sub>3</sub>(A), <font color="black">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, W<sub>2</sub>(B), W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li><li>WW 4&#8594;2 R<sub>1</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, R<sub>4</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, <font color="black">W<sub>2</sub>(B)</font>, W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li><li>RW 1&#8594;2 R<sub>1</sub>(A), W<sub>4</sub>(B), R<sub>4</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(B), <font color="black">R<sub>1</sub>(C)</font>, C<sub>3</sub>, C<sub>4</sub>, C<sub>1</sub>, W<sub>2</sub>(B), <font color="black">W<sub>2</sub>(C)</font>, R<sub>2</sub>(A), C<sub>2</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+View serializable with serial order(s):
+<ol type="i">
+<li>1, 4, 3, 2
+</li><li>4, 1, 3, 2
+</li><li>4, 3, 1, 2
+</li></ol>
+</li><li>Not recoverable due to:
+<ol type="i">
+<li>R<sub>1</sub>(A), <font color="red">W<sub>4</sub>(B)</font>, R<sub>4</sub>(B), R<sub>3</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), <font color="red">C<sub>3</sub></font>, <font color="red">C<sub>4</sub></font>, C<sub>1</sub>, W<sub>2</sub>(B), W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li></ol>
+</li><li>Allows cascading rollbacks due to:
+<ol type="i">
+<li>R<sub>1</sub>(A), <font color="red">W<sub>4</sub>(B)</font>, R<sub>4</sub>(B), R<sub>3</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), C<sub>3</sub>, <font color="red">C<sub>4</sub></font>, C<sub>1</sub>, W<sub>2</sub>(B), W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li></ol>
+</li><li>Not strict due to:
+<ol type="i">
+<li>R<sub>1</sub>(A), <font color="red">W<sub>4</sub>(B)</font>, R<sub>4</sub>(B), R<sub>3</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), C<sub>3</sub>, <font color="red">C<sub>4</sub></font>, C<sub>1</sub>, W<sub>2</sub>(B), W<sub>2</sub>(C), R<sub>2</sub>(A), C<sub>2</sub>
+</li></ol>
+</li></font></ol><p>
+<!-- Schedule Number 3 -->
+</p></li><li>R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>RW 3&#8594;4 R<sub>4</sub>(C), <font color="black">R<sub>3</sub>(B)</font>, W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(B)</font>, C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>RW 3&#8594;4 R<sub>4</sub>(C), <font color="black">R<sub>3</sub>(B)</font>, W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, C<sub>4</sub>
+</li><li>WW 1&#8594;2 R<sub>4</sub>(C), R<sub>3</sub>(B), <font color="black">W<sub>1</sub>(A)</font>, W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WR 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), <font color="black">W<sub>1</sub>(A)</font>, W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, <font color="black">R<sub>4</sub>(A)</font>, R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), <font color="black">W<sub>1</sub>(A)</font>, W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, <font color="black">W<sub>4</sub>(A)</font>, W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 3&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), <font color="black">W<sub>3</sub>(B)</font>, R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(B)</font>, C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 3&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), <font color="black">W<sub>3</sub>(B)</font>, R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, C<sub>4</sub>
+</li><li>RW 2&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), <font color="black">R<sub>2</sub>(C)</font>, R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, <font color="black">W<sub>4</sub>(C)</font>, C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>RW 3&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), <font color="black">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), <font color="black">W<sub>4</sub>(B)</font>, C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>RW 3&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), <font color="black">R<sub>3</sub>(B)</font>, R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, C<sub>4</sub>
+</li><li>RW 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), <font color="black">R<sub>1</sub>(C)</font>, W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, <font color="black">W<sub>4</sub>(C)</font>, C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 2&#8594;1 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, <font color="black">W<sub>1</sub>(A)</font>, R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WR 2&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, <font color="black">R<sub>4</sub>(A)</font>, R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 2&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, <font color="black">W<sub>4</sub>(A)</font>, W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WR 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>4</sub>(C), C<sub>1</sub>, <font color="black">R<sub>4</sub>(A)</font>, R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, <font color="black">W<sub>4</sub>(A)</font>, W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>RW 3&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), <font color="black">R<sub>3</sub>(C)</font>, W<sub>4</sub>(B), C<sub>2</sub>, <font color="black">W<sub>4</sub>(C)</font>, C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li></ol>
+</li><li>Not conflict serializable due to the cycle { T<sub>1</sub>, T<sub>2</sub> }
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>WW 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), <font color="black">W<sub>1</sub>(A)</font>, W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, <font color="black">W<sub>4</sub>(A)</font>, W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 3&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), <font color="black">W<sub>3</sub>(B)</font>, R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), <font color="black">W<sub>4</sub>(B)</font>, C<sub>4</sub>
+</li><li>RW 2&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), <font color="black">R<sub>2</sub>(C)</font>, R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, <font color="black">W<sub>4</sub>(C)</font>, C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>RW 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), <font color="black">R<sub>1</sub>(C)</font>, W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, <font color="black">W<sub>4</sub>(C)</font>, C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 2&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, <font color="black">W<sub>4</sub>(A)</font>, W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WR 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>4</sub>(C), C<sub>1</sub>, <font color="black">R<sub>4</sub>(A)</font>, R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>WW 1&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, <font color="black">W<sub>4</sub>(A)</font>, W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>RW 3&#8594;4 R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), <font color="black">R<sub>3</sub>(C)</font>, W<sub>4</sub>(B), C<sub>2</sub>, <font color="black">W<sub>4</sub>(C)</font>, C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+View serializable with serial order(s):
+<ol type="i">
+<li>2, 1, 3, 4
+</li><li>2, 3, 1, 4
+</li><li>3, 2, 1, 4
+</li></ol>
+</li><li>Recoverable schedule
+</li><li>Allows cascading rollbacks due to:
+<ol type="i">
+<li>R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, <font color="red">R<sub>4</sub>(A)</font>, R<sub>3</sub>(C), W<sub>4</sub>(B), <font color="red">C<sub>2</sub></font>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li></ol>
+</li><li>Not strict due to:
+<ol type="i">
+<li>R<sub>4</sub>(C), R<sub>3</sub>(B), <font color="red">W<sub>1</sub>(A)</font>, W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, W<sub>1</sub>(A), R<sub>4</sub>(C), <font color="red">C<sub>1</sub></font>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), C<sub>2</sub>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), <font color="red">W<sub>3</sub>(B)</font>, R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), W<sub>2</sub>(A), W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), <font color="red">W<sub>4</sub>(B)</font>, C<sub>2</sub>, W<sub>4</sub>(C), <font color="red">C<sub>3</sub></font>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, <font color="red">W<sub>1</sub>(A)</font>, R<sub>4</sub>(C), C<sub>1</sub>, R<sub>4</sub>(A), R<sub>3</sub>(C), W<sub>4</sub>(B), <font color="red">C<sub>2</sub></font>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li><li>R<sub>4</sub>(C), R<sub>3</sub>(B), W<sub>1</sub>(A), W<sub>3</sub>(B), R<sub>2</sub>(C), R<sub>3</sub>(B), R<sub>1</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, W<sub>1</sub>(A), R<sub>4</sub>(C), C<sub>1</sub>, <font color="red">R<sub>4</sub>(A)</font>, R<sub>3</sub>(C), W<sub>4</sub>(B), <font color="red">C<sub>2</sub></font>, W<sub>4</sub>(C), C<sub>3</sub>, W<sub>4</sub>(A), W<sub>4</sub>(B), C<sub>4</sub>
+</li></ol>
+</li></font></ol><p>
+<!-- Schedule Number 4 -->
+</p></li><li>R<sub>4</sub>(B), R<sub>2</sub>(A), W<sub>1</sub>(C), R<sub>3</sub>(A), W<sub>2</sub>(A), C<sub>2</sub>, R<sub>4</sub>(B), R<sub>3</sub>(B), C<sub>3</sub>, C<sub>4</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), C<sub>1</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>RW 3&#8594;2 R<sub>4</sub>(B), R<sub>2</sub>(A), W<sub>1</sub>(C), <font color="black">R<sub>3</sub>(A)</font>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>4</sub>(B), R<sub>3</sub>(B), C<sub>3</sub>, C<sub>4</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), C<sub>1</sub>
+</li></ol>
+</li><li>Conflict serializable with serial order(s):
+<ol type="i">
+<li>1, 3, 2, 4
+</li><li>1, 3, 4, 2
+</li><li>1, 4, 3, 2
+</li><li>3, 1, 2, 4
+</li><li>3, 1, 4, 2
+</li><li>3, 2, 1, 4
+</li><li>3, 2, 4, 1
+</li><li>3, 4, 1, 2
+</li><li>3, 4, 2, 1
+</li><li>4, 1, 3, 2
+</li><li>4, 3, 1, 2
+</li><li>4, 3, 2, 1
+</li></ol>
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>RW 3&#8594;2 R<sub>4</sub>(B), R<sub>2</sub>(A), W<sub>1</sub>(C), <font color="black">R<sub>3</sub>(A)</font>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>4</sub>(B), R<sub>3</sub>(B), C<sub>3</sub>, C<sub>4</sub>, R<sub>1</sub>(C), R<sub>1</sub>(B), C<sub>1</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+View serializable with serial order(s):
+<ol type="i">
+<li>1, 3, 2, 4
+</li><li>1, 3, 4, 2
+</li><li>1, 4, 3, 2
+</li><li>3, 1, 2, 4
+</li><li>3, 1, 4, 2
+</li><li>3, 2, 1, 4
+</li><li>3, 2, 4, 1
+</li><li>3, 4, 1, 2
+</li><li>3, 4, 2, 1
+</li><li>4, 1, 3, 2
+</li><li>4, 3, 1, 2
+</li><li>4, 3, 2, 1
+</li></ol>
+</li><li>Recoverable schedule
+</li><li>Cascadeless schedule
+</li><li>Strict schedule
+</li></font></ol><p>
+<!-- Schedule Number 5 -->
+</p></li><li>R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>RW 2&#8594;3 <font color="black">R<sub>2</sub>(A)</font>, R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 3&#8594;2 R<sub>2</sub>(A), <font color="black">R<sub>3</sub>(A)</font>, R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 2&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), <font color="black">R<sub>2</sub>(A)</font>, R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 2&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>2</sub>(C)</font>, R<sub>3</sub>(B), <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>WR 3&#8594;1 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), <font color="black">R<sub>1</sub>(C)</font>, C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 1&#8594;2 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">R<sub>1</sub>(A)</font>, R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 1&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">R<sub>1</sub>(A)</font>, R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 2&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), <font color="black">R<sub>2</sub>(A)</font>, R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 1&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>1</sub>(B)</font>, R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), <font color="black">W<sub>3</sub>(B)</font>, C<sub>3</sub>
+</li><li>WW 2&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>3</sub>(C), <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li></ol>
+</li><li>Not conflict serializable due to the cycle { T<sub>1</sub>, T<sub>2</sub>, T<sub>3</sub> }
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>RW 3&#8594;2 R<sub>2</sub>(A), <font color="black">R<sub>3</sub>(A)</font>, R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 2&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>2</sub>(C)</font>, R<sub>3</sub>(B), <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>WR 3&#8594;1 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), <font color="black">W<sub>3</sub>(C)</font>, R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), <font color="black">R<sub>1</sub>(C)</font>, C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 1&#8594;2 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">R<sub>1</sub>(A)</font>, R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li><li>RW 1&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>1</sub>(B)</font>, R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), <font color="black">W<sub>3</sub>(B)</font>, C<sub>3</sub>
+</li><li>WW 2&#8594;3 R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), W<sub>3</sub>(C), R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), R<sub>1</sub>(C), C<sub>1</sub>, <font color="black">W<sub>2</sub>(A)</font>, C<sub>2</sub>, R<sub>3</sub>(C), <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(B), W<sub>3</sub>(B), C<sub>3</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+Not view serializable for the following reasons in each serialization:
+  <ol>
+  <li>1, 2, 3: Initial(A)/W<sub>2</sub>(A) R<sub>3</sub>(A), W<sub>3</sub>(C)/Initial(C) R<sub>1</sub>(C)
+  </li><li>1, 3, 2: Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(C)/W<sub>3</sub>(C) R<sub>2</sub>(C), Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), W<sub>3</sub>(C)/Initial(C) R<sub>1</sub>(C), W<sub>3</sub>(A)/W<sub>2</sub>(A) final value
+  </li><li>2, 1, 3: Initial(A)/W<sub>2</sub>(A) R<sub>3</sub>(A), Initial(A)/W<sub>2</sub>(A) R<sub>1</sub>(A), W<sub>3</sub>(C)/Initial(C) R<sub>1</sub>(C)
+  </li><li>2, 3, 1: Initial(A)/W<sub>2</sub>(A) R<sub>3</sub>(A), Initial(A)/W<sub>3</sub>(A) R<sub>1</sub>(A), Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B)
+  </li><li>3, 1, 2: Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(C)/W<sub>3</sub>(C) R<sub>2</sub>(C), Initial(A)/W<sub>3</sub>(A) R<sub>1</sub>(A), Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>3</sub>(A)/W<sub>2</sub>(A) final value
+  </li><li>3, 2, 1: Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(C)/W<sub>3</sub>(C) R<sub>2</sub>(C), Initial(A)/W<sub>2</sub>(A) R<sub>1</sub>(A), Initial(A)/W<sub>3</sub>(A) R<sub>2</sub>(A), Initial(B)/W<sub>3</sub>(B) R<sub>1</sub>(B), W<sub>3</sub>(A)/W<sub>2</sub>(A) final value
+  </li></ol>
+</li><li>Not recoverable due to:
+<ol type="i">
+<li>R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), <font color="red">W<sub>3</sub>(C)</font>, R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), <font color="red">R<sub>1</sub>(C)</font>, <font color="red">C<sub>1</sub></font>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), <font color="red">C<sub>3</sub></font>
+</li></ol>
+</li><li>Allows cascading rollbacks due to:
+<ol type="i">
+<li>R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), <font color="red">W<sub>3</sub>(C)</font>, R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), <font color="red">R<sub>1</sub>(C)</font>, C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), <font color="red">C<sub>3</sub></font>
+</li></ol>
+</li><li>Not strict due to:
+<ol type="i">
+<li>R<sub>2</sub>(A), R<sub>3</sub>(A), R<sub>2</sub>(A), R<sub>2</sub>(C), R<sub>3</sub>(B), <font color="red">W<sub>3</sub>(C)</font>, R<sub>1</sub>(A), R<sub>2</sub>(A), R<sub>1</sub>(B), R<sub>3</sub>(B), <font color="red">R<sub>1</sub>(C)</font>, C<sub>1</sub>, W<sub>2</sub>(A), C<sub>2</sub>, R<sub>3</sub>(C), W<sub>3</sub>(A), R<sub>3</sub>(B), W<sub>3</sub>(B), <font color="red">C<sub>3</sub></font>
+</li></ol>
+</li></font></ol><p>
+<!-- Schedule Number 6 -->
+</p></li><li>R<sub>2</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>RW 2&#8594;3 <font color="black">R<sub>2</sub>(C)</font>, W<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), <font color="black">W<sub>3</sub>(C)</font>, C<sub>3</sub>
+</li><li>WR 2&#8594;1 R<sub>2</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, <font color="black">R<sub>1</sub>(A)</font>, W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;1 R<sub>2</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;1 R<sub>2</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, <font color="black">R<sub>1</sub>(A)</font>, R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;3 R<sub>2</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 R<sub>2</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), <font color="black">R<sub>3</sub>(A)</font>, W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>RW 1&#8594;3 R<sub>2</sub>(C), W<sub>2</sub>(A), <font color="black">R<sub>1</sub>(A)</font>, W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 1&#8594;3 R<sub>2</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 1&#8594;3 R<sub>2</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), <font color="black">R<sub>3</sub>(A)</font>, W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>RW 1&#8594;3 R<sub>2</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, <font color="black">R<sub>1</sub>(A)</font>, R<sub>1</sub>(B), C<sub>1</sub>, <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>
+</li><li>Conflict serializable with serial order(s):
+<ol type="i">
+<li>2, 1, 3
+</li></ol>
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>RW 2&#8594;3 <font color="black">R<sub>2</sub>(C)</font>, W<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), <font color="black">W<sub>3</sub>(C)</font>, C<sub>3</sub>
+</li><li>WR 2&#8594;1 R<sub>2</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, <font color="black">R<sub>1</sub>(A)</font>, W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;3 R<sub>2</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(A), W<sub>1</sub>(A), R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 1&#8594;3 R<sub>2</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(A), <font color="black">W<sub>1</sub>(A)</font>, R<sub>2</sub>(B), C<sub>2</sub>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, <font color="black">W<sub>3</sub>(A)</font>, R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+View serializable with serial order(s):
+<ol type="i">
+<li>2, 1, 3
+</li></ol>
+</li><li>Recoverable schedule
+</li><li>Allows cascading rollbacks due to:
+<ol type="i">
+<li>R<sub>2</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, <font color="red">R<sub>1</sub>(A)</font>, W<sub>1</sub>(A), R<sub>2</sub>(B), <font color="red">C<sub>2</sub></font>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>
+</li><li>Not strict due to:
+<ol type="i">
+<li>R<sub>2</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, <font color="red">R<sub>1</sub>(A)</font>, W<sub>1</sub>(A), R<sub>2</sub>(B), <font color="red">C<sub>2</sub></font>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li><li>R<sub>2</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, R<sub>1</sub>(A), <font color="red">W<sub>1</sub>(A)</font>, R<sub>2</sub>(B), <font color="red">C<sub>2</sub></font>, R<sub>1</sub>(A), R<sub>1</sub>(B), C<sub>1</sub>, W<sub>3</sub>(A), R<sub>3</sub>(A), W<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>
+</li></font></ol><p>
+<!-- Schedule Number 7 -->
+</p></li><li>W<sub>2</sub>(B), W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>WW 2&#8594;1 <font color="black">W<sub>2</sub>(B)</font>, <font color="black">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 <font color="black">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>3</sub>(B)</font>, C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 <font color="black">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, <font color="black">R<sub>3</sub>(B)</font>, C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;3 <font color="black">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;3 <font color="black">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 <font color="black">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), <font color="black">R<sub>3</sub>(B)</font>, R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 1&#8594;2 W<sub>2</sub>(B), <font color="black">W<sub>1</sub>(B)</font>, <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 1&#8594;3 W<sub>2</sub>(B), <font color="black">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>3</sub>(B)</font>, C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 1&#8594;3 W<sub>2</sub>(B), <font color="black">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, <font color="black">R<sub>3</sub>(B)</font>, C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 1&#8594;3 W<sub>2</sub>(B), <font color="black">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 1&#8594;3 W<sub>2</sub>(B), <font color="black">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 1&#8594;3 W<sub>2</sub>(B), <font color="black">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), <font color="black">R<sub>3</sub>(B)</font>, R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>3</sub>(B)</font>, C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, <font color="black">R<sub>3</sub>(B)</font>, C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), <font color="black">R<sub>3</sub>(B)</font>, R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>RW 1&#8594;2 W<sub>2</sub>(B), W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), <font color="black">R<sub>1</sub>(A)</font>, <font color="black">W<sub>2</sub>(A)</font>, R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), <font color="black">W<sub>2</sub>(A)</font>, R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), <font color="black">R<sub>3</sub>(A)</font>, R<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>
+</li><li>Not conflict serializable due to the cycle { T<sub>1</sub>, T<sub>2</sub> }
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>WW 2&#8594;3 <font color="black">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 1&#8594;3 W<sub>2</sub>(B), <font color="black">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="black">R<sub>3</sub>(B)</font>, C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, <font color="black">R<sub>3</sub>(B)</font>, C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WW 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="black">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), <font color="black">W<sub>3</sub>(B)</font>, R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>RW 1&#8594;2 W<sub>2</sub>(B), W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), <font color="black">R<sub>1</sub>(A)</font>, <font color="black">W<sub>2</sub>(A)</font>, R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>WR 2&#8594;3 W<sub>2</sub>(B), W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), <font color="black">W<sub>2</sub>(A)</font>, R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), <font color="black">R<sub>3</sub>(A)</font>, R<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+View serializable with serial order(s):
+<ol type="i">
+<li>1, 2, 3
+</li></ol>
+</li><li>Recoverable schedule
+</li><li>Allows cascading rollbacks due to:
+<ol type="i">
+<li><font color="red">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, <font color="red">C<sub>2</sub></font>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>W<sub>2</sub>(B), <font color="red">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, C<sub>2</sub>, R<sub>3</sub>(B), <font color="red">C<sub>1</sub></font>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>W<sub>2</sub>(B), <font color="red">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, <font color="red">R<sub>3</sub>(B)</font>, <font color="red">C<sub>1</sub></font>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="red">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, <font color="red">C<sub>2</sub></font>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>
+</li><li>Not strict due to:
+<ol type="i">
+<li><font color="red">W<sub>2</sub>(B)</font>, <font color="red">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), <font color="red">C<sub>2</sub></font>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li><font color="red">W<sub>2</sub>(B)</font>, W<sub>1</sub>(B), W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, <font color="red">C<sub>2</sub></font>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>W<sub>2</sub>(B), <font color="red">W<sub>1</sub>(B)</font>, <font color="red">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, R<sub>3</sub>(B), <font color="red">C<sub>1</sub></font>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>W<sub>2</sub>(B), <font color="red">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, C<sub>2</sub>, R<sub>3</sub>(B), <font color="red">C<sub>1</sub></font>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>W<sub>2</sub>(B), <font color="red">W<sub>1</sub>(B)</font>, W<sub>2</sub>(B), R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), R<sub>3</sub>(B), C<sub>2</sub>, <font color="red">R<sub>3</sub>(B)</font>, <font color="red">C<sub>1</sub></font>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li><li>W<sub>2</sub>(B), W<sub>1</sub>(B), <font color="red">W<sub>2</sub>(B)</font>, R<sub>2</sub>(A), R<sub>1</sub>(A), W<sub>2</sub>(A), R<sub>2</sub>(A), <font color="red">R<sub>3</sub>(B)</font>, <font color="red">C<sub>2</sub></font>, R<sub>3</sub>(B), C<sub>1</sub>, W<sub>3</sub>(C), W<sub>3</sub>(B), W<sub>3</sub>(C), W<sub>3</sub>(B), R<sub>3</sub>(B), R<sub>3</sub>(A), R<sub>3</sub>(C), C<sub>3</sub>
+</li></ol>
+</li></font></ol><p>
+<!-- Schedule Number 8 -->
+</p></li><li>W<sub>1</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(C), R<sub>2</sub>(B), W<sub>1</sub>(A), C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, W<sub>3</sub>(B), W<sub>3</sub>(A), C<sub>3</sub>
+<p><font color="green"></font></p><ol type="a"><font color="green">
+<li>The transaction conflicts are:
+<ol type="i">
+<li>WW 2&#8594;1 W<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(C), R<sub>2</sub>(B), <font color="black">W<sub>1</sub>(A)</font>, C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, W<sub>3</sub>(B), W<sub>3</sub>(A), C<sub>3</sub>
+</li><li>WW 2&#8594;3 W<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(C), R<sub>2</sub>(B), W<sub>1</sub>(A), C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, W<sub>3</sub>(B), <font color="black">W<sub>3</sub>(A)</font>, C<sub>3</sub>
+</li><li>RW 2&#8594;3 W<sub>1</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(C), <font color="black">R<sub>2</sub>(B)</font>, W<sub>1</sub>(A), C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, <font color="black">W<sub>3</sub>(B)</font>, W<sub>3</sub>(A), C<sub>3</sub>
+</li><li>WW 1&#8594;3 W<sub>1</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(C), R<sub>2</sub>(B), <font color="black">W<sub>1</sub>(A)</font>, C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, W<sub>3</sub>(B), <font color="black">W<sub>3</sub>(A)</font>, C<sub>3</sub>
+</li><li>RW 2&#8594;3 W<sub>1</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(C), R<sub>2</sub>(B), W<sub>1</sub>(A), C<sub>1</sub>, <font color="black">R<sub>2</sub>(B)</font>, C<sub>2</sub>, <font color="black">W<sub>3</sub>(B)</font>, W<sub>3</sub>(A), C<sub>3</sub>
+</li></ol>
+</li><li>Conflict serializable with serial order(s):
+<ol type="i">
+<li>2, 1, 3
+</li></ol>
+</li><li>The following conflicts can be used to eliminate view equivalent serial schedules:
+<ol type="i">
+<li>WW 2&#8594;3 W<sub>1</sub>(C), <font color="black">W<sub>2</sub>(A)</font>, R<sub>1</sub>(C), R<sub>2</sub>(B), W<sub>1</sub>(A), C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, W<sub>3</sub>(B), <font color="black">W<sub>3</sub>(A)</font>, C<sub>3</sub>
+</li><li>RW 2&#8594;3 W<sub>1</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(C), <font color="black">R<sub>2</sub>(B)</font>, W<sub>1</sub>(A), C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, <font color="black">W<sub>3</sub>(B)</font>, W<sub>3</sub>(A), C<sub>3</sub>
+</li><li>WW 1&#8594;3 W<sub>1</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(C), R<sub>2</sub>(B), <font color="black">W<sub>1</sub>(A)</font>, C<sub>1</sub>, R<sub>2</sub>(B), C<sub>2</sub>, W<sub>3</sub>(B), <font color="black">W<sub>3</sub>(A)</font>, C<sub>3</sub>
+</li><li>RW 2&#8594;3 W<sub>1</sub>(C), W<sub>2</sub>(A), R<sub>1</sub>(C), R<sub>2</sub>(B), W<sub>1</sub>(A), C<sub>1</sub>, <font color="black">R<sub>2</sub>(B)</font>, C<sub>2</sub>, <font color="black">W<sub>3</sub>(B)</font>, W<sub>3</sub>(A), C<sub>3</sub>
+</li></ol>Remember that one must still check view serializability of any candidate view serialization.<br>
+View serializable with serial order(s):
+<ol type="i">
+<li>1, 2, 3
+</li><li>2, 1, 3
+</li></ol>
+</li><li>Recoverable schedule
+</li><li>Cascadeless schedule
+</li><li>Not strict due to:
+<ol type="i">
+<li>W<sub>1</sub>(C), <font color="red">W<sub>2</sub>(A)</font>, R<sub>1</sub>(C), R<sub>2</sub>(B), <font color="red">W<sub>1</sub>(A)</font>, C<sub>1</sub>, R<sub>2</sub>(B), <font color="red">C<sub>2</sub></font>, W<sub>3</sub>(B), W<sub>3</sub>(A), C<sub>3</sub>
+</li></ol>
+</li></font></ol><p>
+</p></li></ol><br>© 2013-2015 Kenneth Baclawski. All rights reserved.
+<!-- Seed: 8831900654682546294 -->
+</body></html>

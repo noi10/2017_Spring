@@ -1,0 +1,136 @@
+
+<!-- saved from url=(0051)http://www.ccs.neu.edu/home/kenb/cs5200/soln03.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>CS 5200 Introduction to Database Management Spring 2017</title>
+</head>
+<body>
+<center><h1>CS 5200 Introduction to Database Management<br>Solution to Assignment #3 Basic Queries</h1></center>
+<p>
+</p><pre>create table Safari (
+  id int primary key auto_increment,
+  name varchar(500) unique
+);
+create table Material (
+  id int primary key auto_increment,
+  description varchar(500) not null,
+  weight double not null
+);
+create table Provision (
+  needs int not null,
+  foreign key(needs) references Material(id)
+    on update cascade on delete cascade,
+  neededBy int not null,
+  foreign key(neededBy) references Safari(id)
+    on update cascade on delete cascade,
+  quantity int not null default 1,
+  recommendation enum ('required', 'optional') not null,
+  primary key(needs, neededBy)
+);
+create table Country (
+  id int primary key auto_increment,
+  name varchar(500) not null unique
+);
+create table City (
+  id int primary key auto_increment,
+  name varchar(500) not null,
+  partOf int not null,
+  foreign key(partOf) references Country(id)
+    on update cascade on delete cascade
+);
+create table Visit (
+  id int primary key auto_increment,
+  visits int not null,
+  foreign key(visits) references City(id)
+    on update cascade on delete no action,
+  visitedBy int not null,
+  foreign key(visitedBy) references Safari(id)
+    on update cascade on delete cascade,
+  -- The first day of the safari is numbered 1.
+  -- If there are no other visits, then the sole visit is numbered 1.
+  dayOfVisit int not null default 1
+);
+</pre>
+
+<p>
+
+1. List the names of all countries whose name ends in "stan".
+
+</p><pre>select c.name
+  from Country c
+ where c.name like '%stan';
+</pre>
+
+2. Find all safaris that visit Venice in Italy.
+
+<pre>select distinct s.id
+  from Safari s, Visit v, City c, Country d
+ where s.id = v.visitedBy
+   and v.visits = c.id
+   and c.partOf = d.id
+   and c.name = 'Venice'
+   and d.name = 'Italy';
+</pre>
+
+3. Show the name and the total weight of all materials of all safaris that have a name.
+
+<pre>select s.name, sum(m.weight * p.quantity)
+  from Safari s, Provision p, Material m
+ where s.id = p.neededBy
+   and p.needs = m.id
+   and s.name is not null
+ group by s.id;
+</pre>
+
+4. Show the description and total weight of each material used on a safari.
+For each material also show the safari by id and name that is using the
+material.  Order the answers by the material description, and when equal, order
+by the safari name.
+
+<pre>select m.description, m.weight * p.quantity, s.id, s.name
+  from Material m left join Provision p on (p.needs = m.id)
+       left join Safari s on (p.neededBy = s.id)
+ order by m.description, s.name;
+</pre>
+
+5. Show all safaris by name and id that require at least 10 units (by weight) of some material.
+
+<pre>select distinct s.name, s.id
+  from Safari s, Provision p, Material m
+ where s.id = p.neededBy
+   and p.needs = m.id
+   and p.recommendation = 'required'
+   and m.weight * p.quantity &gt;= 10;
+</pre>
+
+6. List the safaris that that visit the same city twice.
+
+<pre>select distinct s.id
+  from Safari s, Visit v, City c, Visit w
+ where s.id = v.visitedBy
+   and v.visits = c.id
+   and s.id = w.visitedBy
+   and w.visits = c.id
+   and v.id != w.id;
+</pre>
+
+Here is a simplified version of the query:
+
+<pre>select distinct s.id
+  from Safari s, Visit v, Visit w
+ where s.id = v.visitedBy
+   and v.visits = w.visits
+   and s.id = w.visitedBy
+   and v.id != w.id;
+</pre>
+
+7. List the safaris that have more than 10 visits.
+
+<pre>select s.id
+  from Safari s, Visit v
+ where s.id = v.visitedBy
+ group by s.id
+ having count(*) &gt; 10;
+</pre>
+
+
+</body></html>

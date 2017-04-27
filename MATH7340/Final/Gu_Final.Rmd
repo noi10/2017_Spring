@@ -2,8 +2,9 @@
 title: "Math7340 Final"
 author: "Chengbo Gu"
 output:
-  html_document: default
+  word_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -24,7 +25,7 @@ Sample size is 120, sample mean is 1.816667.
 
 ##### (b) Find the value of MLE $\hat{\theta}$ on this data set using numerical method.
 ```{r}
-nloglik <- function(theta) -sum(log(dpois(y, lambda=exp(theta)))) #likelihood function
+nloglik <- function(theta) -sum(log(dpois(y, lambda=exp(theta))))
 optim(par=1, nloglik)
 ```
 
@@ -37,7 +38,7 @@ nboot <- 1000
 boot.theta <- rep(NA, nboot)
 for (i in 1:nboot) {
   y.star <- y[sample(1:n, replace=TRUE)]
-  nloglik.boot <- function(theta) -sum(log(dpois(y.star, lambda=exp(theta)))) #likelihood function
+  nloglik.boot <- function(theta) -sum(log(dpois(y.star, lambda=exp(theta))))
   boot.theta[i] <- optim(par=1, nloglik.boot)$par
 }
 ```
@@ -56,7 +57,9 @@ The 95% boostrap confidence interval is (`r quantile(boot.theta, c(0.025, 0.975)
 
 Thus, we reject the null hypothesis and conclude that $\theta\neq1$.
 
-The p-value here is 2.695059e-09 which is extremely small. So we could reject the null hypothesis using p-value too.
+To say $\theta=1$ is equal to say the $\bar{y}=e$, so we could apply a t-test to get the precise p-value. Of course we could do it manually.
+
+The p-value here is 9.57e-11 which is extremely small. So we could reject the null hypothesis using p-value too.
 
 ### Problem 2. (20 points) ANOVA
 ##### We analyze the data set NCI60 data from the ISLR library.
@@ -85,12 +88,16 @@ Since the p-value for the types of cancers is 0.03928 which is less than 0.05, w
 pairwise.t.test(mydata[,1],  mylabs, p.adjust.method='fdr')
 ```
 
+Since all the pairwise p-values are greater than 0.05, there is no big difference between the expression levels of every two groups.
+
+This situation is a little bit strange. The overall means for groups are not the same while the pairwise t-test shows no big difference. The reason behind this maybe the p-value for anova is 0.03928 that is not far from 0.05, which indicates that we almost believe the overall means are the same.
+
 ##### (c) Check the model assumptions for analysis in part (b). Is ANOVA analysis appropriate here?
 ```{r}
 shapiro.test( residuals( lm( mydata[,1] ~ mylabs )))
 bptest( lm( mydata[,1] ~ mylabs ), studentize = FALSE)
 ```
-Both of the p-values are greater than 0.05. So the model assumptions are not violated here.
+Both of the p-values are greater than 0.05. So the model assumptions are not violated. ANOVA is appropriate here.
 
 ##### (d) Apply ANOVA analysis to each of the 6830 genes. At FDR level of 0.05, how many genes express differently among different types of cancer patients?
 ```{r}
@@ -139,7 +146,6 @@ for (i in 1:n) {
   data.tr <- data[-i,]
   lin.reg.tr <- lm(Life.Exp~., data = data.tr)
   err <- err + as.numeric(predict(lin.reg.tr, newdata=data[i,]) - data[i,1])^2
-  #err
 }
 err <- err/n
 err
@@ -172,7 +178,10 @@ dim(data.filtered)[1]
 
 ##### (c) We wish to conduct clustering analysis to study natural groupings of the patients predicted by the gene expression profiles. For this analysis, we first need to reduce the number of genes studied. The filter in (b) is one such choice. Please comment on what filtering methods you would use to choose genes, other than the filter in (b). What would you consider as the best gene filter in this case.
 
-Another criteria could be that the absolute expression levels of the genes were big enough.
+Another criteria could be that the absolute expression levels of the genes are big enough.
+Other methods include filtering out genes with expression levels which do not change significantly across samples, filtering out genes that violate the normality and homoscedasticity assumptios and so on.
+
+For this task, the filter in (b) and the filter that the absolute expression levels of the genes are big enough would suffice.
 
 ##### (d) Conduct a hierarchical clustering analysis with filtered genes in (b). How do the clusters compare to the B-stages? How does do the clusters compare to the molecule biology types (in variable ALL$mol.biol)? Provide the confusion matrices of the comparisons, with 4 clusters.
 ```{r}
@@ -197,36 +206,36 @@ From the confusion matrices, the clusters could not reflect the information of B
 ```{r warning=FALSE}
 library(gplots)
 colnames(data.filtered) <- label.filtered
-col.ord<-order(label.filtered) #Order REF/CR cases
-dat1<-data.filtered[, col.ord] #Reorder columns, 6 REF cases first
+col.ord<-order(label.filtered)
+dat1<-data.filtered[, col.ord] 
 
 ```
 ```{r}
-color.map <- function(B) {#color code for each type as in paper
+color.map <- function(B) {
   if (B=="B1") "yellow"
   else if(B=="B2") "lightblue"
   else if(B=="B3") "darkolivegreen4"
   else if(B=="B4") "darkorange"
   else "purple"
 }
-patientcolors<- unlist(lapply(colnames(dat1), color.map)) #apply color code
+patientcolors<- unlist(lapply(colnames(dat1), color.map)) 
 heatmap.2(dat1, col=greenred(75), scale="row", Rowv=FALSE, Colv=FALSE, key=FALSE, ColSideColors=patientcolors, trace="none", dendrogram="none", labRow=NA)
 ```
 
 ```{r}
-col.ord<-order(MBT) #Order REF/CR cases
+col.ord<-order(MBT) 
 colnames(data.filtered) <- MBT
-dat2<-data.filtered[, col.ord] #Reorder columns, 6 REF cases first
+dat2<-data.filtered[, col.ord] 
 ```
 ```{r}
-color.map <- function(MB) {#color code for each type as in paper
+color.map <- function(MB) {
   if (MB=="ALL1/AF4") "yellow"
   else if(MB=="BCR/ABL") "lightblue"
   else if(MB=="E2A/PBX1") "darkolivegreen4"
   else if(MB=="NEG") "darkorange"
   else "purple"
 }
-patientcolors<- unlist(lapply(colnames(dat2), color.map)) #apply color code
+patientcolors<- unlist(lapply(colnames(dat2), color.map)) 
 heatmap.2(dat2, col=greenred(75), scale="row", 
           Rowv=FALSE, 
           Colv=FALSE, 
@@ -304,7 +313,6 @@ svm.classification <- function(data.fit){
     pred.svm <- predict(fit.svm, data.fit[i,])
     mcr.cv.raw[i] <- (pred.svm!=data.fit$label[i])
   }
-  #print(mcr.cv.raw)
   mcr.cv <- mean(mcr.cv.raw)
   cat("cross-validation mcr for SVM:", mcr.cv, "\n\n")
 }

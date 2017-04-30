@@ -1,0 +1,11 @@
+Advice on applying machine learning: Slides from Andrew's lecture on getting machine learning algorithms to work in practice can be found here.
+
+Previous projects: A list of last year's final projects can be found here.
+
+Matlab resources: Here are a couple of Matlab tutorials that you might find helpful: http://www.math.ucsd.edu/~bdriver/21d-s99/matlab-primer.html and http://www.math.mtu.edu/~msgocken/intro/node1.html. For emacs users only: If you plan to run Matlab in emacs, here are matlab.el, and a helpful .emac's file.
+
+Octave resources: For a free alternative to Matlab, check out GNU Octave. The official documentation is available here. Some useful tutorials on Octave include http://en.wikibooks.org/wiki/Octave_Programming_Tutorial and http://www-mdp.eng.cam.ac.uk/web/CD/engapps/octave/octavetut.pdf .
+
+Data: Here is the UCI Machine learning repository http://archive.ics.uci.edu/ml/, which contains a large collection of standard datasets for testing learning algorithms. If you want to see examples of recent work in machine learning, start by taking a look at the conferences NIPS (all old NIPS papers are online) and ICML. Some other related conferences include UAI, AAAI, IJCAI.
+
+Viewing PostScript and PDF files: Depending on the computer you are using, you may be able to download a PostScript viewer or PDF viewer for it if you don't already have one.
